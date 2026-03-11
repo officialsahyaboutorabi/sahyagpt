@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SahyaGPT UI - Ollama Interface</title>
+    <title>SahyaGPT - Ollama Interface</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -296,6 +296,7 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .model-selector:hover {
@@ -309,6 +310,55 @@
             font-size: 0.9rem;
             cursor: pointer;
             outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 20px;
+        }
+
+        .model-selector::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-secondary);
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .model-selector.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* Custom dropdown styling for webkit browsers */
+        .model-selector select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 10px;
+            border: none;
+            animation: dropdown-slide 0.2s ease-out;
+        }
+
+        @keyframes dropdown-slide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Focus state animation */
+        .model-selector:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .header-right {
@@ -1069,7 +1119,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <div class="logo-icon">AI</div>
+                    <div class="logo-icon">SG</div>
                     <span>SahyaGPT</span>
                 </div>
             </div>
@@ -1109,11 +1159,11 @@
                             <line x1="3" y1="18" x2="21" y2="18"></line>
                         </svg>
                     </button>
-                    <div class="model-selector">
+                    <div class="model-selector" id="modelSelector">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                         </svg>
-                        <select id="modelSelect" onchange="chatApp.changeModel(this.value)">
+                        <select id="modelSelect" onchange="chatApp.changeModel(this.value)" onfocus="document.getElementById('modelSelector').classList.add('active')" onblur="document.getElementById('modelSelector').classList.remove('active')">
                             <option value="">Loading models...</option>
                         </select>
                     </div>
@@ -1136,7 +1186,7 @@
                         </div>
                     </div>
                     <h1 class="welcome-title">How can I help you today?</h1>
-                    <p class="welcome-subtitle">Experience the next generation of AI conversation with Ollama. Select a model and start chatting.</p>
+                    <p class="welcome-subtitle">Experience the next generation of AI conversation with SahyaGPT powered by Ollama. Select a model and start chatting.</p>
                     <div class="suggestion-chips">
                         <div class="chip" onclick="chatApp.sendSuggestion('Explain quantum computing in simple terms')">
                             Explain quantum computing

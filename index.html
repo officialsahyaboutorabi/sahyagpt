@@ -22,6 +22,7 @@
             --bg-secondary: #121212;
             --bg-card: #171717;
             --bg-hover: #1f1f1f;
+            --bg-selected: #1f1f1f;
             --text-primary: #fbfbfb;
             --text-secondary: #b7b7b7;
             --accent: #ff4f00;
@@ -379,8 +380,8 @@
         }
 
         .dropdown-item.selected {
-            background: var(--accent);
-            color: white;
+            background: var(--bg-selected);
+            color: var(--text-primary);
         }
 
         /* Scrollbar for dropdown */
@@ -531,8 +532,9 @@
         .message {
             display: flex;
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
             animation: message-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
         @keyframes message-in {
@@ -548,6 +550,77 @@
 
         .message.user {
             flex-direction: row-reverse;
+        }
+
+        /* Message action buttons - Grok style */
+        .message-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-top: 4px;
+            padding: 0 4px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            height: 32px;
+        }
+
+        .message:hover .message-actions,
+        .message:focus-within .message-actions {
+            opacity: 1;
+        }
+
+        .message.user .message-actions {
+            justify-content: flex-end;
+            margin-right: 56px;
+            margin-left: auto;
+        }
+
+        .message.ai .message-actions {
+            justify-content: flex-start;
+            margin-left: 56px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 50%;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            flex-shrink: 0;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .action-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .action-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            padding: 0 6px;
+            user-select: none;
         }
 
         .message-avatar {
@@ -610,10 +683,9 @@
         }
 
         .message.user .message-bubble {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-bottom-right-radius: 4px;
+            background: linear-gradient(135deg, var(--accent), #ff6b00);
             color: white;
+            border-bottom-right-radius: 4px;
         }
 
         .message.user .message-bubble code {
@@ -709,15 +781,14 @@
             40% { transform: scale(1); }
         }
 
-        /* Input Area */
+        /* Input Area - Grok Style */
         .input-container {
-            padding: 20px;
+            padding: 16px 20px 20px;
             background: var(--bg-primary);
-            border-top: 1px solid var(--border);
         }
 
         .input-wrapper {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
         }
@@ -725,17 +796,18 @@
         .input-box {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
+            gap: 8px;
+            padding: 8px 8px 8px 16px;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 28px;
             transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .input-box:focus-within {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+            box-shadow: 0 2px 12px rgba(255, 79, 0, 0.15);
         }
 
         .input-field {
@@ -746,10 +818,11 @@
             font-size: 0.95rem;
             resize: none;
             outline: none;
-            min-height: 24px;
+            min-height: 40px;
             max-height: 200px;
             font-family: inherit;
-            line-height: 1.6;
+            line-height: 1.5;
+            padding: 8px 0;
         }
 
         .input-field::placeholder {
@@ -758,12 +831,13 @@
 
         .input-actions {
             display: flex;
-            gap: 8px;
+            align-items: center;
+            gap: 4px;
         }
 
         .input-btn {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             background: transparent;
             border: none;
             color: var(--text-secondary);
@@ -771,7 +845,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            border-radius: 50%;
             transition: all 0.2s ease;
             flex-shrink: 0;
             padding: 0;
@@ -787,21 +861,25 @@
         }
 
         .file-upload-btn:hover {
-            color: var(--accent);
+            color: var(--text-primary);
         }
 
         .send-btn {
             background: transparent;
-            color: white;
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
         }
 
         .send-btn:hover {
-            background: var(--border);
+            background: var(--bg-hover);
+            color: var(--text-primary);
             transform: scale(1.05);
         }
 
         .send-btn:disabled {
             background: transparent;
+            color: var(--border);
             cursor: not-allowed;
             transform: none;
         }
@@ -1261,7 +1339,7 @@
                 <div class="input-wrapper">
                     <div class="input-box">
                         <button class="input-btn file-upload-btn" onclick="chatApp.triggerFileUpload()" title="Upload file">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                             </svg>
                         </button>
@@ -1275,12 +1353,6 @@
                             oninput="chatApp.autoResize(this)"
                         ></textarea>
                         <div class="input-actions">
-                            <button class="input-btn" onclick="chatApp.clearInput()" title="Clear">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
                             <button class="input-btn send-btn" id="sendBtn" onclick="chatApp.sendMessage()" title="Send">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -1537,6 +1609,9 @@
                 this.currentModel = '';
                 this.isTyping = false;
                 this.avatar = null;
+                this.abortController = null;
+                this.lastUserMessage = '';
+                this.isGenerating = false;
                 
                 this.init();
             }
@@ -1567,6 +1642,9 @@
                 
                 // Focus input on load
                 document.getElementById('messageInput').focus();
+                
+                // Initialize edit button state
+                this.updateEditButton();
             }
             
             async fetchModels() {
@@ -1752,6 +1830,12 @@
             }
             
             async sendMessage() {
+                // If currently generating, stop it
+                if (this.isGenerating) {
+                    this.stopGeneration();
+                    return;
+                }
+                
                 const input = document.getElementById('messageInput');
                 const message = input.value.trim();
                 
@@ -1762,6 +1846,10 @@
                     return;
                 }
                 
+                // Store last user message for potential resend
+                this.lastUserMessage = message;
+                this.updateEditButton();
+                
                 // Add user message
                 this.addMessage('user', message);
                 input.value = '';
@@ -1770,8 +1858,155 @@
                 // Show typing indicator
                 this.showTypingIndicator();
                 
+                // Update button to stop icon
+                this.updateSendButton(true);
+                
                 // Send to Ollama
                 await this.streamResponse(message);
+            }
+            
+            stopGeneration() {
+                if (this.abortController) {
+                    this.abortController.abort();
+                    this.abortController = null;
+                }
+                this.isGenerating = false;
+                this.isTyping = false;
+                this.hideTypingIndicator();
+                this.updateSendButton(false);
+                this.showToast('Generation stopped', 'success');
+            }
+            
+            updateSendButton(isGenerating) {
+                const btn = document.getElementById('sendBtn');
+                const icon = btn.querySelector('svg');
+                this.isGenerating = isGenerating;
+                
+                if (isGenerating) {
+                    // Show stop icon (square)
+                    btn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                        </svg>
+                    `;
+                    btn.title = 'Stop generation';
+                    btn.style.color = 'var(--accent)';
+                } else {
+                    // Show send icon (paper plane)
+                    btn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    `;
+                    btn.title = 'Send';
+                    btn.style.color = '';
+                }
+            }
+            
+            editAndResend() {
+                const input = document.getElementById('messageInput');
+                if (this.lastUserMessage) {
+                    input.value = this.lastUserMessage;
+                    this.autoResize(input);
+                    input.focus();
+                    // Place cursor at end
+                    input.setSelectionRange(input.value.length, input.value.length);
+                    this.showToast('Previous message loaded. Edit and send again.', 'success');
+                } else {
+                    this.showToast('No previous message to edit', 'error');
+                }
+            }
+            
+            updateEditButton() {
+                const editBtn = document.getElementById('editBtn');
+                if (editBtn) {
+                    editBtn.disabled = !this.lastUserMessage;
+                }
+            }
+            
+            // Message action methods
+            editMessage(index) {
+                const msg = this.messages[index];
+                if (msg && msg.role === 'user') {
+                    const input = document.getElementById('messageInput');
+                    input.value = msg.content;
+                    this.autoResize(input);
+                    input.focus();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                    this.showToast('Message loaded for editing', 'success');
+                }
+            }
+            
+            copyMessage(index) {
+                const msg = this.messages[index];
+                if (msg) {
+                    const text = msg.content;
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.showToast('Copied to clipboard', 'success');
+                    }).catch(() => {
+                        this.showToast('Failed to copy', 'error');
+                    });
+                }
+            }
+            
+            regenerateResponse(index) {
+                // Find the previous user message
+                let userIndex = -1;
+                for (let i = index - 1; i >= 0; i--) {
+                    if (this.messages[i].role === 'user') {
+                        userIndex = i;
+                        break;
+                    }
+                }
+                
+                if (userIndex !== -1) {
+                    const userMsg = this.messages[userIndex];
+                    // Remove the AI response and regenerate
+                    this.messages.splice(index, 1);
+                    this.saveMessages();
+                    this.renderMessages();
+                    this.showTypingIndicator();
+                    this.updateSendButton(true);
+                    this.streamResponse(userMsg.content);
+                    this.showToast('Regenerating response...', 'success');
+                }
+            }
+            
+            readAloud(index) {
+                const msg = this.messages[index];
+                if (msg && 'speechSynthesis' in window) {
+                    // Cancel any ongoing speech
+                    window.speechSynthesis.cancel();
+                    
+                    const utterance = new SpeechSynthesisUtterance(msg.content);
+                    utterance.rate = 1;
+                    utterance.pitch = 1;
+                    window.speechSynthesis.speak(utterance);
+                    this.showToast('Reading aloud...', 'success');
+                } else {
+                    this.showToast('Text-to-speech not supported', 'error');
+                }
+            }
+            
+            shareMessage(index) {
+                const msg = this.messages[index];
+                if (msg && navigator.share) {
+                    navigator.share({
+                        title: 'SahyaGPT Message',
+                        text: msg.content
+                    }).catch(() => {});
+                } else {
+                    this.copyMessage(index);
+                }
+            }
+            
+            likeMessage(index) {
+                this.showToast('Thanks for your feedback!', 'success');
+            }
+            
+            dislikeMessage(index) {
+                this.showToast('Thanks for your feedback!', 'success');
             }
             
             addMessage(role, content) {
@@ -1829,6 +2064,7 @@
                 const div = document.createElement('div');
                 div.className = `message ${msg.role}`;
                 div.style.animationDelay = `${index * 0.05}s`;
+                div.dataset.index = index;
                 
                 const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
@@ -1847,6 +2083,65 @@
                 
                 const content = msg.role === 'ai' ? marked.parse(msg.content) : this.escapeHtml(msg.content).replace(/\n/g, '<br>');
                 
+                // Action buttons for user messages
+                const userActions = msg.role === 'user' ? `
+                    <div class="message-actions">
+                        <button class="action-btn" onclick="chatApp.editMessage(${index})" title="Edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                ` : '';
+                
+                // Action buttons for AI messages
+                const aiActions = msg.role === 'ai' ? `
+                    <div class="message-actions">
+                        <button class="action-btn" onclick="chatApp.regenerateResponse(${index})" title="Regenerate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 20V15H4.31241M4.31241 15H9M4.31241 15C5.51251 18.073 8.50203 20.25 12 20.25C15.8582 20.25 19.0978 17.6016 20 14.0236M20 4V9H19.6876M19.6876 9H15M19.6876 9C18.4875 5.92698 15.498 3.75 12 3.75C8.14184 3.75 4.90224 6.3984 4 9.9764"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.readAloud(${index})" title="Read aloud">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path>
+                                <path d="M16 9a5 5 0 0 1 0 6"></path>
+                                <path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.shareMessage(${index})" title="Share">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                <polyline points="16 6 12 2 8 6"></polyline>
+                                <line x1="12" y1="2" x2="12" y2="15"></line>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.likeMessage(${index})" title="Like">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.dislikeMessage(${index})" title="Dislike">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                            </svg>
+                        </button>
+                    </div>
+                ` : '';
+                
                 div.innerHTML = `
                     ${avatar}
                     <div class="message-content">
@@ -1856,6 +2151,8 @@
                         </div>
                         <div class="message-bubble">${content}</div>
                     </div>
+                    ${userActions}
+                    ${aiActions}
                 `;
                 
                 // Initialize avatar for AI messages
@@ -1916,7 +2213,11 @@
             
             async streamResponse(userMessage) {
                 this.isTyping = true;
-                document.getElementById('sendBtn').disabled = true;
+                this.isGenerating = true;
+                
+                // Create abort controller for stopping
+                this.abortController = new AbortController();
+                const signal = this.abortController.signal;
                 
                 try {
                     const response = await fetch(`${this.settings.apiUrl}/api/generate`, {
@@ -1930,7 +2231,8 @@
                             system: this.settings.systemPrompt,
                             temperature: parseFloat(this.settings.temperature),
                             stream: true
-                        })
+                        }),
+                        signal: signal
                     });
                     
                     if (!response.ok) {
@@ -1947,6 +2249,7 @@
                     const container = document.getElementById('messagesContainer');
                     const messageEl = document.createElement('div');
                     messageEl.className = 'message ai';
+                    messageEl.id = 'streamingMessage';
                     messageEl.innerHTML = `
                         <div class="message-avatar">
                             <div class="avatar small" data-v-0e70e152="">
@@ -2001,12 +2304,35 @@
                     this.addMessage('ai', fullResponse);
                     
                 } catch (error) {
-                    console.error('Error streaming response:', error);
-                    this.hideTypingIndicator();
-                    this.showToast('Error: ' + error.message, 'error');
+                    if (error.name === 'AbortError') {
+                        // User stopped the generation - save partial response
+                        const streamContent = document.getElementById('streamContent');
+                        if (streamContent && streamContent.innerHTML) {
+                            // Extract text content from the HTML
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = streamContent.innerHTML;
+                            const partialResponse = tempDiv.textContent || tempDiv.innerText || '';
+                            if (partialResponse.trim()) {
+                                this.addMessage('ai', streamContent.innerHTML);
+                            }
+                        }
+                        console.log('Generation stopped by user');
+                    } else {
+                        console.error('Error streaming response:', error);
+                        this.hideTypingIndicator();
+                        this.showToast('Error: ' + error.message, 'error');
+                    }
                 } finally {
                     this.isTyping = false;
-                    document.getElementById('sendBtn').disabled = false;
+                    this.isGenerating = false;
+                    this.abortController = null;
+                    this.updateSendButton(false);
+                    
+                    // Remove streaming message element if it exists
+                    const streamingMsg = document.getElementById('streamingMessage');
+                    if (streamingMsg) {
+                        streamingMsg.removeAttribute('id');
+                    }
                 }
             }
             

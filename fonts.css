@@ -1,0 +1,95 @@
+/* 
+  ============================================================================
+  Hotlinked Font Definitions for 'SB Sans Text'
+  ============================================================================
+  This stylesheet contains the @font-face rules to load the 'SB Sans Text' font
+  from the cdn-app.giga.chat server.
+  ============================================================================
+*/
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Italic.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Italic.woff') format('woff');
+    font-weight: normal; /* Corresponds to 400 */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-SemiboldItalic.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-SemiboldItalic.woff') format('woff');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Thin.woff2') format('woff2'), url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff') format('woff');
+    font-weight: normal; /* Corresponds to 400 */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-LightItalic.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Heavy.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Heavy.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff') format('woff');
+    font-weight: bold; /* Corresponds to 700 */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-BoldItalic.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-BoldItalic.woff') format('woff');
+    font-weight: bold; /* Corresponds to 700 */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SB Sans Text';
+    src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Medium.woff2') format('woff2'),
+         url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+}

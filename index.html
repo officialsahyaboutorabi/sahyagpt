@@ -4,6 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SahyaGPT - Ollama Interface</title>
+    <!-- SB Sans Text Font -->
+    <style>
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff') format('woff');
+            font-weight: 300;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Italic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Italic.woff') format('woff');
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-SemiboldItalic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-SemiboldItalic.woff') format('woff');
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Thin.woff2') format('woff2'), 
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Thin.woff') format('woff');
+            font-weight: 100;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff') format('woff');
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-LightItalic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-LightItalic.woff') format('woff');
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Heavy.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Heavy.woff') format('woff');
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-BoldItalic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-BoldItalic.woff') format('woff');
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Medium.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Medium.woff') format('woff');
+            font-weight: 500;
+            font-style: normal;
+        }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,7 +108,7 @@
         }
 
         :root {
-            --bg-primary: #0d0d0d;
+            --bg-primary: #0c0d11;
             --bg-secondary: #121212;
             --bg-card: #171717;
             --bg-hover: #1f1f1f;
@@ -38,8 +128,8 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
+            font-family: 'SB Sans Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: transparent;
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
@@ -53,11 +143,12 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--border);
+            background: var(--accent);
             border-radius: 4px;
         }
 
@@ -78,6 +169,19 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
         }
 
+        
+        /* Dark Background */
+        #dark-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: #0c0d11;
+            pointer-events: none;
+        }
+
         /* Layout */
         .app-container {
             display: flex;
@@ -87,7 +191,8 @@
         /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: var(--bg-secondary);
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
@@ -135,7 +240,8 @@
         .new-chat-btn {
             margin: 16px 20px;
             padding: 12px 16px;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
@@ -189,7 +295,8 @@
 
         .history-item:hover,
         .history-item.active {
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             color: var(--text-primary);
         }
 
@@ -248,7 +355,7 @@
         /* Header */
         .header {
             height: 60px;
-            background: rgba(13, 13, 13, 0.8);
+            background: rgba(12, 13, 17, 0.8);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -281,7 +388,8 @@
         }
 
         .menu-toggle:hover {
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             color: var(--text-primary);
         }
 
@@ -296,7 +404,8 @@
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 10px;
             color: var(--text-primary);
@@ -336,7 +445,8 @@
             top: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 10px;
             overflow: hidden;
@@ -412,7 +522,8 @@
             align-items: center;
             gap: 8px;
             padding: 6px 12px;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
             font-size: 0.8rem;
             color: var(--text-secondary);
@@ -505,7 +616,8 @@
 
         .chip {
             padding: 12px 20px;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 20px;
             color: var(--text-secondary);
@@ -682,13 +794,15 @@
         }
 
         .message.ai .message-bubble {
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-top-left-radius: 4px;
         }
 
         .message.user .message-bubble {
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             color: var(--text-primary);
             border: 1px solid var(--border);
             border-top-right-radius: 4px;
@@ -790,7 +904,7 @@
         /* Input Area - Grok Style */
         .input-container {
             padding: 16px 20px 20px;
-            background: var(--bg-primary);
+            background: transparent;
         }
 
         .input-wrapper {
@@ -804,7 +918,8 @@
             align-items: center;
             gap: 8px;
             padding: 8px 8px 8px 16px;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 28px;
             transition: all 0.2s ease;
@@ -950,7 +1065,8 @@
             width: 90%;
             max-width: 560px;
             max-height: 85vh;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 20px;
             overflow: hidden;
@@ -1121,7 +1237,8 @@
         .form-input {
             width: 100%;
             padding: 12px 16px;
-            background: var(--bg-secondary);
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
@@ -1138,7 +1255,8 @@
             width: 100%;
             min-height: 100px;
             padding: 12px 16px;
-            background: var(--bg-secondary);
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
@@ -1156,7 +1274,8 @@
         .form-select {
             width: 100%;
             padding: 12px 16px;
-            background: var(--bg-secondary);
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
@@ -1205,7 +1324,7 @@
         }
 
         .toggle-switch.active {
-            background: var(--border);
+            background: var(--accent);
         }
 
         .toggle-switch::after {
@@ -1268,10 +1387,10 @@
         .save-btn {
             flex: 1;
             padding: 14px;
-            background: transparent;
-            border: 1px solid var(--border);
+            background: var(--accent);
+            border: 1px solid var(--accent);
             border-radius: 12px;
-            color: var(--text-secondary);
+            color: white;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
@@ -1279,8 +1398,8 @@
         }
 
         .save-btn:hover {
-            border-color: var(--border);
-            color: var(--text-primary);
+            background: #ff6b2c;
+            border-color: #ff6b2c;
             transform: translateY(-1px);
         }
 
@@ -1313,7 +1432,8 @@
 
         .toast {
             padding: 14px 20px;
-            background: var(--bg-card);
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
@@ -1475,8 +1595,13 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
+    <!-- Dark Background -->
+    <div id="dark-background"></div>
+
+
     <!-- Noise Overlay -->
     <div class="noise-overlay"></div>
 

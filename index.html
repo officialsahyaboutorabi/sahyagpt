@@ -25,8 +25,8 @@
             --bg-selected: #1f1f1f;
             --text-primary: #fbfbfb;
             --text-secondary: #b7b7b7;
-            --accent: #ff4f00;
-            --accent-glow: rgba(255, 79, 0, 0.4);
+            --accent: var(--border);
+            --accent-glow: rgba(255, 255, 255, 0.1);
             --success: #00ff88;
             --error: #ff3333;
             --border: #2a2a2a;
@@ -62,7 +62,7 @@
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
+            background: var(--border);
         }
 
         /* Noise Overlay */
@@ -118,7 +118,7 @@
         .logo-icon {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, var(--accent), #ff8c00);
+            background: linear-gradient(135deg, var(--border), var(--bg-hover));
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -150,7 +150,7 @@
 
         .new-chat-btn:hover {
             background: var(--bg-hover);
-            border-color: var(--accent);
+            border-color: var(--border);
             transform: translateY(-1px);
         }
 
@@ -182,7 +182,7 @@
             top: 0;
             height: 100%;
             width: 3px;
-            background: var(--accent);
+            background: var(--border);
             transform: scaleY(0);
             transition: transform 0.2s ease;
         }
@@ -227,7 +227,7 @@
         }
 
         .settings-btn:hover {
-            border-color: var(--accent);
+            border-color: var(--border);
             color: var(--text-primary);
         }
 
@@ -313,6 +313,7 @@
 
         .dropdown-trigger.active {
             border-color: var(--border);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .dropdown-trigger-text {
@@ -398,7 +399,7 @@
         }
 
         .dropdown-menu::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
+            background: var(--border);
         }
 
         .header-right {
@@ -482,7 +483,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            background: linear-gradient(135deg, var(--text-primary), var(--border));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -515,7 +516,7 @@
         }
 
         .chip:hover {
-            border-color: var(--accent);
+            border-color: var(--border);
             color: var(--text-primary);
             transform: translateY(-2px);
             box-shadow: 0 4px 20px rgba(255, 79, 0, 0.2);
@@ -637,7 +638,7 @@
         }
 
         .message.user .message-avatar {
-            background: linear-gradient(135deg, var(--accent), #ff8c00);
+            background: linear-gradient(135deg, var(--border), var(--bg-hover));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -737,7 +738,7 @@
         }
 
         .copy-btn:hover {
-            border-color: var(--accent);
+            border-color: var(--border);
             color: var(--text-primary);
         }
 
@@ -760,7 +761,7 @@
             border-radius: 6px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9em;
-            color: var(--accent);
+            color: var(--border);
         }
 
         /* Typing Indicator */
@@ -774,7 +775,7 @@
         .typing-indicator span {
             width: 8px;
             height: 8px;
-            background: var(--accent);
+            background: var(--border);
             border-radius: 50%;
             animation: typing-bounce 1.4s ease-in-out infinite both;
         }
@@ -813,6 +814,7 @@
 
         .input-box:focus-within {
             border-color: var(--border);
+            box-shadow: 0 2px 12px rgba(255, 79, 0, 0.15);
         }
 
         .input-field {
@@ -948,13 +950,16 @@
 
         .modal {
             width: 90%;
-            max-width: 500px;
+            max-width: 560px;
+            max-height: 85vh;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 28px;
+            overflow: hidden;
             transform: scale(0.9) translateY(20px);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-overlay.active .modal {
@@ -965,7 +970,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border);
         }
 
         .modal-title {
@@ -992,15 +998,126 @@
             color: var(--text-primary);
         }
 
+        .modal-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 0 28px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .modal-tab {
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: color 0.25s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .modal-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-tab.active {
+            color: var(--text-primary);
+        }
+
+        .modal-tab.active::after {
+            transform: scaleX(1);
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 20px 28px;
+            border-top: 1px solid var(--border);
+        }
+
+        .settings-section {
+            opacity: 0;
+            transform: translateX(10px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            display: none;
+        }
+
+        .settings-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+            animation: fadeInSlide 0.3s ease forwards;
+        }
+
+        @keyframes fadeInSlide {
+            from {
+                opacity: 0;
+                transform: translateX(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .settings-group {
+            margin-bottom: 28px;
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-group-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
 
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
         .form-label {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 8px;
             font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .form-label span {
             color: var(--text-secondary);
+            font-size: 0.8rem;
         }
 
         .form-input {
@@ -1016,7 +1133,26 @@
 
         .form-input:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--border);
         }
 
         .form-select {
@@ -1033,25 +1169,136 @@
 
         .form-select:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(--border);
         }
 
+        /* Toggle Switch */
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+        }
+
+        .toggle-info {
+            flex: 1;
+        }
+
+        .toggle-label {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .toggle-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: var(--border);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: var(--border);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 25px;
+        }
+
+        /* Slider */
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Buttons */
         .save-btn {
-            width: 100%;
+            flex: 1;
             padding: 14px;
-            background: var(--accent);
+            background: var(--border);
             border: none;
             border-radius: 12px;
             color: white;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .save-btn:hover {
-            background: #ff6b00;
+            background: var(--text-secondary);
             transform: translateY(-1px);
+        }
+
+        .reset-btn {
+            padding: 14px 24px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            border-color: var(--border);
+            color: var(--text-primary);
         }
 
         /* Toast Notifications */
@@ -1178,14 +1425,14 @@
         }
 
         .message-bubble blockquote {
-            border-left: 3px solid var(--accent);
+            border-left: 3px solid var(--border);
             padding-left: 16px;
             margin: 16px 0;
             color: var(--text-secondary);
         }
 
         .message-bubble a {
-            color: var(--accent);
+            color: var(--border);
             text-decoration: none;
         }
 
@@ -1384,21 +1631,145 @@
                     </svg>
                 </button>
             </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="chatApp.switchSettingsTab('general')">General</button>
+                <button class="modal-tab" onclick="chatApp.switchSettingsTab('model')">Model</button>
+                <button class="modal-tab" onclick="chatApp.switchSettingsTab('appearance')">Appearance</button>
+                <button class="modal-tab" onclick="chatApp.switchSettingsTab('advanced')">Advanced</button>
+            </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Ollama API URL</label>
-                    <input type="text" class="form-input" id="apiUrl" value="http://localhost:11434" placeholder="http://localhost:11434">
+                <!-- General Tab -->
+                <div class="settings-section active" id="tab-general">
+                    <div class="settings-group">
+                        <div class="settings-group-title">Connection</div>
+                        <div class="form-group">
+                            <label class="form-label">Ollama API URL</label>
+                            <input type="text" class="form-input" id="apiUrl" value="http://localhost:11434" placeholder="http://localhost:11434">
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">Preferences</div>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Auto-save chats</div>
+                                <div class="toggle-description">Automatically save conversation history</div>
+                            </div>
+                            <div class="toggle-switch active" id="autoSaveToggle" onclick="chatApp.toggleSetting('autoSave')"></div>
+                        </div>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Send with Enter</div>
+                                <div class="toggle-description">Press Enter to send, Shift+Enter for new line</div>
+                            </div>
+                            <div class="toggle-switch active" id="enterToSendToggle" onclick="chatApp.toggleSetting('enterToSend')"></div>
+                        </div>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Show timestamps</div>
+                                <div class="toggle-description">Display message timestamps in chat</div>
+                            </div>
+                            <div class="toggle-switch active" id="showTimestampsToggle" onclick="chatApp.toggleSetting('showTimestamps')"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">System Prompt</label>
-                    <textarea class="form-input" id="systemPrompt" rows="3" placeholder="Enter a system prompt to customize AI behavior...">You are a helpful AI assistant.</textarea>
+
+                <!-- Model Tab -->
+                <div class="settings-section" id="tab-model">
+                    <div class="settings-group">
+                        <div class="settings-group-title">System Prompt</div>
+                        <div class="form-group">
+                            <label class="form-label">Instructions for the AI <span>Defines how the AI behaves</span></label>
+                            <textarea class="form-textarea" id="systemPrompt" placeholder="Enter a system prompt to customize AI behavior...">You are a helpful AI assistant.</textarea>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">Parameters</div>
+                        <div class="form-group">
+                            <label class="form-label">Temperature <span>Controls creativity (0 = focused, 2 = creative)</span></label>
+                            <div class="slider-wrapper">
+                                <input type="range" class="slider" id="temperature" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('tempValue').textContent = this.value">
+                                <span class="slider-value" id="tempValue">0.7</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Max Tokens <span>Maximum response length</span></label>
+                            <div class="slider-wrapper">
+                                <input type="range" class="slider" id="maxTokens" min="256" max="8192" step="256" value="2048" oninput="document.getElementById('maxTokensValue').textContent = this.value">
+                                <span class="slider-value" id="maxTokensValue">2048</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Top P <span>Nucleus sampling threshold</span></label>
+                            <div class="slider-wrapper">
+                                <input type="range" class="slider" id="topP" min="0" max="1" step="0.05" value="0.9" oninput="document.getElementById('topPValue').textContent = this.value">
+                                <span class="slider-value" id="topPValue">0.9</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Temperature</label>
-                    <input type="range" class="form-input" id="temperature" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('tempValue').textContent = this.value">
-                    <span id="tempValue" style="color: var(--text-secondary); font-size: 0.85rem;">0.7</span>
+
+                <!-- Appearance Tab -->
+                <div class="settings-section" id="tab-appearance">
+                    <div class="settings-group">
+                        <div class="settings-group-title">Theme</div>
+                        <div class="form-group">
+                            <label class="form-label">Color Theme</label>
+                            <select class="form-select" id="themeSelect">
+                                <option value="dark">Dark (Default)</option>
+                                <option value="light">Light</option>
+                                <option value="system">System</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">Chat Display</div>
+                        <div class="form-group">
+                            <label class="form-label">Font Size</label>
+                            <select class="form-select" id="fontSizeSelect">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Code Block Theme</label>
+                            <select class="form-select" id="codeThemeSelect">
+                                <option value="atom-one-dark">Atom One Dark</option>
+                                <option value="github-dark">GitHub Dark</option>
+                                <option value="monokai">Monokai</option>
+                                <option value="dracula">Dracula</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <button class="save-btn" onclick="chatApp.saveSettings()">Save Settings</button>
+
+                <!-- Advanced Tab -->
+                <div class="settings-section" id="tab-advanced">
+                    <div class="settings-group">
+                        <div class="settings-group-title">Data Management</div>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Stream responses</div>
+                                <div class="toggle-description">Show AI response as it's being generated</div>
+                            </div>
+                            <div class="toggle-switch active" id="streamToggle" onclick="chatApp.toggleSetting('stream')"></div>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">Danger Zone</div>
+                        <button class="reset-btn" onclick="chatApp.clearAllData()" style="width: 100%; color: var(--error); border-color: var(--error);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 8px; vertical-align: middle;">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="reset-btn" onclick="chatApp.resetSettings()">Reset to Default</button>
+                <button class="save-btn" onclick="chatApp.saveSettings()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -1527,7 +1898,7 @@
                 );
                 leftGradient.addColorStop(0, '#ffffff');
                 leftGradient.addColorStop(0.3, `rgba(255, 79, 0, ${eyeGlow})`);
-                leftGradient.addColorStop(1, '#ff2d00');
+                leftGradient.addColorStop(1, '#666666');
                 ctx.fillStyle = leftGradient;
                 ctx.fill();
                 
@@ -1543,7 +1914,7 @@
                 );
                 rightGradient.addColorStop(0, '#ffffff');
                 rightGradient.addColorStop(0.3, `rgba(255, 79, 0, ${eyeGlow})`);
-                rightGradient.addColorStop(1, '#ff2d00');
+                rightGradient.addColorStop(1, '#666666');
                 ctx.fillStyle = rightGradient;
                 ctx.fill();
                 
@@ -2440,19 +2811,172 @@
                 this.settings.apiUrl = document.getElementById('apiUrl').value.trim();
                 this.settings.systemPrompt = document.getElementById('systemPrompt').value.trim();
                 this.settings.temperature = document.getElementById('temperature').value;
+                this.settings.maxTokens = parseInt(document.getElementById('maxTokens').value);
+                this.settings.topP = parseFloat(document.getElementById('topP').value);
+                this.settings.theme = document.getElementById('themeSelect').value;
+                this.settings.fontSize = document.getElementById('fontSizeSelect').value;
+                this.settings.codeTheme = document.getElementById('codeThemeSelect').value;
+                
+                // Save toggles
+                if (!this.settings.toggles) this.settings.toggles = {};
+                ['autoSave', 'enterToSend', 'showTimestamps', 'stream'].forEach(key => {
+                    const toggle = document.getElementById(`${key}Toggle`);
+                    if (toggle) {
+                        this.settings.toggles[key] = toggle.classList.contains('active');
+                    }
+                });
                 
                 localStorage.setItem('chatSettings', JSON.stringify(this.settings));
                 this.closeSettings();
                 this.showToast('Settings saved successfully', 'success');
                 
+                // Apply theme/font changes
+                this.applyAppearanceSettings();
+                
                 // Re-fetch models with new settings
                 this.fetchModels();
+            }
+            
+            applyAppearanceSettings() {
+                // Apply font size
+                const fontSizeMap = { small: '14px', medium: '16px', large: '18px' };
+                document.documentElement.style.fontSize = fontSizeMap[this.settings.fontSize] || '16px';
+                
+                // Apply theme (basic implementation)
+                if (this.settings.theme === 'light') {
+                    document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+                } else {
+                    document.body.style.filter = '';
+                }
+            }
+            
+            // New Settings Methods
+            switchSettingsTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.modal-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // Update sections
+                document.querySelectorAll('.settings-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+            }
+            
+            toggleSetting(settingName) {
+                const toggle = document.getElementById(`${settingName}Toggle`);
+                toggle.classList.toggle('active');
+                
+                // Store toggle state in settings
+                if (!this.settings.toggles) this.settings.toggles = {};
+                this.settings.toggles[settingName] = toggle.classList.contains('active');
+            }
+            
+            resetSettings() {
+                if (confirm('Are you sure you want to reset all settings to default?')) {
+                    this.settings = {
+                        apiUrl: 'http://localhost:11434',
+                        systemPrompt: 'You are a helpful AI assistant.',
+                        temperature: 0.7,
+                        maxTokens: 2048,
+                        topP: 0.9,
+                        theme: 'dark',
+                        fontSize: 'medium',
+                        codeTheme: 'atom-one-dark',
+                        toggles: {
+                            autoSave: true,
+                            enterToSend: true,
+                            showTimestamps: true,
+                            stream: true
+                        }
+                    };
+                    
+                    // Reset UI
+                    document.getElementById('apiUrl').value = this.settings.apiUrl;
+                    document.getElementById('systemPrompt').value = this.settings.systemPrompt;
+                    document.getElementById('temperature').value = this.settings.temperature;
+                    document.getElementById('tempValue').textContent = this.settings.temperature;
+                    document.getElementById('maxTokens').value = this.settings.maxTokens;
+                    document.getElementById('maxTokensValue').textContent = this.settings.maxTokens;
+                    document.getElementById('topP').value = this.settings.topP;
+                    document.getElementById('topPValue').textContent = this.settings.topP;
+                    document.getElementById('themeSelect').value = this.settings.theme;
+                    document.getElementById('fontSizeSelect').value = this.settings.fontSize;
+                    document.getElementById('codeThemeSelect').value = this.settings.codeTheme;
+                    
+                    // Reset toggles
+                    document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                        toggle.classList.add('active');
+                    });
+                    
+                    localStorage.setItem('chatSettings', JSON.stringify(this.settings));
+                    this.showToast('Settings reset to default', 'success');
+                }
+            }
+            
+            clearAllData() {
+                if (confirm('WARNING: This will permanently delete all your chats and settings. This action cannot be undone. Are you sure?')) {
+                    localStorage.removeItem('chatSettings');
+                    localStorage.removeItem('chatHistory');
+                    this.chats = [];
+                    this.messages = [];
+                    this.currentChatId = null;
+                    this.renderChatHistory();
+                    document.getElementById('welcomeScreen').style.display = 'flex';
+                    document.getElementById('messagesContainer').style.display = 'none';
+                    document.getElementById('messagesContainer').innerHTML = '';
+                    this.showToast('All data cleared', 'success');
+                    this.closeSettings();
+                }
             }
             
             loadSettings() {
                 const saved = localStorage.getItem('chatSettings');
                 if (saved) {
-                    this.settings = { ...this.settings, ...JSON.parse(saved) };
+                    const parsed = JSON.parse(saved);
+                    this.settings = { 
+                        apiUrl: 'http://localhost:11434',
+                        systemPrompt: 'You are a helpful AI assistant.',
+                        temperature: 0.7,
+                        maxTokens: 2048,
+                        topP: 0.9,
+                        theme: 'dark',
+                        fontSize: 'medium',
+                        codeTheme: 'atom-one-dark',
+                        toggles: {
+                            autoSave: true,
+                            enterToSend: true,
+                            showTimestamps: true,
+                            stream: true
+                        },
+                        ...parsed 
+                    };
+                    
+                    // Update UI with loaded settings
+                    document.getElementById('apiUrl').value = this.settings.apiUrl;
+                    document.getElementById('systemPrompt').value = this.settings.systemPrompt;
+                    document.getElementById('temperature').value = this.settings.temperature;
+                    document.getElementById('tempValue').textContent = this.settings.temperature;
+                    document.getElementById('maxTokens').value = this.settings.maxTokens || 2048;
+                    document.getElementById('maxTokensValue').textContent = this.settings.maxTokens || 2048;
+                    document.getElementById('topP').value = this.settings.topP || 0.9;
+                    document.getElementById('topPValue').textContent = this.settings.topP || 0.9;
+                    document.getElementById('themeSelect').value = this.settings.theme || 'dark';
+                    document.getElementById('fontSizeSelect').value = this.settings.fontSize || 'medium';
+                    document.getElementById('codeThemeSelect').value = this.settings.codeTheme || 'atom-one-dark';
+                    
+                    // Update toggles
+                    if (this.settings.toggles) {
+                        Object.entries(this.settings.toggles).forEach(([key, value]) => {
+                            const toggle = document.getElementById(`${key}Toggle`);
+                            if (toggle) {
+                                if (value) toggle.classList.add('active');
+                                else toggle.classList.remove('active');
+                            }
+                        });
+                    }
                 }
             }
             

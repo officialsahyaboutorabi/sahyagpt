@@ -515,10 +515,10 @@
         }
 
         .chip:hover {
-            border-color: var(--accent);
+            border-color: var(--border);
             color: var(--text-primary);
             transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(255, 79, 0, 0.2);
+           /* box-shadow: 0 4px 20px rgba(255, 79, 0, 0.2); */
         }
 
         /* Messages */
@@ -1268,7 +1268,7 @@
         .save-btn {
             flex: 1;
             padding: 14px;
-            background: var(--border);
+            background: transparent;
             border: 1px solid var(--border);
             border-radius: 12px;
             color: white;
@@ -1279,7 +1279,8 @@
         }
 
         .save-btn:hover {
-            background: var(--text-secondary);
+            border-color: var(--border);
+            color: var(--text-primary);
             transform: translateY(-1px);
         }
 

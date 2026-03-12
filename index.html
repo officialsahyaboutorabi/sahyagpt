@@ -25,8 +25,8 @@
             --bg-selected: #1f1f1f;
             --text-primary: #fbfbfb;
             --text-secondary: #b7b7b7;
-            --accent: var(--border);
-            --accent-glow: rgba(255, 255, 255, 0.1);
+            --accent: #ff4f00;
+            --accent-glow: rgba(255, 79, 0, 0.4);
             --success: #00ff88;
             --error: #ff3333;
             --border: #2a2a2a;
@@ -182,7 +182,7 @@
             top: 0;
             height: 100%;
             width: 3px;
-            background: var(--border);
+            background: var(--accent);
             transform: scaleY(0);
             transition: transform 0.2s ease;
         }
@@ -313,7 +313,6 @@
 
         .dropdown-trigger.active {
             border-color: var(--border);
-            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .dropdown-trigger-text {
@@ -399,7 +398,7 @@
         }
 
         .dropdown-menu::-webkit-scrollbar-thumb:hover {
-            background: var(--border);
+            background: var(--accent);
         }
 
         .header-right {

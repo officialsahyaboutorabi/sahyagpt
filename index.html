@@ -170,16 +170,22 @@
         }
 
         
-        /* Dark Background */
-        #dark-background {
+        /* Starfield Background */
+        #starfield-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -2;
-            background: #0c0d11;
             pointer-events: none;
+            background: #0c0d11;
+        }
+
+        #starfield-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         /* Layout */
@@ -1598,8 +1604,10 @@
 <base target="_blank">
 </head>
 <body>
-    <!-- Dark Background -->
-    <div id="dark-background"></div>
+    <!-- Starfield Background -->
+    <div id="starfield-container">
+        <canvas id="starfield-canvas"></canvas>
+    </div>
 
 
     <!-- Noise Overlay -->
@@ -1902,7 +1910,104 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // AI Avatar Animation Class
+                // Starfield Animation
+        const starfieldContainer = document.getElementById('starfield-container');
+        const starfieldCanvas = document.getElementById('starfield-canvas');
+        const starfieldCtx = starfieldCanvas.getContext('2d');
+        let particles = [], shootingStars = [], rotation = 0, animationFrameId = null;
+
+        function animateStarfield() {
+            starfieldCtx.clearRect(0, 0, starfieldCanvas.width, starfieldCanvas.height);
+            rotation += 0.0003;
+            const centerX = starfieldCanvas.width + 0.1 * starfieldCanvas.height;
+            const centerY = starfieldCanvas.height + 0.5 * starfieldCanvas.height;
+
+            particles.forEach(p => {
+                const angle = p.angle + rotation;
+                p.x = centerX + Math.cos(angle) * p.distance;
+                p.y = centerY + Math.sin(angle) * p.distance;
+                p.opacity += p.twinkleSpeed;
+                if (p.opacity > 1 || p.opacity < 0.6) p.twinkleSpeed = -p.twinkleSpeed;
+
+                let gradient = starfieldCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 2 * p.radius);
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+                gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.5 * p.opacity})`);
+                gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                starfieldCtx.beginPath();
+                starfieldCtx.arc(p.x, p.y, 2 * p.radius, 0, 2 * Math.PI);
+                starfieldCtx.fillStyle = gradient;
+                starfieldCtx.fill();
+            });
+
+            if (Math.random() < 0.001 && shootingStars.length < 3) {
+                shootingStars.push({
+                    x: Math.random() * starfieldCanvas.width,
+                    y: -50,
+                    length: 120 + 120 * Math.random(),
+                    speed: 3 + Math.random(),
+                    opacity: 0.9
+                });
+            }
+
+            shootingStars = shootingStars.filter(s => {
+                s.x -= s.speed;
+                s.y += s.speed;
+                s.opacity -= 0.01;
+
+                let gradient = starfieldCtx.createLinearGradient(s.x, s.y, s.x + 0.707 * s.length, s.y - 0.707 * s.length);
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${s.opacity})`);
+                gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.5 * s.opacity})`);
+                gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                starfieldCtx.beginPath();
+                starfieldCtx.moveTo(s.x, s.y);
+                starfieldCtx.lineTo(s.x + 0.707 * s.length, s.y - 0.707 * s.length);
+                starfieldCtx.strokeStyle = gradient;
+                starfieldCtx.lineWidth = 2;
+                starfieldCtx.stroke();
+
+                let headGradient = starfieldCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 4);
+                headGradient.addColorStop(0, `rgba(255, 255, 255, ${s.opacity})`);
+                headGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                starfieldCtx.beginPath();
+                starfieldCtx.arc(s.x, s.y, 4, 0, 2 * Math.PI);
+                starfieldCtx.fillStyle = headGradient;
+                starfieldCtx.fill();
+
+                return s.y < starfieldCanvas.height + 50 && s.opacity > 0;
+            });
+
+            animationFrameId = requestAnimationFrame(animateStarfield);
+        }
+
+        function createParticles(count, initial = false) {
+            for (let i = 0; i < count; i++) {
+                if (particles.length >= 3000) return;
+                particles.push({
+                    x: 0,
+                    y: 0,
+                    radius: Math.random() + 0.3,
+                    opacity: initial ? 0.5 * Math.random() + 0.5 : 0,
+                    twinkleSpeed: 0.005 + 0.01 * Math.random(),
+                    angle: 2 * Math.random() * Math.PI,
+                    distance: Math.random() * Math.max(starfieldCanvas.width, starfieldCanvas.height) * 2 + 500
+                });
+            }
+        }
+
+        function handleStarfieldResize() {
+            const rect = starfieldContainer.getBoundingClientRect();
+            starfieldCanvas.width = rect.width;
+            starfieldCanvas.height = rect.height;
+            particles = [];
+            createParticles(800, true);
+        }
+
+        const starfieldResizeObserver = new ResizeObserver(handleStarfieldResize);
+        starfieldResizeObserver.observe(starfieldContainer);
+        handleStarfieldResize();
+        animateStarfield();
+
+// AI Avatar Animation Class
         class AIAvatar {
             constructor(canvasId, size = 56) {
                 this.canvas = document.getElementById(canvasId);

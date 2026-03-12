@@ -482,7 +482,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--text-primary), var(--border));
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -515,7 +515,7 @@
         }
 
         .chip:hover {
-            border-color: var(--border);
+            border-color: var(--accent);
             color: var(--text-primary);
             transform: translateY(-2px);
             box-shadow: 0 4px 20px rgba(255, 79, 0, 0.2);
@@ -637,7 +637,7 @@
         }
 
         .message.user .message-avatar {
-            background: linear-gradient(135deg, var(--border), var(--bg-hover));
+            background: linear-gradient(135deg, var(--accent), #ff8c00);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -737,7 +737,7 @@
         }
 
         .copy-btn:hover {
-            border-color: var(--border);
+            border-color: var(--accent);
             color: var(--text-primary);
         }
 
@@ -760,7 +760,7 @@
             border-radius: 6px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9em;
-            color: var(--border);
+            color: var(--accent);
         }
 
         /* Typing Indicator */
@@ -774,7 +774,7 @@
         .typing-indicator span {
             width: 8px;
             height: 8px;
-            background: var(--border);
+            background: var(--accent);
             border-radius: 50%;
             animation: typing-bounce 1.4s ease-in-out infinite both;
         }
@@ -813,7 +813,6 @@
 
         .input-box:focus-within {
             border-color: var(--border);
-            box-shadow: 0 2px 12px rgba(255, 79, 0, 0.15);
         }
 
         .input-field {

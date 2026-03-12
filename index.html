@@ -532,9 +532,10 @@
         .message {
             display: flex;
             gap: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 24px;
             animation: message-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
+            flex-wrap: wrap;
         }
 
         @keyframes message-in {
@@ -557,11 +558,13 @@
             display: flex;
             align-items: center;
             gap: 2px;
-            margin-top: 4px;
+            margin-top: 8px;
             padding: 0 4px;
             opacity: 0;
             transition: opacity 0.15s ease;
             height: 32px;
+            width: 100%;
+            order: 3;
         }
 
         .message:hover .message-actions,
@@ -571,13 +574,14 @@
 
         .message.user .message-actions {
             justify-content: flex-end;
-            margin-right: 56px;
+            padding-right: 0;
             margin-left: auto;
+            max-width: calc(100% - 56px);
         }
 
         .message.ai .message-actions {
             justify-content: flex-start;
-            margin-left: 56px;
+            padding-left: 56px;
         }
 
         .action-btn {
@@ -630,6 +634,7 @@
             border-radius: 50%;
             overflow: hidden;
             position: relative;
+            order: 1;
         }
 
         .message.user .message-avatar {
@@ -644,6 +649,7 @@
         .message-content {
             flex: 1;
             max-width: calc(100% - 60px);
+            order: 2;
         }
 
         .message-header {
@@ -683,9 +689,10 @@
         }
 
         .message.user .message-bubble {
-            background: linear-gradient(135deg, var(--accent), #ff6b00);
-            color: white;
-            border-bottom-right-radius: 4px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-top-right-radius: 4px;
         }
 
         .message.user .message-bubble code {
@@ -1890,7 +1897,7 @@
                         </svg>
                     `;
                     btn.title = 'Stop generation';
-                    btn.style.color = 'var(--accent)';
+                    btn.style.color = 'var(--text-primary)';
                 } else {
                     // Show send icon (paper plane)
                     btn.innerHTML = `
@@ -2142,6 +2149,8 @@
                     </div>
                 ` : '';
                 
+                const actions = msg.role === 'user' ? userActions : aiActions;
+                
                 div.innerHTML = `
                     ${avatar}
                     <div class="message-content">
@@ -2151,8 +2160,7 @@
                         </div>
                         <div class="message-bubble">${content}</div>
                     </div>
-                    ${userActions}
-                    ${aiActions}
+                    ${actions}
                 `;
                 
                 // Initialize avatar for AI messages
@@ -2517,6 +2525,1004 @@
             
             if (!isMobile) {
                 // Reset mobile classes when going to desktop
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
+
+        // AI Avatar Animation Class
+        class AIAvatar {
+            constructor(canvasId, size = 56) {
+                this.canvas = document.getElementById(canvasId);
+                if (!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.size = size;
+                this.time = 0;
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.targetX = 0;
+                this.targetY = 0;
+                
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.width = size * 2 * dpr;
+                this.canvas.height = size * 2 * dpr;
+                this.ctx.scale(dpr, dpr);
+                
+                this.init();
+            }
+            
+            init() {
+                this.animate();
+                document.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    this.targetX = (e.clientX - centerX) / 20;
+                    this.targetY = (e.clientY - centerY) / 20;
+                });
+            }
+            
+            animate() {
+                this.time += 0.02;
+                this.mouseX += (this.targetX - this.mouseX) * 0.1;
+                this.mouseY += (this.targetY - this.mouseY) * 0.1;
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            draw() {
+                const ctx = this.ctx;
+                const centerX = this.size;
+                const centerY = this.size;
+                const baseRadius = this.size - 4;
+                
+                ctx.clearRect(0, 0, this.size * 2, this.size * 2);
+                
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, baseRadius);
+                gradient.addColorStop(0, '#1f1f1f');
+                gradient.addColorStop(0.7, '#171717');
+                gradient.addColorStop(1, '#121212');
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                const glowIntensity = 0.3 + Math.sin(this.time) * 0.1;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255, 79, 0, ${glowIntensity})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius * 0.85, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 79, 0, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                const floatX = Math.sin(this.time * 0.5) * 2;
+                const floatY = Math.cos(this.time * 0.7) * 2;
+                
+                const eyeOffsetX = 12 + floatX;
+                const eyeOffsetY = -4 + floatY;
+                const eyeRadius = 10;
+                
+                ctx.beginPath();
+                ctx.arc(centerX - eyeOffsetX, centerY + eyeOffsetY, eyeRadius + 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(centerX + eyeOffsetX, centerY + eyeOffsetY, eyeRadius + 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fill();
+                
+                const eyeGlow = 0.6 + Math.sin(this.time * 2) * 0.2;
+                
+                const leftEyeX = centerX - eyeOffsetX + Math.max(-4, Math.min(4, this.mouseX));
+                const leftEyeY = centerY + eyeOffsetY + Math.max(-3, Math.min(3, this.mouseY));
+                
+                ctx.beginPath();
+                ctx.arc(leftEyeX, leftEyeY, eyeRadius, 0, Math.PI * 2);
+                const leftGradient = ctx.createRadialGradient(leftEyeX - 3, leftEyeY - 3, 0, leftEyeX, leftEyeY, eyeRadius);
+                leftGradient.addColorStop(0, '#ffffff');
+                leftGradient.addColorStop(0.3, `rgba(255, 79, 0, ${eyeGlow})`);
+                leftGradient.addColorStop(1, '#ff2d00');
+                ctx.fillStyle = leftGradient;
+                ctx.fill();
+                
+                const rightEyeX = centerX + eyeOffsetX + Math.max(-4, Math.min(4, this.mouseX));
+                const rightEyeY = centerY + eyeOffsetY + Math.max(-3, Math.min(3, this.mouseY));
+                
+                ctx.beginPath();
+                ctx.arc(rightEyeX, rightEyeY, eyeRadius, 0, Math.PI * 2);
+                const rightGradient = ctx.createRadialGradient(rightEyeX - 3, rightEyeY - 3, 0, rightEyeX, rightEyeY, eyeRadius);
+                rightGradient.addColorStop(0, '#ffffff');
+                rightGradient.addColorStop(0.3, `rgba(255, 79, 0, ${eyeGlow})`);
+                rightGradient.addColorStop(1, '#ff2d00');
+                ctx.fillStyle = rightGradient;
+                ctx.fill();
+                
+                const mouthY = centerY + 16 + floatY * 0.5;
+                const mouthWidth = 16;
+                const mouthOpen = 0.5 + Math.sin(this.time * 3) * 0.3;
+                
+                ctx.beginPath();
+                ctx.ellipse(centerX, mouthY, mouthWidth, mouthWidth * 0.3 * mouthOpen, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 79, 0, 0.4)';
+                ctx.fill();
+                
+                ctx.strokeStyle = 'rgba(255, 79, 0, 0.2)';
+                ctx.lineWidth = 1;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX - 20, centerY - 15);
+                ctx.lineTo(centerX - 25, centerY - 20);
+                ctx.lineTo(centerX - 25, centerY - 28);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX + 20, centerY - 15);
+                ctx.lineTo(centerX + 25, centerY - 20);
+                ctx.lineTo(centerX + 25, centerY - 28);
+                ctx.stroke();
+                
+                const dotPulse = 0.5 + Math.sin(this.time * 4) * 0.3;
+                
+                ctx.beginPath();
+                ctx.arc(centerX - 25, centerY - 28, 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 79, 0, ${dotPulse})`;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(centerX + 25, centerY - 28, 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 79, 0, ${dotPulse})`;
+                ctx.fill();
+                
+                const scanY = centerY - baseRadius + (this.time * 30) % (baseRadius * 2);
+                ctx.beginPath();
+                ctx.moveTo(centerX - baseRadius + 5, scanY);
+                ctx.lineTo(centerX + baseRadius - 5, scanY);
+                ctx.strokeStyle = `rgba(255, 79, 0, ${0.3 * Math.sin(this.time * 2)})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // Chat Application Class
+        class ChatApp {
+            constructor() {
+                this.messages = [];
+                this.currentChatId = null;
+                this.chats = [];
+                this.settings = {
+                    apiUrl: 'http://localhost:11434',
+                    systemPrompt: 'You are a helpful AI assistant.',
+                    temperature: 0.7
+                };
+                this.models = [];
+                this.currentModel = '';
+                this.isTyping = false;
+                this.avatar = null;
+                this.abortController = null;
+                this.lastUserMessage = '';
+                this.isGenerating = false;
+                
+                this.init();
+            }
+            
+            init() {
+                this.avatar = new AIAvatar('aiAvatar', 72);
+                this.loadSettings();
+                this.loadChats();
+                this.fetchModels();
+                
+                marked.setOptions({
+                    highlight: function(code, lang) {
+                        if (lang && hljs.getLanguage(lang)) {
+                            return hljs.highlight(code, { language: lang }).value;
+                        }
+                        return hljs.highlightAuto(code).value;
+                    },
+                    breaks: true
+                });
+                
+                document.getElementById('messageInput').focus();
+            }
+            
+            async fetchModels() {
+                try {
+                    const response = await fetch(`${this.settings.apiUrl}/api/tags`);
+                    if (!response.ok) throw new Error('Failed to fetch models');
+                    
+                    const data = await response.json();
+                    this.models = data.models || [];
+                    
+                    this.updateModelSelect();
+                    this.updateStatus(true);
+                } catch (error) {
+                    console.error('Error fetching models:', error);
+                    this.updateStatus(false);
+                    this.showToast('Failed to connect to Ollama. Please check your settings.', 'error');
+                }
+            }
+            
+            updateModelSelect() {
+                const menu = document.getElementById('dropdownMenu');
+                const text = document.getElementById('dropdownText');
+                menu.innerHTML = '';
+                
+                if (this.models.length === 0) {
+                    text.textContent = 'No models found';
+                    return;
+                }
+                
+                this.models.forEach((model, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.textContent = model.name;
+                    item.dataset.value = model.name;
+                    item.onclick = () => this.selectModel(model.name);
+                    if (model.name === this.currentModel) {
+                        item.classList.add('selected');
+                    }
+                    menu.appendChild(item);
+                });
+                
+                if (!this.currentModel && this.models.length > 0) {
+                    this.currentModel = this.models[0].name;
+                }
+                
+                text.textContent = this.currentModel || 'Select model';
+            }
+            
+            updateStatus(connected) {
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+                
+                if (connected) {
+                    dot.classList.remove('offline');
+                    text.textContent = 'Connected';
+                } else {
+                    dot.classList.add('offline');
+                    text.textContent = 'Disconnected';
+                }
+            }
+            
+            selectModel(modelName) {
+                this.currentModel = modelName;
+                document.getElementById('dropdownText').textContent = modelName;
+                
+                const items = document.querySelectorAll('.dropdown-item');
+                items.forEach(item => {
+                    item.classList.toggle('selected', item.dataset.value === modelName);
+                });
+                
+                this.closeDropdown();
+            }
+            
+            toggleDropdown() {
+                const trigger = document.querySelector('.dropdown-trigger');
+                const menu = document.getElementById('dropdownMenu');
+                const isOpen = menu.classList.contains('open');
+                
+                if (isOpen) {
+                    this.closeDropdown();
+                } else {
+                    menu.classList.add('open');
+                    trigger.classList.add('active');
+                }
+            }
+            
+            closeDropdown() {
+                const trigger = document.querySelector('.dropdown-trigger');
+                const menu = document.getElementById('dropdownMenu');
+                menu.classList.remove('open');
+                trigger.classList.remove('active');
+            }
+            
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const overlay = document.getElementById('sidebarOverlay');
+                const isMobile = window.innerWidth <= 768;
+                
+                if (isMobile) {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('full-width');
+                }
+            }
+            
+            closeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+            
+            newChat() {
+                this.currentChatId = Date.now().toString();
+                this.messages = [];
+                
+                const chat = {
+                    id: this.currentChatId,
+                    title: 'New Chat',
+                    timestamp: Date.now()
+                };
+                
+                this.chats.unshift(chat);
+                this.saveChats();
+                this.renderChatHistory();
+                
+                document.getElementById('welcomeScreen').style.display = 'flex';
+                document.getElementById('messagesContainer').style.display = 'none';
+                document.getElementById('messagesContainer').innerHTML = '';
+                
+                document.getElementById('messageInput').focus();
+            }
+            
+            loadChat(chatId) {
+                this.currentChatId = chatId;
+                const chat = this.chats.find(c => c.id === chatId);
+                
+                if (chat && chat.messages) {
+                    this.messages = chat.messages;
+                    this.renderMessages();
+                }
+                
+                this.renderChatHistory();
+            }
+            
+            renderChatHistory() {
+                const container = document.getElementById('chatHistory');
+                container.innerHTML = '';
+                
+                this.chats.forEach(chat => {
+                    const item = document.createElement('div');
+                    item.className = `history-item ${chat.id === this.currentChatId ? 'active' : ''}`;
+                    item.onclick = () => this.loadChat(chat.id);
+                    
+                    item.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${chat.title}</span>
+                    `;
+                    
+                    container.appendChild(item);
+                });
+            }
+            
+            sendSuggestion(text) {
+                document.getElementById('messageInput').value = text;
+                this.sendMessage();
+            }
+            
+            async sendMessage() {
+                if (this.isGenerating) {
+                    this.stopGeneration();
+                    return;
+                }
+                
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+                
+                if (!message || this.isTyping) return;
+                
+                if (!this.currentModel) {
+                    this.showToast('Please select a model first', 'error');
+                    return;
+                }
+                
+                this.lastUserMessage = message;
+                
+                this.addMessage('user', message);
+                input.value = '';
+                this.autoResize(input);
+                
+                this.showTypingIndicator();
+                this.updateSendButton(true);
+                
+                await this.streamResponse(message);
+            }
+            
+            stopGeneration() {
+                if (this.abortController) {
+                    this.abortController.abort();
+                    this.abortController = null;
+                }
+                this.isGenerating = false;
+                this.isTyping = false;
+                this.hideTypingIndicator();
+                this.updateSendButton(false);
+                this.showToast('Generation stopped', 'success');
+            }
+            
+            updateSendButton(isGenerating) {
+                const btn = document.getElementById('sendBtn');
+                this.isGenerating = isGenerating;
+                
+                if (isGenerating) {
+                    btn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                        </svg>
+                    `;
+                    btn.title = 'Stop generation';
+                    btn.style.color = 'hsl(var(--fg-primary))';
+                } else {
+                    btn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    `;
+                    btn.title = 'Send';
+                    btn.style.color = '';
+                }
+            }
+            
+            editMessage(index) {
+                const msg = this.messages[index];
+                if (msg && msg.role === 'user') {
+                    const input = document.getElementById('messageInput');
+                    input.value = msg.content;
+                    this.autoResize(input);
+                    input.focus();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                    this.showToast('Message loaded for editing', 'success');
+                }
+            }
+            
+            copyMessage(index) {
+                const msg = this.messages[index];
+                if (msg) {
+                    const text = msg.content;
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.showToast('Copied to clipboard', 'success');
+                    }).catch(() => {
+                        this.showToast('Failed to copy', 'error');
+                    });
+                }
+            }
+            
+            regenerateResponse(index) {
+                let userIndex = -1;
+                for (let i = index - 1; i >= 0; i--) {
+                    if (this.messages[i].role === 'user') {
+                        userIndex = i;
+                        break;
+                    }
+                }
+                
+                if (userIndex !== -1) {
+                    const userMsg = this.messages[userIndex];
+                    this.messages.splice(index, 1);
+                    this.saveMessages();
+                    this.renderMessages();
+                    this.showTypingIndicator();
+                    this.updateSendButton(true);
+                    this.streamResponse(userMsg.content);
+                    this.showToast('Regenerating response...', 'success');
+                }
+            }
+            
+            readAloud(index) {
+                const msg = this.messages[index];
+                if (msg && 'speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(msg.content);
+                    utterance.rate = 1;
+                    utterance.pitch = 1;
+                    window.speechSynthesis.speak(utterance);
+                    this.showToast('Reading aloud...', 'success');
+                } else {
+                    this.showToast('Text-to-speech not supported', 'error');
+                }
+            }
+            
+            shareMessage(index) {
+                const msg = this.messages[index];
+                if (msg && navigator.share) {
+                    navigator.share({
+                        title: 'SahyaGPT Message',
+                        text: msg.content
+                    }).catch(() => {});
+                } else {
+                    this.copyMessage(index);
+                }
+            }
+            
+            likeMessage(index) {
+                this.showToast('Thanks for your feedback!', 'success');
+            }
+            
+            dislikeMessage(index) {
+                this.showToast('Thanks for your feedback!', 'success');
+            }
+            
+            addMessage(role, content) {
+                const message = {
+                    role,
+                    content,
+                    timestamp: Date.now()
+                };
+                
+                this.messages.push(message);
+                
+                if (this.messages.length === 1 && role === 'user') {
+                    const chat = this.chats.find(c => c.id === this.currentChatId);
+                    if (chat) {
+                        chat.title = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+                        this.saveChats();
+                        this.renderChatHistory();
+                    }
+                }
+                
+                this.saveMessages();
+                this.renderMessages();
+            }
+            
+            renderMessages() {
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                const container = document.getElementById('messagesContainer');
+                
+                if (this.messages.length > 0) {
+                    welcomeScreen.style.display = 'none';
+                    container.style.display = 'block';
+                }
+                
+                container.innerHTML = '';
+                
+                this.messages.forEach((msg, index) => {
+                    const messageEl = this.createMessageElement(msg, index);
+                    container.appendChild(messageEl);
+                });
+                
+                this.scrollToBottom();
+                
+                container.querySelectorAll('pre code').forEach(block => {
+                    hljs.highlightElement(block);
+                });
+            }
+            
+            createMessageElement(msg, index) {
+                const div = document.createElement('div');
+                div.className = `message ${msg.role}`;
+                div.style.animationDelay = `${index * 0.05}s`;
+                div.dataset.index = index;
+                
+                const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                let avatar;
+                if (msg.role === 'user') {
+                    avatar = '<div class="message-avatar">You</div>';
+                } else {
+                    avatar = `
+                        <div class="message-avatar">
+                            <div class="avatar small" data-v-0e70e152="">
+                                <canvas data-v-a8a4fec6="" data-v-0e70e152="" class="rive-container" width="72" height="72" id="msgAvatar${index}"></canvas>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                const content = msg.role === 'ai' ? marked.parse(msg.content) : this.escapeHtml(msg.content).replace(/\n/g, '<br>');
+                
+                const userActions = msg.role === 'user' ? `
+                    <div class="message-actions">
+                        <button class="action-btn" onclick="chatApp.editMessage(${index})" title="Edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor"></path>
+                                <path d="M12.5 7.5L16.5 11.5" stroke="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="8" width="13" height="13" rx="4" stroke="currentColor"></rect>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                ` : '';
+                
+                const aiActions = msg.role === 'ai' ? `
+                    <div class="message-actions">
+                        <button class="action-btn" onclick="chatApp.regenerateResponse(${index})" title="Regenerate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 20V15H4.31241M4.31241 15H9M4.31241 15C5.51251 18.073 8.50203 20.25 12 20.25C15.8582 20.25 19.0978 17.6016 20 14.0236M20 4V9H19.6876M19.6876 9H15M19.6876 9C18.4875 5.92698 15.498 3.75 12 3.75C8.14184 3.75 4.90224 6.3984 4 9.9764" stroke="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.readAloud(${index})" title="Read aloud">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path>
+                                <path d="M16 9a5 5 0 0 1 0 6"></path>
+                                <path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="8" width="13" height="13" rx="4" stroke="currentColor"></rect>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.shareMessage(${index})" title="Share">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6.99609 9L11.9961 4L16.9961 9M6.99609 9M12 16V4" stroke="currentColor"></path>
+                                <path d="M4 15V16C4 18.2091 5.79086 20 8 20H16C18.2091 20 20 18.2091 20 16V15" stroke="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.likeMessage(${index})" title="Like">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M7 20H3V9H5.5C6.32843 9 7 9.67157 7 10.5V20ZM7 20H16.2062C17.8403 20 19.257 18.8692 19.6192 17.2757L20.8059 12.0541C21.1614 10.4896 19.9724 9 18.3681 9H14.5L15.1142 5.31454C15.3162 4.10294 14.3818 3 13.1535 3C12.4402 3 11.7816 3.38222 11.4277 4.00155L8.43188 9.24421C8.16482 9.71157 7.6678 10 7.12952 10H6.91465" stroke="currentColor" fill="none"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="chatApp.dislikeMessage(${index})" title="Dislike">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M7 4H3V15H5.5C6.32843 15 7 14.3284 7 13.5V4ZM7 4H16.2062C17.8403 4 19.257 5.13082 19.6192 6.72433L20.8059 11.9459C21.1614 13.5104 19.9724 15 18.3681 15H14.5L15.1142 18.6855C15.3162 19.8971 14.3818 21 13.1535 21C12.4402 21 11.7816 20.6178 11.4277 19.9984L8.43188 14.7558C8.16482 14.2884 7.6678 14 7.12952 14H6.91465" stroke="currentColor" fill="none"></path>
+                            </svg>
+                        </button>
+                    </div>
+                ` : '';
+                
+                const actions = msg.role === 'user' ? userActions : aiActions;
+                
+                div.innerHTML = `
+                    ${avatar}
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">${msg.role === 'user' ? 'You' : 'AI Assistant'}</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                        <div class="message-bubble">${content}</div>
+                    </div>
+                    ${actions}
+                `;
+                
+                if (msg.role === 'ai') {
+                    setTimeout(() => {
+                        new AIAvatar(`msgAvatar${index}`, 36);
+                    }, 0);
+                }
+                
+                return div;
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            showTypingIndicator() {
+                const container = document.getElementById('messagesContainer');
+                const indicator = document.createElement('div');
+                indicator.className = 'message ai typing';
+                indicator.id = 'typingIndicator';
+                indicator.innerHTML = `
+                    <div class="message-avatar">
+                        <div class="avatar small" data-v-0e70e152="">
+                            <canvas data-v-a8a4fec6="" data-v-0e70e152="" class="rive-container" width="72" height="72" id="typingAvatar"></canvas>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">AI Assistant</span>
+                        </div>
+                        <div class="message-bubble">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(indicator);
+                
+                setTimeout(() => {
+                    new AIAvatar('typingAvatar', 36);
+                }, 0);
+                
+                this.scrollToBottom();
+            }
+            
+            hideTypingIndicator() {
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+            
+            async streamResponse(userMessage) {
+                this.isTyping = true;
+                this.isGenerating = true;
+                
+                this.abortController = new AbortController();
+                const signal = this.abortController.signal;
+                
+                try {
+                    const response = await fetch(`${this.settings.apiUrl}/api/generate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: this.currentModel,
+                            prompt: userMessage,
+                            system: this.settings.systemPrompt,
+                            temperature: parseFloat(this.settings.temperature),
+                            stream: true
+                        }),
+                        signal: signal
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to get response from Ollama');
+                    }
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullResponse = '';
+                    
+                    this.hideTypingIndicator();
+                    
+                    const container = document.getElementById('messagesContainer');
+                    const messageEl = document.createElement('div');
+                    messageEl.className = 'message ai';
+                    messageEl.id = 'streamingMessage';
+                    messageEl.innerHTML = `
+                        <div class="message-avatar">
+                            <div class="avatar small" data-v-0e70e152="">
+                                <canvas data-v-a8a4fec6="" data-v-0e70e152="" class="rive-container" width="72" height="72" id="streamAvatar"></canvas>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">AI Assistant</span>
+                                <span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <div class="message-bubble" id="streamContent"></div>
+                        </div>
+                    `;
+                    container.appendChild(messageEl);
+                    
+                    setTimeout(() => {
+                        new AIAvatar('streamAvatar', 36);
+                    }, 0);
+                    
+                    const streamContent = document.getElementById('streamContent');
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.trim()) {
+                                try {
+                                    const data = JSON.parse(line);
+                                    if (data.response) {
+                                        fullResponse += data.response;
+                                        streamContent.innerHTML = marked.parse(fullResponse);
+                                        this.scrollToBottom();
+                                        
+                                        streamContent.querySelectorAll('pre code').forEach(block => {
+                                            hljs.highlightElement(block);
+                                        });
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing JSON:', e);
+                                }
+                            }
+                        }
+                    }
+                    
+                    this.addMessage('ai', fullResponse);
+                    
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        const streamContent = document.getElementById('streamContent');
+                        if (streamContent && streamContent.innerHTML) {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = streamContent.innerHTML;
+                            const partialResponse = tempDiv.textContent || tempDiv.innerText || '';
+                            if (partialResponse.trim()) {
+                                this.addMessage('ai', streamContent.innerHTML);
+                            }
+                        }
+                        console.log('Generation stopped by user');
+                    } else {
+                        console.error('Error streaming response:', error);
+                        this.hideTypingIndicator();
+                        this.showToast('Error: ' + error.message, 'error');
+                    }
+                } finally {
+                    this.isTyping = false;
+                    this.isGenerating = false;
+                    this.abortController = null;
+                    this.updateSendButton(false);
+                    
+                    const streamingMsg = document.getElementById('streamingMessage');
+                    if (streamingMsg) {
+                        streamingMsg.removeAttribute('id');
+                    }
+                }
+            }
+            
+            scrollToBottom() {
+                const container = document.getElementById('chatContainer');
+                container.scrollTop = container.scrollHeight;
+            }
+            
+            handleKeyDown(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    this.sendMessage();
+                }
+            }
+            
+            autoResize(textarea) {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+            }
+            
+            triggerFileUpload() {
+                document.getElementById('fileInput').click();
+            }
+            
+            handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    const input = document.getElementById('messageInput');
+                    const fileInfo = `[File: ${file.name}]\n\n\`\`\`\n${content}\n\`\`\``;
+                    
+                    if (input.value) {
+                        input.value += '\n\n' + fileInfo;
+                    } else {
+                        input.value = fileInfo;
+                    }
+                    
+                    this.autoResize(input);
+                    this.showToast(`File "${file.name}" uploaded successfully`, 'success');
+                };
+                
+                reader.onerror = () => {
+                    this.showToast('Failed to read file', 'error');
+                };
+                
+                if (file.type.startsWith('text/') || file.name.match(/\.(js|py|html|css|json|md|txt|csv|xml|yaml|yml)$/i)) {
+                    reader.readAsText(file);
+                } else {
+                    const input = document.getElementById('messageInput');
+                    const fileInfo = `[File attached: ${file.name} (${this.formatFileSize(file.size)})]`;
+                    
+                    if (input.value) {
+                        input.value += '\n\n' + fileInfo;
+                    } else {
+                        input.value = fileInfo;
+                    }
+                    
+                    this.autoResize(input);
+                    this.showToast(`File "${file.name}" attached`, 'success');
+                }
+                
+                event.target.value = '';
+            }
+            
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+            
+            openSettings() {
+                document.getElementById('apiUrl').value = this.settings.apiUrl;
+                document.getElementById('systemPrompt').value = this.settings.systemPrompt;
+                document.getElementById('temperature').value = this.settings.temperature;
+                document.getElementById('tempValue').textContent = this.settings.temperature;
+                document.getElementById('settingsModal').classList.add('active');
+            }
+            
+            closeSettings() {
+                document.getElementById('settingsModal').classList.remove('active');
+            }
+            
+            saveSettings() {
+                this.settings.apiUrl = document.getElementById('apiUrl').value.trim();
+                this.settings.systemPrompt = document.getElementById('systemPrompt').value.trim();
+                this.settings.temperature = document.getElementById('temperature').value;
+                
+                localStorage.setItem('chatSettings', JSON.stringify(this.settings));
+                this.closeSettings();
+                this.showToast('Settings saved successfully', 'success');
+                
+                this.fetchModels();
+            }
+            
+            loadSettings() {
+                const saved = localStorage.getItem('chatSettings');
+                if (saved) {
+                    this.settings = { ...this.settings, ...JSON.parse(saved) };
+                }
+            }
+            
+            saveChats() {
+                localStorage.setItem('chatHistory', JSON.stringify(this.chats));
+            }
+            
+            loadChats() {
+                const saved = localStorage.getItem('chatHistory');
+                if (saved) {
+                    this.chats = JSON.parse(saved);
+                    this.renderChatHistory();
+                }
+            }
+            
+            saveMessages() {
+                const chat = this.chats.find(c => c.id === this.currentChatId);
+                if (chat) {
+                    chat.messages = this.messages;
+                    chat.timestamp = Date.now();
+                    this.saveChats();
+                }
+            }
+            
+            showToast(message, type = 'success') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icon = type === 'success' 
+                    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+                    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+                
+                toast.innerHTML = `${icon}<span>${message}</span>`;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        const chatApp = new ChatApp();
+
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'settingsModal') {
+                chatApp.closeSettings();
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('modelDropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                chatApp.closeDropdown();
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (!isMobile) {
                 sidebar.classList.remove('open');
                 overlay.classList.remove('active');
             }

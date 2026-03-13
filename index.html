@@ -414,26 +414,29 @@
         /* ============================================
            PROMPT SUGGESTIONS STYLES
            ============================================ */
-        .suggestions-container {
+        .prompt-kit-container {
             position: relative;
-            width: 100%;
-            max-width: 768px;
-            margin: 0 auto 12px;
-            padding: 8px 12px 0;
+        }
+        .suggestions-container {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 12px;
+            right: 12px;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-10px);
+            transform: translateY(10px);
             max-height: 0;
             overflow: hidden;
+            z-index: 50;
         }
         .suggestions-container.visible {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
-            max-height: 300px;
+            max-height: 200px;
         }
-        @media (min-width: 768px) { .suggestions-container { padding: 12px 20px 0; } }
+        @media (min-width: 768px) { .suggestions-container { left: 20px; right: 20px; } }
         .suggestions-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -615,16 +618,17 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Prompt Suggestions Container -->
-            <div class="suggestions-container" id="suggestionsContainer">
-                <div class="suggestions-wrapper" id="suggestionsWrapper">
-                    <!-- Suggestions will be dynamically rendered here -->
+                
+                <!-- Prompt Suggestions Container -->
+                <div class="suggestions-container" id="suggestionsContainer">
+                    <div class="suggestions-wrapper" id="suggestionsWrapper">
+                        <!-- Suggestions will be dynamically rendered here -->
+                    </div>
                 </div>
             </div>
-            
-            <p class="input-footer">SahyaGPT can make mistakes. Consider checking important information.</p>
+        </div>
+        
+        <p class="input-footer">SahyaGPT can make mistakes. Consider checking important information.</p>
             
             <input type="file" id="fileInput" style="display: none;" onchange="chatApp.handleFileSelect(event)">
         </main>

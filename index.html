@@ -323,7 +323,7 @@
         .prompt-submit-btn .stop-icon { width: 12px; height: 12px; background: white; border-radius: 2px; }
         .prompt-action-tooltip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); background: rgba(30, 30, 30, 0.95); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; color: var(--text-primary); white-space: nowrap; opacity: 0; visibility: hidden; transition: all 0.15s ease; z-index: 100; backdrop-filter: blur(10px); pointer-events: none; }
         .prompt-action-btn:hover .prompt-action-tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-        .input-container { padding: 16px 20px 20px; background: transparent; }
+        .input-container { position: relative; padding: 16px 20px 20px; background: transparent; }
         .input-wrapper { max-width: 800px; margin: 0 auto; position: relative; }
         .input-footer { text-align: center; margin-top: 12px; font-size: 0.75rem; color: var(--text-secondary); }
         .avatar { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; position: relative; background: linear-gradient(135deg, #1f1f1f, #171717, #121212); box-shadow: 0 0 30px var(--accent-glow); }
@@ -414,34 +414,38 @@
         /* ============================================
            PROMPT SUGGESTIONS STYLES
            ============================================ */
-        .prompt-kit-container {
-            position: relative;
-        }
         .suggestions-container {
             position: absolute;
             bottom: calc(100% + 8px);
-            left: 12px;
-            right: 12px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 0 12px;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
             visibility: hidden;
             transform: translateY(10px);
             max-height: 0;
             overflow: hidden;
-            z-index: 50;
+            z-index: 100;
+            pointer-events: none;
         }
         .suggestions-container.visible {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
             max-height: 200px;
+            pointer-events: auto;
         }
-        @media (min-width: 768px) { .suggestions-container { left: 20px; right: 20px; } }
+        @media (min-width: 768px) { .suggestions-container { padding: 0 20px; } }
         .suggestions-wrapper {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            justify-content: flex-start;
+            justify-content: center;
+            padding-bottom: 4px;
         }
         .suggestions-wrapper.category-view {
             flex-direction: column;
@@ -625,11 +629,9 @@
                         <!-- Suggestions will be dynamically rendered here -->
                     </div>
                 </div>
+                
+                <p class="input-footer">SahyaGPT can make mistakes. Consider checking important information.</p>
             </div>
-        </div>
-        
-        <p class="input-footer">SahyaGPT can make mistakes. Consider checking important information.</p>
-            
             <input type="file" id="fileInput" style="display: none;" onchange="chatApp.handleFileSelect(event)">
         </main>
     </div>
@@ -976,6 +978,7 @@
                 this.searchBtn = null;
                 this.moreBtn = null;
                 this.voiceBtn = null;
+                this.activeCategory = '';
                 this.init();
             }
 

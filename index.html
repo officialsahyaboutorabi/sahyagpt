@@ -527,6 +527,112 @@
             border-color: var(--accent) !important;
             color: white !important;
         }
+
+        /* ============================================
+           ENDPOINTS MANAGEMENT STYLES
+           ============================================ */
+        .endpoints-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .endpoints-list::-webkit-scrollbar {
+            display: none;
+        }
+        .endpoint-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(18, 18, 18, 0.85);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+        .endpoint-item:hover {
+            border-color: var(--accent);
+        }
+        .endpoint-item input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .endpoint-item input::placeholder {
+            color: var(--text-secondary);
+        }
+        .endpoint-remove {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .endpoint-remove:hover {
+            background: rgba(255, 51, 51, 0.1);
+            color: var(--error);
+        }
+        .endpoint-remove svg {
+            width: 16px;
+            height: 16px;
+        }
+        .endpoint-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .endpoint-add-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        .endpoint-add-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .endpoint-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .endpoint-status.online {
+            background: var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .endpoint-status.offline {
+            background: var(--error);
+        }
+        .endpoint-status.checking {
+            background: var(--accent);
+            animation: pulse 1s ease-in-out infinite;
+        }
+        .model-source-tag {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            margin-left: 4px;
+        }
     </style>
 <base target="_blank">
 <base target="_blank">
@@ -661,10 +767,16 @@
             <div class="modal-body">
                 <div class="settings-section active" id="tab-general">
                     <div class="settings-group">
-                        <div class="settings-group-title">Connection</div>
+                        <div class="settings-group-title">Ollama Endpoints</div>
                         <div class="form-group">
-                            <label class="form-label">Ollama API URL</label>
-                            <input type="text" class="form-input" id="apiUrl" value="http://localhost:11434" placeholder="http://localhost:11434">
+                            <label class="form-label">API Endpoints <span>Add multiple Ollama servers</span></label>
+                            <div class="endpoints-list" id="endpointsList">
+                                <!-- Endpoints will be rendered here -->
+                            </div>
+                            <button class="endpoint-add-btn" onclick="chatApp.addEndpoint()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Add Endpoint
+                            </button>
                         </div>
                     </div>
                     <div class="settings-group">
@@ -972,9 +1084,16 @@
                 this.messages = [];
                 this.currentChatId = null;
                 this.chats = [];
-                this.settings = { apiUrl: 'http://localhost:11434', systemPrompt: 'You are a helpful AI assistant.', temperature: 0.7 };
-                this.models = [];
-                this.currentModel = '';
+                this.settings = { 
+                    endpoints: [
+                        { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
+                        { url: 'http://localhost:11434', name: 'Local', enabled: true }
+                    ],
+                    systemPrompt: 'You are a helpful AI assistant.', 
+                    temperature: 0.7 
+                };
+                this.models = []; // Will contain { name, endpoint }
+                this.currentModel = null; // Will contain { name, endpoint }
                 this.isTyping = false;
                 this.avatar = null;
                 this.abortController = null;
@@ -1113,17 +1232,43 @@
             }
 
             async fetchModels() {
-                try {
-                    const response = await fetch(`${this.settings.apiUrl}/api/tags`);
-                    if (!response.ok) throw new Error('Failed to fetch models');
-                    const data = await response.json();
-                    this.models = data.models || [];
+                this.models = [];
+                const endpoints = this.settings.endpoints || [{ url: 'http://localhost:11434', name: 'Local', enabled: true }];
+                const enabledEndpoints = endpoints.filter(e => e.enabled !== false);
+                
+                if (enabledEndpoints.length === 0) {
                     this.updateModelSelect();
-                    this.updateStatus(true);
-                } catch (error) {
-                    console.error('Error fetching models:', error);
                     this.updateStatus(false);
-                    this.showToast('Failed to connect to Ollama. Please check your settings.', 'error');
+                    this.showToast('No enabled endpoints. Please add an endpoint in settings.', 'error');
+                    return;
+                }
+
+                let anyConnected = false;
+                const fetchPromises = enabledEndpoints.map(async (endpoint) => {
+                    try {
+                        const response = await fetch(`${endpoint.url}/api/tags`);
+                        if (!response.ok) throw new Error(`Failed to fetch from ${endpoint.name}`);
+                        const data = await response.json();
+                        const models = (data.models || []).map(m => ({
+                            name: m.name,
+                            endpoint: endpoint.url,
+                            endpointName: endpoint.name
+                        }));
+                        this.models.push(...models);
+                        anyConnected = true;
+                    } catch (error) {
+                        console.error(`Error fetching from ${endpoint.url}:`, error);
+                    }
+                });
+
+                await Promise.all(fetchPromises);
+                this.updateModelSelect();
+                this.updateStatus(anyConnected);
+                
+                if (!anyConnected) {
+                    this.showToast('Failed to connect to any Ollama endpoint. Please check your settings.', 'error');
+                } else if (this.models.length === 0) {
+                    this.showToast('Connected but no models found. Please pull models to your Ollama servers.', 'error');
                 }
             }
 
@@ -1132,17 +1277,37 @@
                 const text = document.getElementById('dropdownText');
                 menu.innerHTML = '';
                 if (this.models.length === 0) { text.textContent = 'No models found'; return; }
-                this.models.forEach((model) => {
-                    const item = document.createElement('div');
-                    item.className = 'dropdown-item';
-                    item.textContent = model.name;
-                    item.dataset.value = model.name;
-                    item.onclick = () => this.selectModel(model.name);
-                    if (model.name === this.currentModel) item.classList.add('selected');
-                    menu.appendChild(item);
+                
+                // Group models by endpoint
+                const grouped = {};
+                this.models.forEach(model => {
+                    if (!grouped[model.endpointName]) grouped[model.endpointName] = [];
+                    grouped[model.endpointName].push(model);
                 });
-                if (!this.currentModel && this.models.length > 0) this.currentModel = this.models[0].name;
-                text.textContent = this.currentModel || 'Select model';
+
+                Object.entries(grouped).forEach(([endpointName, models]) => {
+                    // Add endpoint header
+                    const header = document.createElement('div');
+                    header.style.cssText = 'padding: 8px 16px; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border);';
+                    header.textContent = endpointName;
+                    menu.appendChild(header);
+                    
+                    models.forEach((model) => {
+                        const item = document.createElement('div');
+                        item.className = 'dropdown-item';
+                        item.innerHTML = `${model.name}<span class="model-source-tag">${endpointName}</span>`;
+                        item.dataset.value = model.name;
+                        item.dataset.endpoint = model.endpoint;
+                        item.onclick = () => this.selectModel(model);
+                        if (this.currentModel && this.currentModel.name === model.name && this.currentModel.endpoint === model.endpoint) {
+                            item.classList.add('selected');
+                        }
+                        menu.appendChild(item);
+                    });
+                });
+                
+                if (!this.currentModel && this.models.length > 0) this.currentModel = this.models[0];
+                text.textContent = this.currentModel ? this.currentModel.name : 'Select model';
             }
 
             toggleDropdown() {
@@ -1160,11 +1325,12 @@
                 trigger.classList.remove('active');
             }
 
-            selectModel(modelName) {
-                this.currentModel = modelName;
-                document.getElementById('dropdownText').textContent = modelName;
+            selectModel(model) {
+                this.currentModel = model;
+                document.getElementById('dropdownText').textContent = model.name;
                 document.querySelectorAll('.dropdown-item').forEach(item => {
-                    item.classList.toggle('selected', item.dataset.value === modelName);
+                    const isSelected = item.dataset.value === model.name && item.dataset.endpoint === model.endpoint;
+                    item.classList.toggle('selected', isSelected);
                 });
                 this.closeDropdown();
             }
@@ -1364,10 +1530,19 @@
                 this.isGenerating = true;
                 this.abortController = new AbortController();
                 const signal = this.abortController.signal;
+                
+                if (!this.currentModel || !this.currentModel.endpoint) {
+                    this.showToast('Please select a model first', 'error');
+                    this.isTyping = false;
+                    this.isGenerating = false;
+                    this.updatePromptSubmitButton(false);
+                    return;
+                }
+                
                 try {
-                    const response = await fetch(`${this.settings.apiUrl}/api/generate`, {
+                    const response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: this.currentModel, prompt: userMessage, system: this.settings.systemPrompt, temperature: parseFloat(this.settings.temperature), stream: true }),
+                        body: JSON.stringify({ model: this.currentModel.name, prompt: userMessage, system: this.settings.systemPrompt, temperature: parseFloat(this.settings.temperature), stream: true }),
                         signal: signal
                     });
                     if (!response.ok) throw new Error('Failed to get response from Ollama');
@@ -1462,17 +1637,75 @@
             formatFileSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / (1024 * 1024)).toFixed(1) + ' MB'; }
 
             openSettings() {
-                document.getElementById('apiUrl').value = this.settings.apiUrl;
+                this.renderEndpoints();
                 document.getElementById('systemPrompt').value = this.settings.systemPrompt;
                 document.getElementById('temperature').value = this.settings.temperature;
                 document.getElementById('tempValue').textContent = this.settings.temperature;
                 document.getElementById('settingsModal').classList.add('active');
             }
 
+            // Endpoint Management
+            renderEndpoints() {
+                const container = document.getElementById('endpointsList');
+                if (!container) return;
+                container.innerHTML = '';
+                
+                const endpoints = this.settings.endpoints || [];
+                endpoints.forEach((endpoint, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'endpoint-item';
+                    item.innerHTML = `
+                        <div class="endpoint-status ${endpoint.enabled !== false ? 'online' : 'offline'}"></div>
+                        <input type="text" placeholder="Endpoint URL" value="${endpoint.url}" data-index="${index}" data-field="url">
+                        <input type="text" placeholder="Name (optional)" value="${endpoint.name || ''}" data-index="${index}" data-field="name" style="max-width: 120px; font-size: 0.8rem; color: var(--text-secondary);">
+                        <button class="endpoint-remove" onclick="chatApp.removeEndpoint(${index})" title="Remove endpoint">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            addEndpoint() {
+                if (!this.settings.endpoints) this.settings.endpoints = [];
+                this.settings.endpoints.push({ url: '', name: '', enabled: true });
+                this.renderEndpoints();
+            }
+
+            removeEndpoint(index) {
+                if (!this.settings.endpoints) return;
+                this.settings.endpoints.splice(index, 1);
+                this.renderEndpoints();
+            }
+
+            saveEndpointsFromUI() {
+                const container = document.getElementById('endpointsList');
+                if (!container) return;
+                
+                const endpoints = [];
+                const items = container.querySelectorAll('.endpoint-item');
+                items.forEach(item => {
+                    const urlInput = item.querySelector('[data-field="url"]');
+                    const nameInput = item.querySelector('[data-field="name"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        endpoints.push({
+                            url: urlInput.value.trim(),
+                            name: nameInput ? nameInput.value.trim() || 'Unnamed' : 'Unnamed',
+                            enabled: true
+                        });
+                    }
+                });
+                
+                this.settings.endpoints = endpoints.length > 0 ? endpoints : [
+                    { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
+                    { url: 'http://localhost:11434', name: 'Local', enabled: true }
+                ];
+            }
+
             closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
 
             saveSettings() {
-                this.settings.apiUrl = document.getElementById('apiUrl').value.trim();
+                this.saveEndpointsFromUI();
                 this.settings.systemPrompt = document.getElementById('systemPrompt').value.trim();
                 this.settings.temperature = document.getElementById('temperature').value;
                 this.settings.maxTokens = parseInt(document.getElementById('maxTokens').value);
@@ -1515,8 +1748,16 @@
 
             resetSettings() {
                 if (confirm('Are you sure you want to reset all settings to default?')) {
-                    this.settings = { apiUrl: 'https://apisahyagpt.qzz.io', systemPrompt: 'You are a helpful AI assistant.', temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true } };
-                    document.getElementById('apiUrl').value = this.settings.apiUrl;
+                    this.settings = { 
+                        endpoints: [
+                            { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
+                            { url: 'http://localhost:11434', name: 'Local', enabled: true }
+                        ],
+                        systemPrompt: 'You are a helpful AI assistant.', 
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', 
+                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true } 
+                    };
+                    this.renderEndpoints();
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;
                     document.getElementById('temperature').value = this.settings.temperature;
                     document.getElementById('tempValue').textContent = this.settings.temperature;
@@ -1553,8 +1794,23 @@
                 const saved = localStorage.getItem('chatSettings');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    this.settings = { apiUrl: 'http://localhost:11434', systemPrompt: 'You are a helpful AI assistant.', temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true }, ...parsed };
-                    document.getElementById('apiUrl').value = this.settings.apiUrl;
+                    // Migrate old apiUrl to endpoints if needed
+                    if (parsed.apiUrl && !parsed.endpoints) {
+                        parsed.endpoints = [
+                            { url: parsed.apiUrl, name: 'Default', enabled: true }
+                        ];
+                        delete parsed.apiUrl;
+                    }
+                    this.settings = { 
+                        endpoints: [
+                            { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
+                            { url: 'http://localhost:11434', name: 'Local', enabled: true }
+                        ],
+                        systemPrompt: 'You are a helpful AI assistant.', 
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true }, 
+                        ...parsed 
+                    };
+                    this.renderEndpoints();
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;
                     document.getElementById('temperature').value = this.settings.temperature;
                     document.getElementById('tempValue').textContent = this.settings.temperature;

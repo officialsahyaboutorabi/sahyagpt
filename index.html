@@ -430,19 +430,32 @@
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
-            max-height: 200px;
+            max-height: 180px;
         }
-        @media (min-width: 768px) { .suggestions-container { padding: 0 20px; margin-top: -3px; } }
+        .suggestions-scroll-frame {
+            max-height: 180px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .suggestions-scroll-frame::-webkit-scrollbar {
+            display: none;
+        }
+        @media (min-width: 768px) { .suggestions-container { padding: 0 20px; margin-top: -3px; } .suggestions-scroll-frame { max-height: 180px; } }
         .suggestions-wrapper {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             justify-content: center;
-            padding-bottom: 0px;
+            padding: 4px 0;
+            background: transparent;
         }
         .suggestions-wrapper.category-view {
             flex-direction: column;
             gap: 6px;
+            background: transparent;
         }
         .suggestion-pill {
             display: inline-flex;
@@ -618,8 +631,10 @@
                 
                 <!-- Prompt Suggestions Container -->
                 <div class="suggestions-container" id="suggestionsContainer">
-                    <div class="suggestions-wrapper" id="suggestionsWrapper">
-                        <!-- Suggestions will be dynamically rendered here -->
+                    <div class="suggestions-scroll-frame">
+                        <div class="suggestions-wrapper" id="suggestionsWrapper">
+                            <!-- Suggestions will be dynamically rendered here -->
+                        </div>
                     </div>
                 </div>
                 

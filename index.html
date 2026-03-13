@@ -410,6 +410,110 @@
         .message-bubble th { background: var(--bg-hover); font-weight: 600; }
         .loading-shimmer { background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* ============================================
+           PROMPT SUGGESTIONS STYLES
+           ============================================ */
+        .suggestions-container {
+            position: relative;
+            width: 100%;
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 8px 12px 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            max-height: 0;
+            overflow: hidden;
+        }
+        .suggestions-container.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            max-height: 300px;
+        }
+        @media (min-width: 768px) { .suggestions-container { padding: 12px 20px 0; } }
+        .suggestions-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+        .suggestions-wrapper.category-view {
+            flex-direction: column;
+            gap: 6px;
+        }
+        .suggestion-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(23, 23, 23, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .suggestion-pill:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 79, 0, 0.15);
+        }
+        .suggestion-pill svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+        .suggestion-pill:hover svg { opacity: 1; }
+        .suggestion-pill.category {
+            text-transform: capitalize;
+        }
+        .suggestion-pill.item {
+            background: rgba(23, 23, 23, 0.7);
+            border-color: rgba(42, 42, 42, 0.5);
+        }
+        .suggestion-pill.item:hover {
+            background: rgba(23, 23, 23, 0.95);
+        }
+        .suggestion-pill .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .suggestions-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+        }
+        .suggestions-back-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        .suggestions-back-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+        .more-btn-active {
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: white !important;
+        }
     </style>
 <base target="_blank">
 <base target="_blank">
@@ -513,6 +617,14 @@
                 </div>
                 <p class="input-footer">SahyaGPT can make mistakes. Consider checking important information.</p>
             </div>
+            
+            <!-- Prompt Suggestions Container -->
+            <div class="suggestions-container" id="suggestionsContainer">
+                <div class="suggestions-wrapper" id="suggestionsWrapper">
+                    <!-- Suggestions will be dynamically rendered here -->
+                </div>
+            </div>
+            
             <input type="file" id="fileInput" style="display: none;" onchange="chatApp.handleFileSelect(event)">
         </main>
     </div>
@@ -896,7 +1008,7 @@
                 if (this.promptSubmit) this.promptSubmit.addEventListener('click', () => this.handlePromptSubmit());
                 if (this.attachBtn) this.attachBtn.addEventListener('click', () => this.triggerFileUpload());
                 if (this.searchBtn) this.searchBtn.addEventListener('click', () => this.showToast('Search feature coming soon!', 'success'));
-                if (this.moreBtn) this.moreBtn.addEventListener('click', () => this.showToast('More actions coming soon!', 'success'));
+                if (this.moreBtn) this.moreBtn.addEventListener('click', () => this.toggleSuggestions());
                 if (this.voiceBtn) this.voiceBtn.addEventListener('click', () => this.toggleVoiceInput());
             }
 
@@ -1387,7 +1499,7 @@
 
             resetSettings() {
                 if (confirm('Are you sure you want to reset all settings to default?')) {
-                    this.settings = { apiUrl: 'http://localhost:11434', systemPrompt: 'You are a helpful AI assistant.', temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true } };
+                    this.settings = { apiUrl: 'https://apisahyagpt.qzz.io', systemPrompt: 'You are a helpful AI assistant.', temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true } };
                     document.getElementById('apiUrl').value = this.settings.apiUrl;
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;
                     document.getElementById('temperature').value = this.settings.temperature;
@@ -1466,6 +1578,132 @@
                 toast.innerHTML = `${icon}<span>${message}</span>`;
                 container.appendChild(toast);
                 setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100px)'; setTimeout(() => toast.remove(), 300); }, 3000);
+            }
+
+            // Prompt Suggestions
+            toggleSuggestions() {
+                const container = document.getElementById('suggestionsContainer');
+                const isVisible = container.classList.contains('visible');
+                
+                if (isVisible) {
+                    this.hideSuggestions();
+                } else {
+                    this.showSuggestions();
+                }
+            }
+
+            showSuggestions() {
+                const container = document.getElementById('suggestionsContainer');
+                const moreBtn = document.getElementById('moreBtn');
+                container.classList.add('visible');
+                if (moreBtn) moreBtn.classList.add('more-btn-active');
+                this.activeCategory = '';
+                this.renderSuggestions();
+            }
+
+            hideSuggestions() {
+                const container = document.getElementById('suggestionsContainer');
+                const moreBtn = document.getElementById('moreBtn');
+                container.classList.remove('visible');
+                if (moreBtn) moreBtn.classList.remove('more-btn-active');
+                this.activeCategory = '';
+            }
+
+            renderSuggestions() {
+                const wrapper = document.getElementById('suggestionsWrapper');
+                wrapper.innerHTML = '';
+                
+                const suggestionGroups = [
+                    {
+                        label: "Summary",
+                        highlight: "Summarize",
+                        items: [
+                            "Summarize a document",
+                            "Summarize a video",
+                            "Summarize a podcast",
+                            "Summarize a book",
+                        ],
+                    },
+                    {
+                        label: "Code",
+                        highlight: "Help me",
+                        items: [
+                            "Help me write React components",
+                            "Help me debug code",
+                            "Help me learn Python",
+                            "Help me learn SQL",
+                        ],
+                    },
+                    {
+                        label: "Design",
+                        highlight: "Design",
+                        items: [
+                            "Design a small logo",
+                            "Design a hero section",
+                            "Design a landing page",
+                            "Design a social media post",
+                        ],
+                    },
+                    {
+                        label: "Research",
+                        highlight: "Research",
+                        items: [
+                            "Research the best practices for SEO",
+                            "Research the best running shoes",
+                            "Research the best restaurants in Paris",
+                            "Research the best AI tools",
+                        ],
+                    },
+                ];
+
+                if (this.activeCategory) {
+                    // Show items for the selected category
+                    const categoryData = suggestionGroups.find(g => g.label === this.activeCategory);
+                    if (categoryData) {
+                        wrapper.classList.add('category-view');
+                        
+                        // Back button
+                        const backBtn = document.createElement('button');
+                        backBtn.className = 'suggestions-back-btn';
+                        backBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg> Back to categories`;
+                        backBtn.onclick = () => {
+                            this.activeCategory = '';
+                            this.renderSuggestions();
+                        };
+                        wrapper.appendChild(backBtn);
+                        
+                        // Category items
+                        categoryData.items.forEach(item => {
+                            const pill = document.createElement('div');
+                            pill.className = 'suggestion-pill item';
+                            pill.innerHTML = `<span class="highlight">${categoryData.highlight}</span> ${item.replace(categoryData.highlight, '').trim()}`;
+                            pill.onclick = () => {
+                                this.promptTextarea.value = item;
+                                this.autoResizePromptInput();
+                                this.updateSubmitButtonState();
+                                this.hideSuggestions();
+                                this.promptTextarea.focus();
+                            };
+                            wrapper.appendChild(pill);
+                        });
+                    }
+                } else {
+                    // Show category pills
+                    wrapper.classList.remove('category-view');
+                    
+                    const brainIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.04z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.04z"></path></svg>`;
+                    
+                    suggestionGroups.forEach(group => {
+                        const pill = document.createElement('div');
+                        pill.className = 'suggestion-pill category';
+                        pill.innerHTML = `${brainIcon}${group.label}`;
+                        pill.onclick = () => {
+                            this.activeCategory = group.label;
+                            this.renderSuggestions();
+                        };
+                        wrapper.appendChild(pill);
+                    });
+                }
             }
         }
 

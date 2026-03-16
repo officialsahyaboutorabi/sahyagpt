@@ -525,9 +525,9 @@
             height: 14px;
         }
         .more-btn-active {
-            background: var(--Others-SGPTOrange) !important;
-            border-color: var(--Others-TextSelected) !important;
-            color: var(--accent) !important;
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: white !important;
         }
         .search-active {
             background: var(--Others-SGPTOrange) !important;
@@ -567,6 +567,41 @@
             font-weight: 500;
             font-size: 0.95rem;
             display: inline-block;
+        }
+
+        /* ============================================
+           STREAM RENDERER ANIMATIONS
+           Vanilla-JS port of the ResponseStream / useTextStream
+           React module (@/components/prompt-kit/response-stream)
+           ============================================ */
+
+        /* ── Fade mode (regular text tokens) ──────── */
+        @keyframes stream-fade-in {
+            from { opacity: 0; filter: blur(3px); }
+            to   { opacity: 1; filter: blur(0px); }
+        }
+        .stream-fade-word {
+            /* display:inline keeps words on the same line;
+               opacity:0 is the "before-animation" state;
+               forwards keeps the final opacity:1 after animation ends */
+            display: inline;
+            opacity: 0;
+            animation: stream-fade-in 380ms ease-out forwards;
+        }
+
+        /* ── Typewriter cursor for live code blocks ─ */
+        @keyframes cursor-blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+        /* .stream-active-code is added to the wrapper div while the code
+           block is still receiving tokens; removed on close fence */
+        .stream-active-code > pre > code::after {
+            content: '\25AE'; /* ▮ block cursor */
+            color: var(--accent);
+            animation: cursor-blink 0.65s step-end infinite;
+            margin-left: 2px;
+            font-weight: 700;
         }
 
         /* ============================================
@@ -1116,6 +1151,180 @@
                 ctx.strokeStyle = `rgba(255, 79, 0, ${0.3 * Math.sin(this.time * 2)})`;
                 ctx.lineWidth = 1;
                 ctx.stroke();
+            }
+        }
+
+        // ================================================================
+        // StreamRenderer — vanilla-JS port of ResponseStream / useTextStream
+        // (@/components/prompt-kit/response-stream)
+        //
+        // Behaviour mirrors the React module:
+        //   • Regular text  → mode:"fade"      (opacity + blur fade-in per token)
+        //   • Inside ```…``` → mode:"typewriter" (tokens arrive as the block is
+        //                      streaming, blinking cursor shows activity)
+        //   • After closing ``` → switches back to fade mode
+        //   • finalize()    → replaces animated spans with properly-parsed
+        //                      marked.parse() HTML (equiv. to React hydration)
+        // ================================================================
+        class StreamRenderer {
+            constructor(container) {
+                this.container  = container;
+                this.fullText   = '';
+                this.lastLen    = 0;     // chars of fullText already processed
+
+                // ── Code-block tracking ──────────────────────────────────
+                this.tickCount  = 0;     // each ``` found increments; odd = in block
+                this.tickBuf    = '';    // accumulates '`' chars (max 3)
+
+                // ── Text-mode state ──────────────────────────────────────
+                this.wordBuf    = '';    // buffer flushed on whitespace → fade span
+
+                // ── Code-mode state ──────────────────────────────────────
+                this.codeEl     = null;  // the live <code> DOM node
+                this.codeBuf    = '';    // raw code text (no markup)
+                this.langBuf    = '';    // language tag (e.g. "js")
+                this.inLangLine = false; // true until first \n after opening fence
+            }
+
+            /* ── Public API ─────────────────────────────────────────── */
+
+            /** Feed the full accumulated text on every streaming tick. */
+            update(fullText) {
+                this.fullText = fullText;
+                const chunk = fullText.slice(this.lastLen);
+                this.lastLen  = fullText.length;
+                if (!chunk) return;
+                for (const ch of chunk) this._dispatch(ch);
+            }
+
+            /** Call once streaming is finished.
+             *  Flushes any buffered word, then replaces the animated spans
+             *  with a clean marked.parse() render (proper headings, bold, etc.) */
+            finalize() {
+                this._flushWord();          // flush any trailing partial word
+                if (!this.fullText) return;
+                this.container.innerHTML = marked.parse(this.fullText);
+                this.container.querySelectorAll('pre code')
+                    .forEach(b => hljs.highlightElement(b));
+            }
+
+            /* ── Private helpers ─────────────────────────────────────── */
+
+            _inCode() { return (this.tickCount % 2) === 1; }
+
+            _dispatch(ch) {
+                if (this._inCode()) this._codeChar(ch);
+                else                this._textChar(ch);
+            }
+
+            // ── TEXT MODE ────────────────────────────────────────────────
+            _textChar(ch) {
+                if (ch === '`') {
+                    this.tickBuf += ch;
+                    if (this.tickBuf.length === 3) {          // opening fence
+                        this.tickBuf = '';
+                        this.tickCount++;
+                        this._flushWord();
+                        this._startCodeBlock();
+                    }
+                } else {
+                    if (this.tickBuf) {                       // partial ticks → text
+                        this.wordBuf += this.tickBuf;
+                        this.tickBuf = '';
+                    }
+                    if (ch === '\n') {
+                        this._flushWord();
+                        this.container.appendChild(document.createElement('br'));
+                    } else {
+                        this.wordBuf += ch;
+                        if (ch === ' ') this._flushWord();    // flush on space
+                    }
+                }
+            }
+
+            _flushWord() {
+                if (!this.wordBuf) return;
+                const span = document.createElement('span');
+                span.className = 'stream-fade-word';
+                span.textContent = this.wordBuf;
+                this.container.appendChild(span);
+                this.wordBuf = '';
+            }
+
+            // ── CODE MODE ────────────────────────────────────────────────
+            _codeChar(ch) {
+                if (ch === '`') {
+                    this.tickBuf += ch;
+                    if (this.tickBuf.length === 3) {          // closing fence
+                        this.tickBuf = '';
+                        this.tickCount++;
+                        this._endCodeBlock();
+                    }
+                } else {
+                    if (this.tickBuf) {                       // partial ticks → code
+                        this.codeBuf    += this.tickBuf;
+                        this.tickBuf     = '';
+                    }
+                    if (this.inLangLine) {
+                        if (ch === '\n') {
+                            this.inLangLine = false;
+                            this._applyLang();                // update header label
+                        } else {
+                            this.langBuf += ch;
+                        }
+                    } else {
+                        this.codeBuf += ch;
+                        if (this.codeEl) this.codeEl.textContent = this.codeBuf;
+                    }
+                }
+            }
+
+            _startCodeBlock() {
+                // Build the same .code-block structure the rest of the UI uses
+                const wrapper  = document.createElement('div');
+                wrapper.className = 'code-block stream-active-code';
+
+                const header   = document.createElement('div');
+                header.className = 'code-header';
+                header.innerHTML =
+                    '<span class="code-lang">code</span>' +
+                    '<span style="font-size:0.75rem;color:var(--text-secondary);margin-left:auto;opacity:.6">streaming…</span>';
+
+                const pre  = document.createElement('pre');
+                const code = document.createElement('code');
+                pre.appendChild(code);
+                wrapper.appendChild(header);
+                wrapper.appendChild(pre);
+                this.container.appendChild(wrapper);
+
+                this.codeEl     = code;
+                this.codeBuf    = '';
+                this.langBuf    = '';
+                this.inLangLine = true;
+            }
+
+            _applyLang() {
+                if (!this.codeEl) return;
+                const lang = this.langBuf.trim();
+                if (!lang) return;
+                this.codeEl.className = `language-${lang}`;
+                const label = this.codeEl.closest('.code-block')
+                    ?.querySelector('.code-lang');
+                if (label) label.textContent = lang;
+            }
+
+            _endCodeBlock() {
+                if (!this.codeEl) return;
+                const wrapper = this.codeEl.closest('.stream-active-code');
+                if (wrapper) {
+                    wrapper.classList.remove('stream-active-code');
+                    // Remove "streaming…" label
+                    const hint = wrapper.querySelector('.code-header span:last-child');
+                    if (hint) hint.remove();
+                }
+                try { hljs.highlightElement(this.codeEl); } catch (_) {}
+                this.codeEl     = null;
+                this.codeBuf    = '';
             }
         }
 
@@ -1700,6 +1909,8 @@
                     container.appendChild(messageEl);
                     setTimeout(() => new AIAvatar('streamAvatar', 40), 0);
                     const streamContent = document.getElementById('streamContent');
+                    // ── StreamRenderer: fade for text, typewriter for code ──
+                    const streamRenderer = new StreamRenderer(streamContent);
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
@@ -1711,24 +1922,22 @@
                                     const data = JSON.parse(line);
                                     if (data.response) {
                                         fullResponse += data.response;
-                                        streamContent.innerHTML = marked.parse(fullResponse);
+                                        // Feed the full accumulated text; renderer
+                                        // diffs against lastLen to find new content
+                                        streamRenderer.update(fullResponse);
                                         this.scrollToBottom();
-                                        streamContent.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
                                     }
                                 } catch (e) { console.error('Error parsing JSON:', e); }
                             }
                         }
                     }
+                    // Swap animated spans → proper marked.parse() HTML
+                    streamRenderer.finalize();
                     this.addMessage('ai', fullResponse);
                 } catch (error) {
                     if (error.name === 'AbortError') {
-                        const streamContent = document.getElementById('streamContent');
-                        if (streamContent && streamContent.innerHTML) {
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = streamContent.innerHTML;
-                            const partialResponse = tempDiv.textContent || tempDiv.innerText || '';
-                            if (partialResponse.trim()) this.addMessage('ai', streamContent.innerHTML);
-                        }
+                        // Use the accumulated raw text (not animated HTML) for saving
+                        if (fullResponse.trim()) this.addMessage('ai', fullResponse);
                     } else {
                         console.error('Error streaming response:', error);
                         this.hideTypingIndicator();

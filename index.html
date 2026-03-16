@@ -540,6 +540,36 @@
         }
 
         /* ============================================
+           TEXT SHIMMER — converted from React component
+           (@/components/prompt-kit/text-shimmer)
+           ============================================ */
+        @keyframes text-shimmer {
+            0%   { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        .text-shimmer {
+            /* Maps React's var(--muted-foreground) → var(--text-secondary)
+               and var(--foreground) → var(--text-primary).
+               spread=20 → gradient stops at 30 / 50 / 70 % */
+            background-image: linear-gradient(
+                to right,
+                var(--text-secondary) 30%,
+                var(--text-primary)   50%,
+                var(--text-secondary) 70%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            /* duration=2s keeps it snappy; bump to 4s for the original pace */
+            animation: text-shimmer 2s infinite linear;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: inline-block;
+        }
+
+        /* ============================================
            ENDPOINTS MANAGEMENT STYLES
            ============================================ */
         .endpoints-list {
@@ -1196,13 +1226,17 @@
                 this.updatePromptSubmitButton(true);
 
                 if (this.searchMode) {
-                    this.showToast('Searching the web...', 'success');
+                    // Phase 1 — swap the typing dots for a shimmer "Searching the web…"
+                    this._setTypingShimmer('Searching the web\u2026');
                     const searchResults = await this.performWebSearch(message);
                     if (searchResults) {
+                        // Phase 2 — search done, now generating
+                        this._setTypingShimmer('Generating response\u2026');
                         const llmPrompt = `The user asked: "${message}"\n\nHere are relevant web search results:\n\n${searchResults}\n\nUsing the search results above as your primary source of information, provide a thorough and accurate answer to the user's question. Cite relevant details from the results. Today's date is ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
                         this.streamResponse(llmPrompt);
                     } else {
                         this.showToast('Search failed — answering from model knowledge', 'error');
+                        this._setTypingShimmer('Generating response\u2026');
                         this.streamResponse(message);
                     }
                 } else {
@@ -1613,6 +1647,25 @@
             }
 
             hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
+
+            /** Replace the typing-dots bubble with a shimmer status label.
+             *  Can be called multiple times to update the text in-place. */
+            _setTypingShimmer(text) {
+                const indicator = document.getElementById('typingIndicator');
+                if (!indicator) return;
+                const bubble = indicator.querySelector('.message-bubble');
+                if (!bubble) return;
+                // Re-use or create the shimmer span
+                let shimmer = bubble.querySelector('.text-shimmer');
+                if (!shimmer) {
+                    bubble.innerHTML = '';
+                    shimmer = document.createElement('span');
+                    shimmer.className = 'text-shimmer';
+                    bubble.appendChild(shimmer);
+                }
+                shimmer.textContent = text;
+                this.scrollToBottom();
+            }
 
             async streamResponse(userMessage) {
                 this.isTyping = true;

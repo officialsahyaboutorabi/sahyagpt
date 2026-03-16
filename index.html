@@ -616,6 +616,93 @@
         }
 
         /* ============================================
+           REASONING COMPONENT
+           Vanilla-JS port of Reasoning / ReasoningTrigger /
+           ReasoningContent (@/components/prompt-kit/reasoning)
+           ============================================ */
+        .reasoning-block { margin-bottom: 14px; }
+
+        /* Trigger button — mirrors ReasoningTrigger */
+        .reasoning-trigger {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: transparent; border: none; padding: 4px 0;
+            color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;
+            font-family: inherit; cursor: pointer;
+            transition: color 0.2s ease; user-select: none;
+        }
+        .reasoning-trigger:hover { color: var(--text-primary); }
+
+        /* Animated "Thinking..." dots while isStreaming=true */
+        .reasoning-trigger.streaming .reasoning-label::after {
+            content: '';
+            animation: thinking-dots 1.4s steps(4, end) infinite;
+        }
+        @keyframes thinking-dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+            100% { content: ''; }
+        }
+
+        /* Chevron icon — rotates when open (mirrors ReasoningTrigger rotate-180) */
+        .reasoning-chevron {
+            display: flex; align-items: center; flex-shrink: 0; opacity: 0.7;
+            transition: transform 0.2s ease;
+        }
+        .reasoning-chevron.open { transform: rotate(180deg); }
+        .reasoning-chevron svg { width: 14px; height: 14px; }
+
+        /* Collapsible area — mirrors ReasoningContent transition-[max-height] */
+        .reasoning-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 200ms ease-out;
+            margin-top: 4px;
+        }
+
+        /* Inner content — mirrors the ml-2 border-l-2 border-l-slate-700 className */
+        .reasoning-inner {
+            margin-left: 8px;
+            border-left: 2px solid var(--border);
+            padding: 8px 12px 4px;
+            color: var(--text-secondary);
+            font-size: 0.84rem;
+            line-height: 1.65;
+        }
+        /* Pulsing accent border while streaming */
+        .reasoning-inner.streaming-inner {
+            border-left-color: var(--accent);
+            animation: reasoning-border-pulse 2s ease-in-out infinite;
+        }
+        @keyframes reasoning-border-pulse {
+            0%, 100% { border-left-color: var(--accent); }
+            50%       { border-left-color: var(--border); }
+        }
+
+        /* Prose styles inside reasoning panel */
+        .reasoning-inner h1, .reasoning-inner h2,
+        .reasoning-inner h3, .reasoning-inner h4 {
+            font-size: 0.875rem; margin: 8px 0 4px; font-weight: 600;
+        }
+        .reasoning-inner p  { margin-bottom: 8px; }
+        .reasoning-inner ul, .reasoning-inner ol { margin: 6px 0; padding-left: 18px; }
+        .reasoning-inner li { margin-bottom: 3px; }
+        .reasoning-inner blockquote {
+            border-left: 2px solid var(--border); padding-left: 10px;
+            margin: 8px 0; color: var(--text-secondary);
+        }
+        .reasoning-inner code {
+            background: var(--bg-hover); padding: 1px 5px;
+            border-radius: 4px; font-size: 0.8rem;
+        }
+        .reasoning-inner pre {
+            background: #1e1e1e; padding: 10px 14px;
+            border-radius: 8px; overflow-x: auto; margin: 8px 0;
+        }
+        .reasoning-inner pre code { background: transparent; padding: 0; }
+
+        /* ============================================
            ENDPOINTS MANAGEMENT STYLES
            ============================================ */
         .endpoints-list {
@@ -1166,6 +1253,29 @@
         }
 
         // ================================================================
+        // parseThinking — splits <think>…</think> (DeepSeek R1 / QwQ) or
+        // <thinking>…</thinking> from the rest of the model response.
+        // Returns { thinking, response, isThinking }
+        //   thinking   — text inside the tag (null if no tag found)
+        //   response   — text after the closing tag ('' if still inside)
+        //   isThinking — true while the closing tag hasn't arrived yet
+        // ================================================================
+        function parseThinking(text) {
+            const openRe  = /^<think(?:ing)?>\n?/i;
+            const closeRe = /<\/think(?:ing)?>/i;
+            const openM   = text.match(openRe);
+            if (!openM) return { thinking: null, response: text, isThinking: false };
+            const start  = openM[0].length;
+            const closeM = text.match(closeRe);
+            if (!closeM) return { thinking: text.slice(start), response: '', isThinking: true };
+            return {
+                thinking:   text.slice(start, closeM.index),
+                response:   text.slice(closeM.index + closeM[0].length).replace(/^\n+/, ''),
+                isThinking: false,
+            };
+        }
+
+        // ================================================================
         // StreamRenderer — vanilla-JS port of ResponseStream / useTextStream
         // (@/components/prompt-kit/response-stream)
         //
@@ -1336,6 +1446,126 @@
                 try { hljs.highlightElement(this.codeEl); } catch (_) {}
                 this.codeEl     = null;
                 this.codeBuf    = '';
+            }
+        }
+
+        // ================================================================
+        // ReasoningRenderer — vanilla-JS port of the Reasoning /
+        // ReasoningTrigger / ReasoningContent React module.
+        //
+        // Mirrors the component behaviour:
+        //   • Auto-opens when created (isStreaming=true equivalent)
+        //   • ResizeObserver keeps max-height in sync as content grows
+        //   • finalize() → removes streaming class, shows "Thought for Xs",
+        //                   then auto-closes (isStreaming=false equivalent)
+        //   • toggle() lets the user open/close manually at any time
+        // ================================================================
+        class ReasoningRenderer {
+            constructor(bubbleEl) {
+                this.bubble     = bubbleEl; // the .message-bubble
+                this.block      = null;
+                this.triggerEl  = null;
+                this.labelEl    = null;
+                this.chevronEl  = null;
+                this.contentEl  = null;
+                this.innerEl    = null;
+                this.isOpen     = false;
+                this.startTime  = null;
+                this.resizeObs  = null;
+                this._build();
+            }
+
+            _build() {
+                // ── Wrapper ───────────────────────────────────────────
+                this.block = document.createElement('div');
+                this.block.className = 'reasoning-block';
+
+                // ── Trigger button ────────────────────────────────────
+                this.triggerEl = document.createElement('button');
+                this.triggerEl.className = 'reasoning-trigger streaming';
+                this.triggerEl.addEventListener('click', () => this._toggle());
+
+                this.labelEl = document.createElement('span');
+                this.labelEl.className = 'reasoning-label';
+                this.labelEl.textContent = 'Thinking';
+
+                this.chevronEl = document.createElement('span');
+                this.chevronEl.className = 'reasoning-chevron';
+                this.chevronEl.innerHTML =
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' +
+                    '<polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+                this.triggerEl.appendChild(this.labelEl);
+                this.triggerEl.appendChild(this.chevronEl);
+
+                // ── Collapsible content (ReasoningContent) ────────────
+                this.contentEl = document.createElement('div');
+                this.contentEl.className = 'reasoning-content';
+
+                this.innerEl = document.createElement('div');
+                this.innerEl.className = 'reasoning-inner streaming-inner';
+
+                this.contentEl.appendChild(this.innerEl);
+                this.block.appendChild(this.triggerEl);
+                this.block.appendChild(this.contentEl);
+
+                // Insert BEFORE whatever is already in the bubble
+                // (the responseContainer div will be appended after us)
+                this.bubble.insertBefore(this.block, this.bubble.firstChild);
+                this.startTime = Date.now();
+
+                // ResizeObserver — keeps max-height current as content grows
+                // (mirrors the ResizeObserver in ReasoningContent useEffect)
+                this.resizeObs = new ResizeObserver(() => {
+                    if (this.isOpen && this.contentEl && this.innerEl) {
+                        this.contentEl.style.maxHeight =
+                            this.innerEl.scrollHeight + 'px';
+                    }
+                });
+                this.resizeObs.observe(this.innerEl);
+
+                // Auto-open (mirrors isStreaming → setInternalOpen(true))
+                this._setOpen(true);
+            }
+
+            /** Feed new thinking text; re-renders inner markdown. */
+            update(thinkingText) {
+                if (!thinkingText || !this.innerEl) return;
+                this.innerEl.innerHTML = marked.parse(thinkingText);
+                this.innerEl.querySelectorAll('pre code')
+                    .forEach(b => { try { hljs.highlightElement(b); } catch (_) {} });
+                if (this.isOpen) {
+                    this.contentEl.style.maxHeight =
+                        this.innerEl.scrollHeight + 'px';
+                }
+            }
+
+            /** Called when streaming ends — mirrors isStreaming → false effect. */
+            finalize() {
+                if (!this.block) return;
+                const secs = Math.max(1, Math.round((Date.now() - this.startTime) / 1000));
+                this.triggerEl.classList.remove('streaming');
+                this.innerEl.classList.remove('streaming-inner');
+                this.labelEl.textContent = `Thought for ${secs}s`;
+                // Disconnect observer — content is now static
+                if (this.resizeObs) { this.resizeObs.disconnect(); this.resizeObs = null; }
+                // Auto-close after brief delay (mirrors wasAutoOpened → close)
+                setTimeout(() => this._setOpen(false), 700);
+            }
+
+            _toggle() { this._setOpen(!this.isOpen); }
+
+            _setOpen(open) {
+                this.isOpen = open;
+                if (!this.contentEl || !this.chevronEl) return;
+                if (open) {
+                    this.contentEl.style.maxHeight =
+                        (this.innerEl?.scrollHeight || 400) + 'px';
+                    this.chevronEl.classList.add('open');
+                } else {
+                    this.contentEl.style.maxHeight = '0px';
+                    this.chevronEl.classList.remove('open');
+                }
             }
         }
 
@@ -1882,15 +2112,83 @@
                 div.dataset.index = index;
                 const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 let avatar = msg.role === 'user' ? '<div class="message-avatar">You</div>' : `<div class="message-avatar"><div class="avatar small"><canvas width="80" height="80" id="msgAvatar${index}"></canvas></div></div>`;
-                const content = msg.role === 'ai' ? marked.parse(msg.content) : this.escapeHtml(msg.content).replace(/\n/g, '<br>');
+                const userContent = msg.role === 'user' ? this.escapeHtml(msg.content).replace(/\n/g, '<br>') : '';
                 const userActions = msg.role === 'user' ? `<div class="message-actions"><button class="action-btn" onclick="chatApp.editMessage(${index})" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>` : '';
                 const aiActions = msg.role === 'ai' ? `<div class="message-actions"><button class="action-btn" onclick="chatApp.regenerateResponse(${index})" title="Regenerate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V15H4.31241M4.31241 15H9M4.31241 15C5.51251 18.073 8.50203 20.25 12 20.25C15.8582 20.25 19.0978 17.6016 20 14.0236M20 4V9H19.6876M19.6876 9H15M19.6876 9C18.4875 5.92698 15.498 3.75 12 3.75C8.14184 3.75 4.90224 6.3984 4 9.9764"></path></svg></button><button class="action-btn" onclick="chatApp.readAloud(${index})" title="Read aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg></button><button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button><button class="action-btn" onclick="chatApp.shareMessage(${index})" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button><button class="action-btn" onclick="chatApp.likeMessage(${index})" title="Like"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button><button class="action-btn" onclick="chatApp.dislikeMessage(${index})" title="Dislike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg></button></div>` : '';
-                div.innerHTML = `${avatar}<div class="message-content"><div class="message-header"><span class="message-author">${msg.role === 'user' ? 'You' : 'AI Assistant'}</span><span class="message-time">${time}</span></div><div class="message-bubble">${content}</div></div>${msg.role === 'user' ? userActions : aiActions}`;
-                if (msg.role === 'ai') setTimeout(() => new AIAvatar(`msgAvatar${index}`, 40), 0);
+                // Build the message shell — for AI, leave the bubble empty so renderAIContent can populate it
+                div.innerHTML = `${avatar}<div class="message-content"><div class="message-header"><span class="message-author">${msg.role === 'user' ? 'You' : 'AI Assistant'}</span><span class="message-time">${time}</span></div><div class="message-bubble">${msg.role === 'user' ? userContent : ''}</div></div>${msg.role === 'user' ? userActions : aiActions}`;
+                if (msg.role === 'ai') {
+                    const bubble = div.querySelector('.message-bubble');
+                    this.renderAIContent(bubble, msg.content);
+                    setTimeout(() => new AIAvatar(`msgAvatar${index}`, 40), 0);
+                }
                 return div;
             }
 
             escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+            /**
+             * Render an AI message string into a given container element,
+             * handling <think>…</think> blocks by building a static
+             * ReasoningBlock (collapsed by default) above the response.
+             */
+            renderAIContent(bubbleEl, rawText) {
+                const parsed = parseThinking(rawText);
+
+                if (parsed.thinking !== null) {
+                    // ── Build static reasoning block ──────────────────────
+                    const block = document.createElement('div');
+                    block.className = 'reasoning-block';
+
+                    // Unique id so the toggle can target the right content
+                    const uid = 'rblock-' + Math.random().toString(36).slice(2, 9);
+
+                    const trigger = document.createElement('button');
+                    trigger.className = 'reasoning-trigger';
+                    trigger.innerHTML =
+                        `<span class="reasoning-label">Reasoning</span>` +
+                        `<span class="reasoning-chevron" id="chev-${uid}">` +
+                        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">` +
+                        `<polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
+                    trigger.addEventListener('click', () => {
+                        const chevron = document.getElementById('chev-' + uid);
+                        const content = document.getElementById('rcontent-' + uid);
+                        if (!content) return;
+                        const isOpen = content.style.maxHeight !== '0px' && content.style.maxHeight !== '';
+                        if (isOpen) {
+                            content.style.maxHeight = '0px';
+                            if (chevron) chevron.classList.remove('open');
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                            if (chevron) chevron.classList.add('open');
+                        }
+                    });
+
+                    const contentEl = document.createElement('div');
+                    contentEl.className = 'reasoning-content';
+                    contentEl.id = 'rcontent-' + uid;
+                    contentEl.style.maxHeight = '0px'; // collapsed by default
+
+                    const inner = document.createElement('div');
+                    inner.className = 'reasoning-inner';
+                    inner.innerHTML = marked.parse(parsed.thinking);
+                    inner.querySelectorAll('pre code').forEach(b => { try { hljs.highlightElement(b); } catch (_) {} });
+
+                    contentEl.appendChild(inner);
+                    block.appendChild(trigger);
+                    block.appendChild(contentEl);
+                    bubbleEl.appendChild(block);
+                }
+
+                // ── Render the actual response ──────────────────────────
+                const responseText = parsed.thinking !== null ? parsed.response : rawText;
+                if (responseText && responseText.trim()) {
+                    const responseDiv = document.createElement('div');
+                    responseDiv.innerHTML = marked.parse(responseText);
+                    responseDiv.querySelectorAll('pre code').forEach(b => { try { hljs.highlightElement(b); } catch (_) {} });
+                    bubbleEl.appendChild(responseDiv);
+                }
+            }
 
             showTypingIndicator() {
                 const container = document.getElementById('messagesContainer');
@@ -1938,6 +2236,7 @@
                     return;
                 }
                 
+                let fullResponse = '';
                 try {
                     const response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1947,7 +2246,6 @@
                     if (!response.ok) throw new Error('Failed to get response from Ollama');
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
-                    let fullResponse = '';
                     this.hideTypingIndicator();
                     const container = document.getElementById('messagesContainer');
                     const messageEl = document.createElement('div');
@@ -1957,8 +2255,14 @@
                     container.appendChild(messageEl);
                     setTimeout(() => new AIAvatar('streamAvatar', 40), 0);
                     const streamContent = document.getElementById('streamContent');
-                    // ── StreamRenderer: fade for text, typewriter for code ──
-                    const streamRenderer = new StreamRenderer(streamContent);
+
+                    // ── Reasoning + Stream renderers ──────────────────────────
+                    // responseContainer sits AFTER any reasoning block inside the bubble
+                    const responseContainer = document.createElement('div');
+                    streamContent.appendChild(responseContainer);
+                    const streamRenderer = new StreamRenderer(responseContainer);
+                    let reasoningRenderer = null;
+
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
@@ -1970,16 +2274,30 @@
                                     const data = JSON.parse(line);
                                     if (data.response) {
                                         fullResponse += data.response;
-                                        // Feed the full accumulated text; renderer
-                                        // diffs against lastLen to find new content
-                                        streamRenderer.update(fullResponse);
+                                        const parsed = parseThinking(fullResponse);
+
+                                        if (parsed.thinking !== null) {
+                                            // Model has a reasoning block — create renderer on first appearance
+                                            if (!reasoningRenderer) {
+                                                reasoningRenderer = new ReasoningRenderer(streamContent);
+                                            }
+                                            reasoningRenderer.update(parsed.thinking);
+                                            // Feed only the post-thinking response text to StreamRenderer
+                                            if (parsed.response) {
+                                                streamRenderer.update(parsed.response);
+                                            }
+                                        } else {
+                                            // No reasoning block — feed everything to StreamRenderer
+                                            streamRenderer.update(fullResponse);
+                                        }
                                         this.scrollToBottom();
                                     }
                                 } catch (e) { console.error('Error parsing JSON:', e); }
                             }
                         }
                     }
-                    // Swap animated spans → proper marked.parse() HTML
+                    // Finalize both renderers
+                    if (reasoningRenderer) reasoningRenderer.finalize();
                     streamRenderer.finalize();
                     this.addMessage('ai', fullResponse);
                 } catch (error) {

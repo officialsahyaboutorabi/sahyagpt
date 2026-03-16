@@ -703,6 +703,78 @@
         .reasoning-inner pre code { background: transparent; padding: 0; }
 
         /* ============================================
+           TOOL COMPONENT
+           Vanilla-JS port of Tool (@/components/prompt-kit/tool)
+           ============================================ */
+        .tool-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            background: var(--bg-secondary);
+        }
+        .tool-card-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; width: 100%; border: none;
+            background: transparent; font-family: inherit;
+            cursor: pointer; text-align: left;
+            transition: background 0.15s ease;
+        }
+        .tool-card-header:hover { background: var(--bg-hover); }
+        .tool-card-icon { flex-shrink: 0; display: flex; align-items: center; }
+        .tool-card-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; font-weight: 600; color: var(--text-primary);
+        }
+        .tool-card-badge {
+            padding: 2px 8px; border-radius: 999px;
+            font-size: 0.68rem; font-weight: 600;
+        }
+        .tool-card-badge.tc-streaming { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .tool-card-badge.tc-ready     { background: rgba(251,146,60,0.15);  color: #fb923c; }
+        .tool-card-badge.tc-done      { background: rgba(74,222,128,0.15);  color: #4ade80; }
+        .tool-card-badge.tc-error     { background: rgba(248,113,113,0.15); color: #f87171; }
+        .tool-card-chevron {
+            margin-left: auto; flex-shrink: 0; display: flex; align-items: center;
+            color: var(--text-secondary); opacity: 0.6;
+            transition: transform 0.2s ease;
+        }
+        .tool-card-chevron.open { transform: rotate(180deg); }
+        .tool-card-chevron svg  { width: 13px; height: 13px; }
+        .tool-card-body {
+            max-height: 0; overflow: hidden;
+            transition: max-height 250ms ease-out;
+            border-top: 1px solid var(--border);
+        }
+        .tool-card-inner { padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+        .tool-card-section h4 {
+            font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px;
+        }
+        .tool-card-kv {
+            background: var(--bg-primary); border: 1px solid var(--border);
+            border-radius: 6px; padding: 8px 10px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.74rem;
+        }
+        .tool-card-kv .kv-row { margin-bottom: 3px; }
+        .tool-card-kv .kv-key { color: var(--text-secondary); }
+        .tool-card-results { display: flex; flex-direction: column; gap: 7px; }
+        .tool-card-result {
+            padding: 8px 10px; border-radius: 7px;
+            background: var(--bg-primary); border: 1px solid var(--border);
+        }
+        .tool-card-result-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+        .tool-card-result-url   { font-size: 0.69rem; color: var(--accent); margin-bottom: 3px; word-break: break-all; }
+        .tool-card-result-snippet { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.45; }
+        .tool-card-error-box {
+            border: 1px solid rgba(248,113,113,0.3);
+            background: rgba(248,113,113,0.08); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.78rem; color: #f87171;
+        }
+        @keyframes tc-spin { to { transform: rotate(360deg); } }
+        .tc-spinning { animation: tc-spin 0.9s linear infinite; display: inline-flex; }
+
+        /* ============================================
            ENDPOINTS MANAGEMENT STYLES
            ============================================ */
         .endpoints-list {
@@ -1450,6 +1522,121 @@
         }
 
         // ================================================================
+        // ToolCard — vanilla-JS port of Tool (@/components/prompt-kit/tool)
+        //
+        // Mirrors the React module behaviour:
+        //   • Collapsible panel with state icon, type label, badge
+        //   • States: input-streaming | input-available | output-available | output-error
+        //   • Renders key/value input and structured results in the output
+        //   • update(toolPart) hot-swaps state without recreating the element
+        // ================================================================
+        class ToolCard {
+            constructor(toolPart, defaultOpen = false) {
+                this.toolPart = toolPart;
+                this.isOpen   = defaultOpen;
+                this.element  = document.createElement('div');
+                this.element.className = 'tool-card';
+                this._render();
+            }
+
+            /** Hot-swap state/output — merges new props, re-renders in place. */
+            update(toolPart) {
+                this.toolPart = Object.assign({}, this.toolPart, toolPart);
+                this._render();
+                // Restore open state after re-render
+                const body = this.element.querySelector('.tool-card-body');
+                if (body) body.style.maxHeight = this.isOpen ? body.scrollHeight + 'px' : '0px';
+            }
+
+            _render() {
+                const { state, type, input, output, errorText } = this.toolPart;
+                const chevCls = this.isOpen ? 'open' : '';
+                this.element.innerHTML = `
+                    <button class="tool-card-header" type="button">
+                        <span class="tool-card-icon">${this._icon(state)}</span>
+                        <span class="tool-card-type">${this._esc(type)}</span>
+                        ${this._badge(state)}
+                        <span class="tool-card-chevron ${chevCls}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="tool-card-body" style="max-height:${this.isOpen ? '600' : '0'}px">
+                        <div class="tool-card-inner">
+                            ${this._renderInput(input)}
+                            ${this._renderOutput(state, output, errorText)}
+                        </div>
+                    </div>`;
+                this.element.querySelector('.tool-card-header')
+                    .addEventListener('click', () => this._toggle());
+            }
+
+            _toggle() {
+                this.isOpen = !this.isOpen;
+                const body = this.element.querySelector('.tool-card-body');
+                const chev = this.element.querySelector('.tool-card-chevron');
+                if (this.isOpen) {
+                    body.style.maxHeight = body.scrollHeight + 'px';
+                    chev?.classList.add('open');
+                } else {
+                    body.style.maxHeight = '0px';
+                    chev?.classList.remove('open');
+                }
+            }
+
+            _icon(state) {
+                const icons = {
+                    'input-streaming':  `<span class="tc-spinning"><svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" width="14" height="14"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></span>`,
+                    'input-available':  `<svg viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+                    'output-available': `<svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>`,
+                    'output-error':     `<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+                };
+                return icons[state] || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="3"/></svg>`;
+            }
+
+            _badge(state) {
+                const map = {
+                    'input-streaming':  ['tc-streaming', 'Searching'],
+                    'input-available':  ['tc-ready',     'Ready'],
+                    'output-available': ['tc-done',      'Completed'],
+                    'output-error':     ['tc-error',     'Error'],
+                };
+                const [cls, label] = map[state] || ['', 'Pending'];
+                return `<span class="tool-card-badge ${cls}">${label}</span>`;
+            }
+
+            _renderInput(input) {
+                if (!input || Object.keys(input).length === 0) return '';
+                const rows = Object.entries(input)
+                    .map(([k, v]) => `<div class="kv-row"><span class="kv-key">${this._esc(k)}:</span> ${this._esc(typeof v === 'object' ? JSON.stringify(v) : String(v))}</div>`)
+                    .join('');
+                return `<div class="tool-card-section"><h4>Input</h4><div class="tool-card-kv">${rows}</div></div>`;
+            }
+
+            _renderOutput(state, output, errorText) {
+                if (state === 'output-error' && errorText)
+                    return `<div class="tool-card-error-box">${this._esc(errorText)}</div>`;
+                if (!output) return '';
+                // Rich rendering for search results array
+                if (Array.isArray(output.results) && output.results.length) {
+                    const cards = output.results.map(r => `
+                        <div class="tool-card-result">
+                            <div class="tool-card-result-title">${this._esc(r.title || '')}</div>
+                            ${r.url ? `<div class="tool-card-result-url">${this._esc(r.url)}</div>` : ''}
+                            ${r.snippet ? `<div class="tool-card-result-snippet">${this._esc(r.snippet)}</div>` : ''}
+                        </div>`).join('');
+                    return `<div class="tool-card-section"><h4>Results</h4><div class="tool-card-results">${cards}</div></div>`;
+                }
+                // Generic JSON fallback
+                const text = typeof output === 'object' ? JSON.stringify(output, null, 2) : String(output);
+                return `<div class="tool-card-section"><h4>Output</h4><div class="tool-card-kv"><pre style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.73rem">${this._esc(text)}</pre></div></div>`;
+            }
+
+            _esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        }
+
+        // ================================================================
         // ReasoningRenderer — vanilla-JS port of the Reasoning /
         // ReasoningTrigger / ReasoningContent React module.
         //
@@ -1461,8 +1648,9 @@
         //   • toggle() lets the user open/close manually at any time
         // ================================================================
         class ReasoningRenderer {
-            constructor(bubbleEl) {
-                this.bubble     = bubbleEl; // the .message-bubble
+            constructor(bubbleEl, beforeEl = null) {
+                this.bubble     = bubbleEl;   // the .message-bubble
+                this.beforeEl   = beforeEl;   // insert block before this element
                 this.block      = null;
                 this.triggerEl  = null;
                 this.labelEl    = null;
@@ -1509,9 +1697,10 @@
                 this.block.appendChild(this.triggerEl);
                 this.block.appendChild(this.contentEl);
 
-                // Insert BEFORE whatever is already in the bubble
-                // (the responseContainer div will be appended after us)
-                this.bubble.insertBefore(this.block, this.bubble.firstChild);
+                // Insert directly before responseContainer (or firstChild as fallback).
+                // Using beforeEl means the order is always:
+                //   [tool card?] → [reasoning block] → [responseContainer]
+                this.bubble.insertBefore(this.block, this.beforeEl || this.bubble.firstChild);
                 this.startTime = Date.now();
 
                 // ResizeObserver — keeps max-height current as content grows
@@ -1676,18 +1865,33 @@
                 this.updatePromptSubmitButton(true);
 
                 if (this.searchMode) {
-                    // Phase 1 — swap the typing dots for a shimmer "Searching the web…"
+                    // Phase 1 — shimmer while fetching
                     this._setTypingShimmer('Searching the web\u2026');
-                    const searchResults = await this.performWebSearch(message);
-                    if (searchResults) {
-                        // Phase 2 — search done, now generating
+                    const searchResult = await this.performWebSearch(message);
+
+                    if (searchResult) {
+                        // Phase 2 — results ready, ask LLM to answer
                         this._setTypingShimmer('Generating response\u2026');
-                        const llmPrompt = `The user asked: "${message}"\n\nHere are relevant web search results:\n\n${searchResults}\n\nUsing the search results above as your primary source of information, provide a thorough and accurate answer to the user's question. Cite relevant details from the results. Today's date is ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
-                        this.streamResponse(llmPrompt);
+                        const llmPrompt = `The user asked: "${message}"\n\nHere are relevant web search results:\n\n${searchResult.text}\n\nUsing the search results above as your primary source of information, provide a thorough and accurate answer to the user's question. Cite relevant details from the results. Today's date is ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
+                        this.streamResponse(llmPrompt, {
+                            toolCard: {
+                                type: 'search_web',
+                                state: 'output-available',
+                                input: { query: message },
+                                output: { results: searchResult.rawResults },
+                            }
+                        });
                     } else {
-                        this.showToast('Search failed — answering from model knowledge', 'error');
+                        this.showToast('Search returned no results — answering from model knowledge', 'error');
                         this._setTypingShimmer('Generating response\u2026');
-                        this.streamResponse(message);
+                        this.streamResponse(message, {
+                            toolCard: {
+                                type: 'search_web',
+                                state: 'output-error',
+                                input: { query: message },
+                                errorText: 'No results found from DuckDuckGo or Wikipedia',
+                            }
+                        });
                     }
                 } else {
                     this.streamResponse(message);
@@ -1752,9 +1956,10 @@
             }
 
             async performWebSearch(query) {
-                const results = [];
+                const textParts = [];    // LLM-readable markdown lines
+                const rawResults = [];  // structured data for ToolCard display
 
-                // --- Source 1: DuckDuckGo Instant Answer API (CORS-enabled, no key needed) ---
+                // --- Source 1: DuckDuckGo Instant Answer API ---
                 try {
                     const ddgRes = await fetch(
                         `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`,
@@ -1762,25 +1967,30 @@
                     );
                     if (ddgRes.ok) {
                         const d = await ddgRes.json();
-                        if (d.Answer)       results.push(`**Direct Answer:** ${d.Answer}`);
-                        if (d.AbstractText) results.push(`**Summary (${d.AbstractSource || 'DuckDuckGo'}):** ${d.AbstractText}${d.AbstractURL ? '\nSource: ' + d.AbstractURL : ''}`);
-                        if (d.Definition)   results.push(`**Definition (${d.DefinitionSource || ''}):** ${d.Definition}${d.DefinitionURL ? '\nSource: ' + d.DefinitionURL : ''}`);
-
-                        const topics = (d.RelatedTopics || [])
-                            .filter(t => t.Text && !t.Topics)
-                            .slice(0, 6)
-                            .map(t => `- ${t.Text}${t.FirstURL ? ' (' + t.FirstURL + ')' : ''}`);
-                        if (topics.length) results.push('**Related Topics:**\n' + topics.join('\n'));
-
-                        const directResults = (d.Results || []).slice(0, 4)
-                            .map(r => `- ${r.Text}${r.FirstURL ? ' (' + r.FirstURL + ')' : ''}`);
-                        if (directResults.length) results.push('**Search Results:**\n' + directResults.join('\n'));
+                        if (d.Answer) {
+                            textParts.push(`**Direct Answer:** ${d.Answer}`);
+                            rawResults.push({ title: 'Direct Answer', snippet: d.Answer });
+                        }
+                        if (d.AbstractText) {
+                            textParts.push(`**Summary (${d.AbstractSource || 'DuckDuckGo'}):** ${d.AbstractText}${d.AbstractURL ? '\nSource: ' + d.AbstractURL : ''}`);
+                            rawResults.push({ title: d.AbstractSource || 'DuckDuckGo', url: d.AbstractURL || '', snippet: d.AbstractText });
+                        }
+                        if (d.Definition) {
+                            textParts.push(`**Definition (${d.DefinitionSource || ''}):** ${d.Definition}${d.DefinitionURL ? '\nSource: ' + d.DefinitionURL : ''}`);
+                            rawResults.push({ title: `Definition — ${d.DefinitionSource || 'DuckDuckGo'}`, url: d.DefinitionURL || '', snippet: d.Definition });
+                        }
+                        (d.RelatedTopics || []).filter(t => t.Text && !t.Topics).slice(0, 4).forEach(t => {
+                            textParts.push(`- ${t.Text}${t.FirstURL ? ' (' + t.FirstURL + ')' : ''}`);
+                            rawResults.push({ title: t.Text.split(' - ')[0] || t.Text.slice(0, 60), url: t.FirstURL || '', snippet: t.Text });
+                        });
+                        (d.Results || []).slice(0, 3).forEach(r => {
+                            textParts.push(`- ${r.Text}${r.FirstURL ? ' (' + r.FirstURL + ')' : ''}`);
+                            rawResults.push({ title: r.Text.slice(0, 60), url: r.FirstURL || '', snippet: r.Text });
+                        });
                     }
-                } catch (e) {
-                    console.error('DuckDuckGo search error:', e);
-                }
+                } catch (e) { console.error('DuckDuckGo search error:', e); }
 
-                // --- Source 2: Wikipedia Search API (always CORS-enabled, great for facts) ---
+                // --- Source 2: Wikipedia Search API ---
                 try {
                     const wikiRes = await fetch(
                         `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=4&format=json&origin=*`,
@@ -1788,20 +1998,17 @@
                     );
                     if (wikiRes.ok) {
                         const wikiData = await wikiRes.json();
-                        const hits = (wikiData.query?.search || []).slice(0, 4);
-                        if (hits.length) {
-                            const lines = hits.map(r => {
-                                const snippet = r.snippet.replace(/<[^>]*>/g, '');
-                                return `- **${r.title}**: ${snippet}\n  https://en.wikipedia.org/wiki/${encodeURIComponent(r.title.replace(/ /g, '_'))}`;
-                            });
-                            results.push('**Wikipedia Results:**\n' + lines.join('\n'));
-                        }
+                        (wikiData.query?.search || []).slice(0, 4).forEach(r => {
+                            const snippet = r.snippet.replace(/<[^>]*>/g, '');
+                            const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(r.title.replace(/ /g, '_'))}`;
+                            textParts.push(`- **${r.title}**: ${snippet}\n  ${url}`);
+                            rawResults.push({ title: r.title, url, snippet });
+                        });
                     }
-                } catch (e) {
-                    console.error('Wikipedia search error:', e);
-                }
+                } catch (e) { console.error('Wikipedia search error:', e); }
 
-                return results.length > 0 ? results.join('\n\n') : null;
+                if (textParts.length === 0) return null;
+                return { text: textParts.join('\n\n'), rawResults };
             }
 
             async fetchModels() {
@@ -2222,7 +2429,7 @@
                 this.scrollToBottom();
             }
 
-            async streamResponse(userMessage) {
+            async streamResponse(userMessage, options = {}) {
                 this.isTyping = true;
                 this.isGenerating = true;
                 this.abortController = new AbortController();
@@ -2256,8 +2463,15 @@
                     setTimeout(() => new AIAvatar('streamAvatar', 40), 0);
                     const streamContent = document.getElementById('streamContent');
 
+                    // ── Tool card (search results, etc.) ──────────────────────
+                    // Inserted first so order is: [tool card] → [reasoning] → [response]
+                    if (options.toolCard) {
+                        const card = new ToolCard(options.toolCard, false);
+                        streamContent.appendChild(card.element);
+                    }
+
                     // ── Reasoning + Stream renderers ──────────────────────────
-                    // responseContainer sits AFTER any reasoning block inside the bubble
+                    // responseContainer always sits last — reasoning inserts before it
                     const responseContainer = document.createElement('div');
                     streamContent.appendChild(responseContainer);
                     let streamRenderer = new StreamRenderer(responseContainer);
@@ -2300,7 +2514,8 @@
                                     // already rendered, then reset it.
                                     responseContainer.innerHTML = '';
                                     streamRenderer = new StreamRenderer(responseContainer);
-                                    reasoningRenderer = new ReasoningRenderer(streamContent);
+                                    // Pass responseContainer so reasoning inserts before it
+                                    reasoningRenderer = new ReasoningRenderer(streamContent, responseContainer);
                                 }
                                 if (parsed.thinking) reasoningRenderer.update(parsed.thinking);
                                 if (parsed.response) streamRenderer.update(parsed.response);

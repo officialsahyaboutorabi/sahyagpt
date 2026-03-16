@@ -2260,7 +2260,7 @@
                     // responseContainer sits AFTER any reasoning block inside the bubble
                     const responseContainer = document.createElement('div');
                     streamContent.appendChild(responseContainer);
-                    const streamRenderer = new StreamRenderer(responseContainer);
+                    let streamRenderer = new StreamRenderer(responseContainer);
                     let reasoningRenderer = null;
 
                     while (true) {
@@ -2282,14 +2282,21 @@
                             const parsed = parseThinking(fullResponse);
 
                             if (parsed.thinking !== null) {
-                                // Reasoning model (<think>…</think>) detected
+                                // ── Reasoning model path ───────────────────────────
                                 if (!reasoningRenderer) {
+                                    // First confirmed <think> detection.
+                                    // <think> may have arrived character-by-character,
+                                    // so StreamRenderer might have already rendered some
+                                    // partial tag chars (e.g. '<', '<t', '<think').
+                                    // Wipe them and start a fresh StreamRenderer.
+                                    responseContainer.innerHTML = '';
+                                    streamRenderer = new StreamRenderer(responseContainer);
                                     reasoningRenderer = new ReasoningRenderer(streamContent);
                                 }
                                 if (parsed.thinking) reasoningRenderer.update(parsed.thinking);
                                 if (parsed.response) streamRenderer.update(parsed.response);
                             } else {
-                                // Normal model — feed full accumulated text
+                                // ── Normal model path ──────────────────────────────
                                 streamRenderer.update(fullResponse);
                             }
                             this.scrollToBottom();

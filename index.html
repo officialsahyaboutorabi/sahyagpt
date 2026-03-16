@@ -1261,7 +1261,7 @@
         //   isThinking — true while the closing tag hasn't arrived yet
         // ================================================================
         function parseThinking(text) {
-            const openRe  = /^<think(?:ing)?>\n?/i;
+            const openRe  = /^\s*<think(?:ing)?>\n*/i;   // allow optional leading whitespace
             const closeRe = /<\/think(?:ing)?>/i;
             const openM   = text.match(openRe);
             if (!openM) return { thinking: null, response: text, isThinking: false };
@@ -2263,17 +2263,28 @@
                     let streamRenderer = new StreamRenderer(responseContainer);
                     let reasoningRenderer = null;
 
+                    // ── NDJSON line buffer ─────────────────────────────────────
+                    // Ollama streams newline-delimited JSON, but a single read()
+                    // chunk can contain multiple JSON objects, or one object split
+                    // across two chunks.  We buffer here so JSON.parse always
+                    // operates on a complete line — no more skipped tokens.
+                    let lineBuffer = '';
+
                     while (true) {
                         const { done, value } = await reader.read();
-                        if (done) break;
-                        const chunk = decoder.decode(value, { stream: true });
-                        const lines = chunk.split('\n');
+                        if (value) lineBuffer += decoder.decode(value, { stream: true });
+
+                        // Split on newlines; if not done, the last element may be
+                        // an incomplete line — hold it in the buffer for next tick.
+                        const lines = lineBuffer.split('\n');
+                        lineBuffer = done ? '' : (lines.pop() ?? '');
+
                         for (const line of lines) {
                             if (!line.trim()) continue;
-                            // ── Parse JSON (partial chunks from Ollama are normal) ──
+
                             let data;
                             try { data = JSON.parse(line); }
-                            catch (e) { console.warn('Skipping partial chunk:', e.message); continue; }
+                            catch (e) { continue; }   // malformed — skip silently
 
                             if (!data.response) continue;
 
@@ -2284,11 +2295,9 @@
                             if (parsed.thinking !== null) {
                                 // ── Reasoning model path ───────────────────────────
                                 if (!reasoningRenderer) {
-                                    // First confirmed <think> detection.
-                                    // <think> may have arrived character-by-character,
-                                    // so StreamRenderer might have already rendered some
-                                    // partial tag chars (e.g. '<', '<t', '<think').
-                                    // Wipe them and start a fresh StreamRenderer.
+                                    // First confirmed <think> block.
+                                    // Clear any partial tag chars StreamRenderer
+                                    // already rendered, then reset it.
                                     responseContainer.innerHTML = '';
                                     streamRenderer = new StreamRenderer(responseContainer);
                                     reasoningRenderer = new ReasoningRenderer(streamContent);
@@ -2301,6 +2310,8 @@
                             }
                             this.scrollToBottom();
                         }
+
+                        if (done) break;
                     }
                     // Finalize both renderers
                     if (reasoningRenderer) reasoningRenderer.finalize();

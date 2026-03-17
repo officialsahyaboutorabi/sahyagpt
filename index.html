@@ -1134,6 +1134,17 @@
                             <div class="toggle-switch active" id="showTimestampsToggle" onclick="chatApp.toggleSetting('showTimestamps')"></div>
                         </div>
                     </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">Kimi Integration</div>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-info"><div class="toggle-label">Enable Kimi</div><div class="toggle-description">Add Kimi models to the model selector</div></div>
+                            <div class="toggle-switch" id="kimiEnabledToggle" onclick="chatApp.toggleSetting('kimiEnabled')"></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 8px;">
+                            <label class="form-label">API Key <span>Your Moonshot AI key (sk-kimi-…)</span></label>
+                            <input type="password" class="form-input" id="kimiApiKey" placeholder="sk-kimi-…" autocomplete="off">
+                        </div>
+                    </div>
                 </div>
                 <div class="settings-section" id="tab-model">
                     <div class="settings-group">
@@ -2359,13 +2370,44 @@
                 });
 
                 await Promise.all(fetchPromises);
+
+                // ── Kimi models ──────────────────────────────────────────────
+                const kimiEnabled = this.settings.toggles?.kimiEnabled;
+                const kimiApiKey  = this.settings.kimiApiKey;
+                if (kimiEnabled && kimiApiKey) {
+                    try {
+                        const kimiResp = await fetch('https://api.moonshot.ai/v1/models', {
+                            headers: { 'Authorization': `Bearer ${kimiApiKey}` }
+                        });
+                        if (kimiResp.ok) {
+                            const kimiData = await kimiResp.json();
+                            const kimiModels = (kimiData.data || [])
+                                .filter(m => m.id)
+                                .map(m => ({
+                                    name:         m.id,
+                                    endpoint:     'https://api.moonshot.ai',
+                                    endpointName: 'Kimi',
+                                    provider:     'kimi'
+                                }));
+                            this.models.push(...kimiModels);
+                            anyConnected = true;
+                        } else {
+                            const errBody = await kimiResp.json().catch(() => ({}));
+                            this.showToast('Kimi: ' + (errBody.error?.message || `API error ${kimiResp.status}`), 'error');
+                        }
+                    } catch (e) {
+                        console.error('Error fetching Kimi models:', e);
+                        this.showToast('Could not reach Kimi API', 'error');
+                    }
+                }
+
                 this.updateModelSelect();
                 this.updateStatus(anyConnected);
-                
+
                 if (!anyConnected) {
-                    this.showToast('Failed to connect to any Ollama endpoint. Please check your settings.', 'error');
+                    this.showToast('Failed to connect to any endpoint. Please check your settings.', 'error');
                 } else if (this.models.length === 0) {
-                    this.showToast('Connected but no models found. Please pull models to your Ollama servers.', 'error');
+                    this.showToast('Connected but no models found.', 'error');
                 }
             }
 
@@ -2765,15 +2807,46 @@
                 let streamRenderer = null;
                 let reasoningRenderer = null;
                 try {
-                    const response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: this.currentModel.name, prompt: userMessage, system: this.settings.systemPrompt, temperature: parseFloat(this.settings.temperature), stream: true }),
-                        signal: signal
-                    });
-                    if (!response.ok) throw new Error('Failed to get response from Ollama');
+                    // ── Fetch (provider-specific) ──────────────────────────────
+                    let response;
+                    if (this.currentModel.provider === 'kimi') {
+                        // Build OpenAI-format messages array from history + current turn
+                        const chatMessages = [
+                            { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
+                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
+                            { role: 'user', content: userMessage }
+                        ];
+                        response = await fetch('https://api.moonshot.ai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.settings.kimiApiKey}` },
+                            body: JSON.stringify({
+                                model:       this.currentModel.name,
+                                messages:    chatMessages,
+                                stream:      true,
+                                temperature: parseFloat(this.settings.temperature),
+                                max_tokens:  this.settings.maxTokens
+                            }),
+                            signal
+                        });
+                        if (!response.ok) {
+                            const errBody = await response.json().catch(() => ({}));
+                            throw new Error(errBody.error?.message || `Kimi API error: ${response.status}`);
+                        }
+                    } else {
+                        // ── Ollama ─────────────────────────────────────────────
+                        response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ model: this.currentModel.name, prompt: userMessage, system: this.settings.systemPrompt, temperature: parseFloat(this.settings.temperature), stream: true }),
+                            signal: signal
+                        });
+                        if (!response.ok) throw new Error('Failed to get response from Ollama');
+                    }
+
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
                     this.hideTypingIndicator();
+
+                    // ── Shared: create message bubble ──────────────────────────
                     const container = document.getElementById('messagesContainer');
                     const messageEl = document.createElement('div');
                     messageEl.className = 'message ai';
@@ -2809,44 +2882,51 @@
                     streamContent.appendChild(responseContainer);
                     streamRenderer = new StreamRenderer(responseContainer);
 
-                    // ── NDJSON line buffer ─────────────────────────────────────
-                    // Ollama streams newline-delimited JSON, but a single read()
-                    // chunk can contain multiple JSON objects, or one object split
-                    // across two chunks.  We buffer here so JSON.parse always
-                    // operates on a complete line — no more skipped tokens.
+                    // ── Unified streaming loop ─────────────────────────────────
+                    // Buffer handles both NDJSON (Ollama) and SSE (Kimi/OpenAI) since
+                    // both are newline-delimited and a read() chunk may span lines.
+                    const isKimi = this.currentModel.provider === 'kimi';
                     let lineBuffer = '';
 
                     while (true) {
                         const { done, value } = await reader.read();
                         if (value) lineBuffer += decoder.decode(value, { stream: true });
 
-                        // Split on newlines; if not done, the last element may be
-                        // an incomplete line — hold it in the buffer for next tick.
                         const lines = lineBuffer.split('\n');
                         lineBuffer = done ? '' : (lines.pop() ?? '');
 
                         for (const line of lines) {
-                            if (!line.trim()) continue;
+                            const trimmed = line.trim();
+                            if (!trimmed) continue;
 
-                            let data;
-                            try { data = JSON.parse(line); }
-                            catch (e) { continue; }   // malformed — skip silently
+                            // ── Extract token (provider-specific parsing) ──────
+                            let token = null;
+                            if (isKimi) {
+                                // SSE: "data: {...}"  or  "data: [DONE]"
+                                if (trimmed === 'data: [DONE]') continue;
+                                if (!trimmed.startsWith('data: ')) continue;
+                                let data;
+                                try { data = JSON.parse(trimmed.slice(6)); } catch (e) { continue; }
+                                token = data.choices?.[0]?.delta?.content ?? null;
+                            } else {
+                                // NDJSON: {"response":"...","done":false}
+                                let data;
+                                try { data = JSON.parse(trimmed); } catch (e) { continue; }
+                                token = data.response ?? null;
+                            }
 
-                            if (!data.response) continue;
+                            if (!token) continue;
 
-                            // ── Accumulate & route to renderers ───────────────────
-                            fullResponse += data.response;
+                            // ── Accumulate & route to renderers ───────────────
+                            fullResponse += token;
                             const parsed = parseThinking(fullResponse);
 
                             if (parsed.thinking !== null) {
-                                // ── Reasoning model path ───────────────────────────
+                                // ── Reasoning model path ───────────────────────
                                 if (!reasoningRenderer) {
-                                    // First confirmed <think> block.
-                                    // Clear any partial tag chars StreamRenderer
-                                    // already rendered, then reset it.
+                                    // First confirmed <think> block — reset StreamRenderer
                                     responseContainer.innerHTML = '';
                                     streamRenderer = new StreamRenderer(responseContainer);
-                                    // Pass responseContainer so reasoning inserts before it
                                     const useClassic = (this.settings.thinkingStyle === 'classic');
                                     reasoningRenderer = useClassic
                                         ? new ReasoningRenderer(streamContent, responseContainer)
@@ -2855,7 +2935,6 @@
                                 if (parsed.thinking) reasoningRenderer.update(parsed.thinking);
                                 if (parsed.response) streamRenderer.update(parsed.response);
                             } else {
-                                // ── Normal model path ──────────────────────────────
                                 streamRenderer.update(fullResponse);
                             }
                             this.scrollToBottom();
@@ -3010,8 +3089,9 @@
                 this.settings.fontSize = document.getElementById('fontSizeSelect').value;
                 this.settings.codeTheme = document.getElementById('codeThemeSelect').value;
                 this.settings.thinkingStyle = document.getElementById('thinkingStyleSelect').value;
+                this.settings.kimiApiKey = document.getElementById('kimiApiKey').value.trim();
                 if (!this.settings.toggles) this.settings.toggles = {};
-                ['autoSave', 'enterToSend', 'showTimestamps', 'stream'].forEach(key => {
+                ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'kimiEnabled'].forEach(key => {
                     const toggle = document.getElementById(`${key}Toggle`);
                     if (toggle) this.settings.toggles[key] = toggle.classList.contains('active');
                 });
@@ -3051,8 +3131,8 @@
                             { url: 'http://localhost:11434', name: 'Local', enabled: true }
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
-                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot',
-                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true }
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '',
+                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false }
                     };
                     this.renderEndpoints();
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;
@@ -3066,7 +3146,10 @@
                     document.getElementById('fontSizeSelect').value = this.settings.fontSize;
                     document.getElementById('codeThemeSelect').value = this.settings.codeTheme;
                     document.getElementById('thinkingStyleSelect').value = 'cot';
+                    document.getElementById('kimiApiKey').value = '';
+                    // Activate all standard toggles, then explicitly deactivate opt-in ones
                     document.querySelectorAll('.toggle-switch').forEach(toggle => toggle.classList.add('active'));
+                    document.getElementById('kimiEnabledToggle').classList.remove('active');
                     localStorage.setItem('chatSettings', JSON.stringify(this.settings));
                     this.showToast('Settings reset to default', 'success');
                 }
@@ -3120,6 +3203,7 @@
                     document.getElementById('fontSizeSelect').value = this.settings.fontSize || 'medium';
                     document.getElementById('codeThemeSelect').value = this.settings.codeTheme || 'atom-one-dark';
                     document.getElementById('thinkingStyleSelect').value = this.settings.thinkingStyle || 'cot';
+                    document.getElementById('kimiApiKey').value = this.settings.kimiApiKey || '';
                     if (this.settings.toggles) {
                         Object.entries(this.settings.toggles).forEach(([key, value]) => {
                             const toggle = document.getElementById(`${key}Toggle`);

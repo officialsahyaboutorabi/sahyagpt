@@ -616,24 +616,58 @@
         }
 
         /* ============================================
-           REASONING COMPONENT
-           Vanilla-JS port of Reasoning / ReasoningTrigger /
-           ReasoningContent (@/components/prompt-kit/reasoning)
+           CHAIN OF THOUGHT COMPONENT
+           Vanilla-JS port of ChainOfThought /
+           (@/components/prompt-kit/chain-of-thought)
            ============================================ */
-        .reasoning-block { margin-bottom: 14px; }
 
-        /* Trigger button — mirrors ReasoningTrigger */
-        .reasoning-trigger {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: transparent; border: none; padding: 4px 0;
-            color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;
-            font-family: inherit; cursor: pointer;
-            transition: color 0.2s ease; user-select: none;
+        /* Container — wraps one or more steps */
+        .cot-container { margin-bottom: 14px; }
+
+        /* Step — one collapsible reasoning block */
+        .cot-step { position: relative; }
+
+        /* Short connector line drawn BELOW the step (hidden on last step) */
+        .cot-connector {
+            display: flex; justify-content: flex-start; height: 16px;
         }
-        .reasoning-trigger:hover { color: var(--text-primary); }
+        .cot-connector::after {
+            content: ''; display: block;
+            width: 1px; height: 100%;
+            background: rgba(255,79,0,0.25);
+            margin-left: 7px;
+        }
+        .cot-step.cot-last > .cot-connector { display: none; }
 
-        /* Animated "Thinking..." dots while isStreaming=true */
-        .reasoning-trigger.streaming .reasoning-label::after {
+        /* ── Trigger button ── */
+        .cot-trigger {
+            display: flex; align-items: center; gap: 6px;
+            justify-content: flex-start;
+            background: transparent; border: none; padding: 4px 0;
+            cursor: pointer; font-family: inherit; font-size: 0.85rem;
+            color: var(--text-secondary); transition: color 0.2s ease;
+            text-align: left; width: 100%; user-select: none;
+        }
+        .cot-trigger:hover { color: var(--text-primary); }
+
+        /* Left icon with hover-swap to chevron */
+        .cot-icon-wrap {
+            position: relative; display: inline-flex;
+            width: 16px; height: 16px;
+            align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .cot-icon-main  { transition: opacity 0.15s ease; }
+        .cot-trigger:hover .cot-icon-main { opacity: 0; }
+        .cot-icon-chevron {
+            position: absolute; opacity: 0;
+            transition: opacity 0.15s ease, transform 0.2s ease;
+        }
+        .cot-trigger:hover .cot-icon-chevron { opacity: 1; }
+        .cot-icon-chevron.open { transform: rotate(180deg); }
+
+        /* Animated "Thinking…" dots while streaming */
+        .cot-label { font-size: 0.85rem; font-weight: 500; }
+        .cot-trigger.streaming .cot-label::after {
             content: '';
             animation: thinking-dots 1.4s steps(4, end) infinite;
         }
@@ -645,32 +679,105 @@
             100% { content: ''; }
         }
 
-        /* Chevron icon — rotates when open (mirrors ReasoningTrigger rotate-180) */
+        /* ── Collapsible content ── */
+        .cot-content {
+            max-height: 0; overflow: hidden;
+            transition: max-height 250ms ease-out;
+        }
+
+        /* Two-column grid: thin line | items (mirrors ChainOfThoughtContent grid) */
+        .cot-content-grid {
+            display: grid;
+            grid-template-columns: 16px 1fr;
+            column-gap: 16px;
+            padding: 8px 0 6px;
+        }
+
+        /* The vertical line that runs the full height of the content */
+        .cot-line {
+            width: 1px; justify-self: start;
+            background: rgba(255,79,0,0.2);
+            margin-left: 7px;
+            transition: background 0.3s ease;
+        }
+        .cot-line.streaming {
+            background: var(--accent);
+            animation: cot-line-pulse 2s ease-in-out infinite;
+        }
+        @keyframes cot-line-pulse {
+            0%, 100% { opacity: 0.55; }
+            50%       { opacity: 1; }
+        }
+
+        /* Bullet — default when no custom icon (mirrors Circle className) */
+        .cot-bullet {
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; background: currentColor; flex-shrink: 0;
+        }
+
+        /* Items column */
+        .cot-items { display: flex; flex-direction: column; gap: 8px; }
+
+        /* Individual item (mirrors ChainOfThoughtItem) */
+        .cot-item {
+            font-size: 0.84rem; color: var(--text-secondary); line-height: 1.65;
+        }
+
+        /* Prose inside cot items */
+        .cot-item h1,.cot-item h2,.cot-item h3,.cot-item h4 {
+            font-size: 0.875rem; margin: 8px 0 4px; font-weight: 600;
+        }
+        .cot-item p  { margin-bottom: 8px; }
+        .cot-item ul, .cot-item ol { margin: 6px 0; padding-left: 18px; }
+        .cot-item li { margin-bottom: 3px; }
+        .cot-item blockquote {
+            border-left: 2px solid var(--border); padding-left: 10px;
+            margin: 8px 0; color: var(--text-secondary);
+        }
+        .cot-item code {
+            background: var(--bg-hover); padding: 1px 5px;
+            border-radius: 4px; font-size: 0.8rem;
+        }
+        .cot-item pre {
+            background: #1e1e1e; padding: 10px 14px;
+            border-radius: 8px; overflow-x: auto; margin: 8px 0;
+        }
+        .cot-item pre code { background: transparent; padding: 0; }
+
+        /* ============================================
+           REASONING COMPONENT  (kept separate from ChainOfThought)
+           Vanilla-JS port of Reasoning / ReasoningTrigger /
+           ReasoningContent (@/components/prompt-kit/reasoning)
+           ============================================ */
+        .reasoning-block { margin-bottom: 14px; }
+
+        .reasoning-trigger {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: transparent; border: none; padding: 4px 0;
+            color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;
+            font-family: inherit; cursor: pointer;
+            transition: color 0.2s ease; user-select: none;
+        }
+        .reasoning-trigger:hover { color: var(--text-primary); }
+        .reasoning-trigger.streaming .reasoning-label::after {
+            content: '';
+            animation: thinking-dots 1.4s steps(4, end) infinite;
+        }
         .reasoning-chevron {
             display: flex; align-items: center; flex-shrink: 0; opacity: 0.7;
             transition: transform 0.2s ease;
         }
         .reasoning-chevron.open { transform: rotate(180deg); }
         .reasoning-chevron svg { width: 14px; height: 14px; }
-
-        /* Collapsible area — mirrors ReasoningContent transition-[max-height] */
         .reasoning-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 200ms ease-out;
-            margin-top: 4px;
+            max-height: 0; overflow: hidden;
+            transition: max-height 200ms ease-out; margin-top: 4px;
         }
-
-        /* Inner content — mirrors the ml-2 border-l-2 border-l-slate-700 className */
         .reasoning-inner {
-            margin-left: 8px;
-            border-left: 2px solid var(--border);
-            padding: 8px 12px 4px;
-            color: var(--text-secondary);
-            font-size: 0.84rem;
-            line-height: 1.65;
+            margin-left: 8px; border-left: 2px solid var(--border);
+            padding: 8px 12px 4px; color: var(--text-secondary);
+            font-size: 0.84rem; line-height: 1.65;
         }
-        /* Pulsing accent border while streaming */
         .reasoning-inner.streaming-inner {
             border-left-color: var(--accent);
             animation: reasoning-border-pulse 2s ease-in-out infinite;
@@ -679,28 +786,15 @@
             0%, 100% { border-left-color: var(--accent); }
             50%       { border-left-color: var(--border); }
         }
-
-        /* Prose styles inside reasoning panel */
-        .reasoning-inner h1, .reasoning-inner h2,
-        .reasoning-inner h3, .reasoning-inner h4 {
-            font-size: 0.875rem; margin: 8px 0 4px; font-weight: 600;
-        }
+        .reasoning-inner h1,.reasoning-inner h2,
+        .reasoning-inner h3,.reasoning-inner h4 { font-size:.875rem; margin:8px 0 4px; font-weight:600; }
         .reasoning-inner p  { margin-bottom: 8px; }
-        .reasoning-inner ul, .reasoning-inner ol { margin: 6px 0; padding-left: 18px; }
+        .reasoning-inner ul,.reasoning-inner ol { margin:6px 0; padding-left:18px; }
         .reasoning-inner li { margin-bottom: 3px; }
-        .reasoning-inner blockquote {
-            border-left: 2px solid var(--border); padding-left: 10px;
-            margin: 8px 0; color: var(--text-secondary);
-        }
-        .reasoning-inner code {
-            background: var(--bg-hover); padding: 1px 5px;
-            border-radius: 4px; font-size: 0.8rem;
-        }
-        .reasoning-inner pre {
-            background: #1e1e1e; padding: 10px 14px;
-            border-radius: 8px; overflow-x: auto; margin: 8px 0;
-        }
-        .reasoning-inner pre code { background: transparent; padding: 0; }
+        .reasoning-inner blockquote { border-left:2px solid var(--border); padding-left:10px; margin:8px 0; color:var(--text-secondary); }
+        .reasoning-inner code { background:var(--bg-hover); padding:1px 5px; border-radius:4px; font-size:.8rem; }
+        .reasoning-inner pre { background:#1e1e1e; padding:10px 14px; border-radius:8px; overflow-x:auto; margin:8px 0; }
+        .reasoning-inner pre code { background:transparent; padding:0; }
 
         /* ============================================
            TOOL COMPONENT
@@ -1637,6 +1731,164 @@
         }
 
         // ================================================================
+        // ChainOfThought — vanilla-JS port of
+        // @/components/prompt-kit/chain-of-thought
+        //
+        // Usage:
+        //   const cot = new ChainOfThought(parentEl);
+        //   const step = cot.addStep(iconSVG, 'Label', ['item1','item2']);
+        //   step.open();  step.setStreaming(false);  step.setLabel('Done');
+        // ================================================================
+        class ChainOfThoughtStepEl {
+            constructor(containerEl, icon, label, items = [], options = {}) {
+                this.containerEl = containerEl;
+                this.isOpen      = options.defaultOpen ?? false;
+                this.streaming   = options.streaming   ?? false;
+                this.chevronEl   = null;
+                this.labelEl     = null;
+                this.contentEl   = null;
+                this.itemsEl     = null;
+                this.lineEl      = null;
+                this.element     = document.createElement('div');
+                this.element.className = 'cot-step';
+                this._build(icon, label, items);
+                containerEl.appendChild(this.element);
+            }
+
+            _build(icon, label, items) {
+                const CHEVRON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+                // ── Trigger ──────────────────────────────────────────────
+                const trigger = document.createElement('button');
+                trigger.type = 'button';
+                trigger.className = 'cot-trigger' + (this.streaming ? ' streaming' : '');
+                trigger.addEventListener('click', () => this._toggle());
+
+                const iconWrap = document.createElement('span');
+                iconWrap.className = 'cot-icon-wrap';
+                if (icon) {
+                    iconWrap.innerHTML =
+                        `<span class="cot-icon-main">${icon}</span>` +
+                        `<span class="cot-icon-chevron">${CHEVRON}</span>`;
+                    this.chevronEl = iconWrap.querySelector('.cot-icon-chevron');
+                } else {
+                    // No icon → bullet + right-side chevron (mirrors no-leftIcon path)
+                    const bullet = document.createElement('span');
+                    bullet.className = 'cot-bullet';
+                    iconWrap.appendChild(bullet);
+                }
+
+                this.labelEl = document.createElement('span');
+                this.labelEl.className = 'cot-label';
+                this.labelEl.textContent = label;
+
+                trigger.appendChild(iconWrap);
+                trigger.appendChild(this.labelEl);
+
+                // ── Collapsible content ───────────────────────────────────
+                this.contentEl = document.createElement('div');
+                this.contentEl.className = 'cot-content';
+                this.contentEl.style.maxHeight = '0px';
+
+                const grid = document.createElement('div');
+                grid.className = 'cot-content-grid';
+
+                this.lineEl = document.createElement('div');
+                this.lineEl.className = 'cot-line' + (this.streaming ? ' streaming' : '');
+
+                this.itemsEl = document.createElement('div');
+                this.itemsEl.className = 'cot-items';
+
+                items.forEach(item => this._appendItem(item));
+
+                grid.appendChild(this.lineEl);
+                grid.appendChild(this.itemsEl);
+                this.contentEl.appendChild(grid);
+
+                // ── Connector line (between steps) ────────────────────────
+                const connector = document.createElement('div');
+                connector.className = 'cot-connector';
+
+                this.element.appendChild(trigger);
+                this.element.appendChild(this.contentEl);
+                this.element.appendChild(connector);
+
+                if (this.isOpen) setTimeout(() => this._setOpen(true), 10);
+            }
+
+            _appendItem(htmlOrText) {
+                const el = document.createElement('div');
+                el.className = 'cot-item';
+                el.innerHTML = typeof htmlOrText === 'string' ? htmlOrText : '';
+                this.itemsEl.appendChild(el);
+                return el;
+            }
+
+            /** Add an item to the open content and refresh height. */
+            addItem(htmlOrText) {
+                const el = this._appendItem(htmlOrText);
+                if (this.isOpen) this._refreshHeight();
+                return el;
+            }
+
+            setLabel(text)        { if (this.labelEl) this.labelEl.textContent = text; }
+            setLast(isLast)       { this.element.classList.toggle('cot-last', isLast); }
+            open()                { this._setOpen(true); }
+            close()               { this._setOpen(false); }
+
+            setStreaming(on) {
+                this.streaming = on;
+                const btn = this.element.querySelector('.cot-trigger');
+                btn?.classList.toggle('streaming', on);
+                this.lineEl?.classList.toggle('streaming', on);
+            }
+
+            _toggle()         { this._setOpen(!this.isOpen); }
+            _refreshHeight()  { if (this.contentEl) this.contentEl.style.maxHeight = this.contentEl.scrollHeight + 'px'; }
+
+            _setOpen(open) {
+                this.isOpen = open;
+                if (!this.contentEl) return;
+                if (open) {
+                    this._refreshHeight();
+                    this.chevronEl?.classList.add('open');
+                } else {
+                    this.contentEl.style.maxHeight = '0px';
+                    this.chevronEl?.classList.remove('open');
+                }
+            }
+        }
+
+        class ChainOfThought {
+            constructor(parentEl, insertBefore = null) {
+                this.parentEl = parentEl;
+                this.steps    = [];
+                this.element  = document.createElement('div');
+                this.element.className = 'cot-container';
+                parentEl.insertBefore(this.element, insertBefore ?? null);
+            }
+
+            /**
+             * Add a step to the chain.
+             * @param {string|null} icon     - SVG markup string, or null for bullet
+             * @param {string}      label    - Step header text
+             * @param {string[]}    items    - Array of HTML strings for the content items
+             * @param {object}      options  - { defaultOpen, streaming }
+             * @returns {ChainOfThoughtStepEl}
+             */
+            addStep(icon, label, items = [], options = {}) {
+                const step = new ChainOfThoughtStepEl(this.element, icon, label, items, options);
+                this.steps.push(step);
+                this._syncLast();
+                return step;
+            }
+
+            _syncLast() {
+                this.steps.forEach((s, i) => s.setLast(i === this.steps.length - 1));
+            }
+        }
+
+        // ================================================================
         // ReasoningRenderer — vanilla-JS port of the Reasoning /
         // ReasoningTrigger / ReasoningContent React module.
         //
@@ -1869,27 +2121,46 @@
                     this._setTypingShimmer('Searching the web\u2026');
                     const searchResult = await this.performWebSearch(message);
 
+                    // SVG icons for the ChainOfThought steps
+                    const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+                    const CHECK_ICON  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>';
+
                     if (searchResult) {
                         // Phase 2 — results ready, ask LLM to answer
                         this._setTypingShimmer('Generating response\u2026');
+
+                        // Build result items for ChainOfThought display
+                        const resultItems = searchResult.rawResults.slice(0, 6).map(r => {
+                            const title   = r.title   ? `<strong>${this.escapeHtml(r.title)}</strong>` : '';
+                            const url     = r.url     ? `<div style="font-size:0.73rem;opacity:0.5;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(r.url)}</div>` : '';
+                            const snippet = r.snippet ? `<div style="margin-top:3px">${this.escapeHtml(r.snippet)}</div>` : '';
+                            return title + url + snippet;
+                        });
+
                         const llmPrompt = `The user asked: "${message}"\n\nHere are relevant web search results:\n\n${searchResult.text}\n\nUsing the search results above as your primary source of information, provide a thorough and accurate answer to the user's question. Cite relevant details from the results. Today's date is ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
                         this.streamResponse(llmPrompt, {
-                            toolCard: {
-                                type: 'search_web',
-                                state: 'output-available',
-                                input: { query: message },
-                                output: { results: searchResult.rawResults },
+                            chainOfThought: {
+                                steps: [{
+                                    icon:        SEARCH_ICON,
+                                    label:       `Found ${resultItems.length} result${resultItems.length !== 1 ? 's' : ''} for "${this.escapeHtml(message)}"`,
+                                    items:       resultItems,
+                                    defaultOpen: false,
+                                    streaming:   false,
+                                }]
                             }
                         });
                     } else {
                         this.showToast('Search returned no results — answering from model knowledge', 'error');
                         this._setTypingShimmer('Generating response\u2026');
                         this.streamResponse(message, {
-                            toolCard: {
-                                type: 'search_web',
-                                state: 'output-error',
-                                input: { query: message },
-                                errorText: 'No results found from DuckDuckGo or Wikipedia',
+                            chainOfThought: {
+                                steps: [{
+                                    icon:        CHECK_ICON,
+                                    label:       `No web results found for "${this.escapeHtml(message)}"`,
+                                    items:       ['<span style="opacity:0.6">Falling back to model knowledge.</span>'],
+                                    defaultOpen: false,
+                                    streaming:   false,
+                                }]
                             }
                         });
                     }
@@ -2468,8 +2739,19 @@
                     // id="streamContent" from a prior message can't interfere.
                     const streamContent = messageEl.querySelector('#streamContent');
 
-                    // ── Tool card (search results, etc.) ──────────────────────
-                    // Inserted first so order is: [tool card] → [reasoning] → [response]
+                    // ── ChainOfThought (multi-step display, e.g. search) ───────
+                    // Order: [chain-of-thought?] → [tool card?] → [reasoning] → [response]
+                    if (options.chainOfThought) {
+                        const cot = new ChainOfThought(streamContent);
+                        (options.chainOfThought.steps || []).forEach(s => {
+                            cot.addStep(s.icon ?? null, s.label, s.items ?? [], {
+                                defaultOpen: s.defaultOpen ?? false,
+                                streaming:   s.streaming   ?? false,
+                            });
+                        });
+                    }
+
+                    // ── Tool card (fallback / other tool calls) ────────────────
                     if (options.toolCard) {
                         const card = new ToolCard(options.toolCard, false);
                         streamContent.appendChild(card.element);

@@ -2371,34 +2371,26 @@
 
                 await Promise.all(fetchPromises);
 
-                // ── Kimi models ──────────────────────────────────────────────
+                // ── Kimi models (hardcoded — /v1/models blocks browser requests) ─
                 const kimiEnabled = this.settings.toggles?.kimiEnabled;
                 const kimiApiKey  = this.settings.kimiApiKey;
                 if (kimiEnabled && kimiApiKey) {
-                    try {
-                        const kimiResp = await fetch('https://api.moonshot.ai/v1/models', {
-                            headers: { 'Authorization': `Bearer ${kimiApiKey}` }
+                    const KIMI_MODELS = [
+                        'kimi-k2.5',
+                        'kimi-latest',
+                        'moonshot-v1-8k',
+                        'moonshot-v1-32k',
+                        'moonshot-v1-128k',
+                    ];
+                    KIMI_MODELS.forEach(id => {
+                        this.models.push({
+                            name:         id,
+                            endpoint:     'https://api.moonshot.ai',
+                            endpointName: 'Kimi',
+                            provider:     'kimi'
                         });
-                        if (kimiResp.ok) {
-                            const kimiData = await kimiResp.json();
-                            const kimiModels = (kimiData.data || [])
-                                .filter(m => m.id)
-                                .map(m => ({
-                                    name:         m.id,
-                                    endpoint:     'https://api.moonshot.ai',
-                                    endpointName: 'Kimi',
-                                    provider:     'kimi'
-                                }));
-                            this.models.push(...kimiModels);
-                            anyConnected = true;
-                        } else {
-                            const errBody = await kimiResp.json().catch(() => ({}));
-                            this.showToast('Kimi: ' + (errBody.error?.message || `API error ${kimiResp.status}`), 'error');
-                        }
-                    } catch (e) {
-                        console.error('Error fetching Kimi models:', e);
-                        this.showToast('Could not reach Kimi API', 'error');
-                    }
+                    });
+                    anyConnected = true;
                 }
 
                 this.updateModelSelect();

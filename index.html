@@ -2444,6 +2444,9 @@
                 }
                 
                 let fullResponse = '';
+                // Declared here so catch/finally can always reach them
+                let streamRenderer = null;
+                let reasoningRenderer = null;
                 try {
                     const response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2461,7 +2464,9 @@
                     messageEl.innerHTML = `<div class="message-avatar"><div class="avatar small"><canvas width="80" height="80" id="streamAvatar"></canvas></div></div><div class="message-content"><div class="message-header"><span class="message-author">AI Assistant</span><span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div><div class="message-bubble" id="streamContent"></div></div>`;
                     container.appendChild(messageEl);
                     setTimeout(() => new AIAvatar('streamAvatar', 40), 0);
-                    const streamContent = document.getElementById('streamContent');
+                    // Use a direct reference — never look up by ID again, so a stale
+                    // id="streamContent" from a prior message can't interfere.
+                    const streamContent = messageEl.querySelector('#streamContent');
 
                     // ── Tool card (search results, etc.) ──────────────────────
                     // Inserted first so order is: [tool card] → [reasoning] → [response]
@@ -2474,8 +2479,7 @@
                     // responseContainer always sits last — reasoning inserts before it
                     const responseContainer = document.createElement('div');
                     streamContent.appendChild(responseContainer);
-                    let streamRenderer = new StreamRenderer(responseContainer);
-                    let reasoningRenderer = null;
+                    streamRenderer = new StreamRenderer(responseContainer);
 
                     // ── NDJSON line buffer ─────────────────────────────────────
                     // Ollama streams newline-delimited JSON, but a single read()
@@ -2540,7 +2544,9 @@
                         // "Error in input stream" — browser throws this when Ollama
                         // closes the TCP connection after finishing the stream (common
                         // on Firefox / some Chrome builds).  All content was already
-                        // received and rendered; just save the message silently.
+                        // received and rendered; finalize to proper HTML then save.
+                        if (reasoningRenderer) reasoningRenderer.finalize();
+                        if (streamRenderer) streamRenderer.finalize();
                         this.addMessage('ai', fullResponse);
                     } else {
                         console.error('Error streaming response:', error);
@@ -2552,8 +2558,12 @@
                     this.isGenerating = false;
                     this.abortController = null;
                     this.updatePromptSubmitButton(false);
+                    // Clean up both transient IDs so the next streamResponse call
+                    // doesn't accidentally get a stale element via getElementById.
                     const streamingMsg = document.getElementById('streamingMessage');
                     if (streamingMsg) streamingMsg.removeAttribute('id');
+                    const staleContent = document.getElementById('streamContent');
+                    if (staleContent) staleContent.removeAttribute('id');
                 }
             }
 

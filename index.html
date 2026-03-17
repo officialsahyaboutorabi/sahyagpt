@@ -1141,10 +1141,18 @@
                             <div class="toggle-switch" id="kimiEnabledToggle" onclick="chatApp.toggleSetting('kimiEnabled')"></div>
                         </div>
                         <div class="form-group" style="margin-top: 8px;">
-                            <label class="form-label">API Key <span>Your Moonshot AI key (sk-kimi-…)</span></label>
+                            <label class="form-label">API Key <span>Your Kimi coding API key (sk-kimi-…)</span></label>
                             <div style="display:flex;gap:8px;align-items:center;">
                                 <input type="password" class="form-input" id="kimiApiKey" placeholder="sk-kimi-…" autocomplete="off" style="flex:1;">
                                 <button type="button" onclick="chatApp.testKimiKey()" id="kimiTestBtn" style="flex-shrink:0;padding:10px 16px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--text-secondary);font-size:0.85rem;cursor:pointer;white-space:nowrap;transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">Test key</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Proxy URL <span>Required — Kimi blocks direct browser requests</span></label>
+                            <input type="text" class="form-input" id="kimiProxyUrl" placeholder="https://kimi-proxy.your-name.workers.dev" autocomplete="off">
+                            <div style="margin-top:6px;font-size:0.78rem;color:var(--text-secondary);line-height:1.5;">
+                                Deploy <strong>kimi-proxy-worker.js</strong> as a free Cloudflare Worker, then paste the worker URL above.
+                                See the file next to <code>index.html</code> for deploy instructions.
                             </div>
                         </div>
                     </div>
@@ -2811,13 +2819,19 @@
                             this.showToast('No Kimi API key — add it in Settings → General → Kimi Integration', 'error');
                             return;
                         }
+                        if (!this.settings.kimiProxyUrl) {
+                            this.hideTypingIndicator();
+                            this.showToast('Kimi requires a proxy URL — deploy kimi-proxy-worker.js and add the URL in Settings', 'error');
+                            return;
+                        }
                         // Build OpenAI-format messages array from history + current turn
                         const chatMessages = [
                             { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
                             ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
                             { role: 'user', content: userMessage }
                         ];
-                        response = await fetch('https://api.kimi.com/coding/v1/chat/completions', {
+                        const kimiEndpoint = `${this.settings.kimiProxyUrl}/chat/completions`;
+                        response = await fetch(kimiEndpoint, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.settings.kimiApiKey}` },
                             body: JSON.stringify({
@@ -3085,18 +3099,20 @@
             closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
 
             async testKimiKey() {
-                const key = document.getElementById('kimiApiKey').value.trim();
+                const key      = document.getElementById('kimiApiKey').value.trim();
+                const proxyUrl = document.getElementById('kimiProxyUrl').value.trim().replace(/\/$/, '');
                 if (!key) { this.showToast('Enter an API key first', 'error'); return; }
+                if (!proxyUrl) { this.showToast('Enter a Proxy URL first — the Kimi API blocks direct browser requests', 'error'); return; }
                 const btn = document.getElementById('kimiTestBtn');
                 const origText = btn.textContent;
                 btn.textContent = 'Testing…';
                 btn.disabled = true;
                 try {
-                    const res = await fetch('https://api.kimi.com/coding/v1/chat/completions', {
+                    const res = await fetch(`${proxyUrl}/chat/completions`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
                         body: JSON.stringify({
-                            model: 'moonshot-v1-8k',
+                            model: 'kimi-k2.5',
                             messages: [{ role: 'user', content: 'Hi' }],
                             max_tokens: 1,
                             stream: false
@@ -3134,7 +3150,8 @@
                 this.settings.fontSize = document.getElementById('fontSizeSelect').value;
                 this.settings.codeTheme = document.getElementById('codeThemeSelect').value;
                 this.settings.thinkingStyle = document.getElementById('thinkingStyleSelect').value;
-                this.settings.kimiApiKey = document.getElementById('kimiApiKey').value.trim();
+                this.settings.kimiApiKey   = document.getElementById('kimiApiKey').value.trim();
+                this.settings.kimiProxyUrl = document.getElementById('kimiProxyUrl').value.trim().replace(/\/$/, '');
                 if (!this.settings.toggles) this.settings.toggles = {};
                 ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'kimiEnabled'].forEach(key => {
                     const toggle = document.getElementById(`${key}Toggle`);
@@ -3176,7 +3193,7 @@
                             { url: 'http://localhost:11434', name: 'Local', enabled: true }
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
-                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '',
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '', kimiProxyUrl: 'https://kimi-proxy.sahya-bootsy.workers.dev',
                         toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false }
                     };
                     this.renderEndpoints();
@@ -3191,7 +3208,8 @@
                     document.getElementById('fontSizeSelect').value = this.settings.fontSize;
                     document.getElementById('codeThemeSelect').value = this.settings.codeTheme;
                     document.getElementById('thinkingStyleSelect').value = 'cot';
-                    document.getElementById('kimiApiKey').value = '';
+                    document.getElementById('kimiApiKey').value   = '';
+                    document.getElementById('kimiProxyUrl').value = '';
                     // Activate all standard toggles, then explicitly deactivate opt-in ones
                     document.querySelectorAll('.toggle-switch').forEach(toggle => toggle.classList.add('active'));
                     document.getElementById('kimiEnabledToggle').classList.remove('active');
@@ -3234,7 +3252,7 @@
                             { url: 'http://localhost:11434', name: 'Local', enabled: true }
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
-                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '',
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '', kimiProxyUrl: 'https://kimi-proxy.sahya-bootsy.workers.dev',
                         ...parsed,
                         // Always deep-merge toggles so new keys get their defaults
                         // even when loading settings saved before those keys existed.
@@ -3252,7 +3270,8 @@
                     document.getElementById('fontSizeSelect').value = this.settings.fontSize || 'medium';
                     document.getElementById('codeThemeSelect').value = this.settings.codeTheme || 'atom-one-dark';
                     document.getElementById('thinkingStyleSelect').value = this.settings.thinkingStyle || 'cot';
-                    document.getElementById('kimiApiKey').value = this.settings.kimiApiKey || '';
+                    document.getElementById('kimiApiKey').value   = this.settings.kimiApiKey   || '';
+                    document.getElementById('kimiProxyUrl').value = this.settings.kimiProxyUrl || '';
                     if (this.settings.toggles) {
                         Object.entries(this.settings.toggles).forEach(([key, value]) => {
                             const toggle = document.getElementById(`${key}Toggle`);

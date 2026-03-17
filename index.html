@@ -1142,7 +1142,10 @@
                         </div>
                         <div class="form-group" style="margin-top: 8px;">
                             <label class="form-label">API Key <span>Your Moonshot AI key (sk-kimi-…)</span></label>
-                            <input type="password" class="form-input" id="kimiApiKey" placeholder="sk-kimi-…" autocomplete="off">
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="password" class="form-input" id="kimiApiKey" placeholder="sk-kimi-…" autocomplete="off" style="flex:1;">
+                                <button type="button" onclick="chatApp.testKimiKey()" id="kimiTestBtn" style="flex-shrink:0;padding:10px 16px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--text-secondary);font-size:0.85rem;cursor:pointer;white-space:nowrap;transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">Test key</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2385,7 +2388,7 @@
                     KIMI_MODELS.forEach(id => {
                         this.models.push({
                             name:         id,
-                            endpoint:     'https://api.moonshot.ai',
+                            endpoint:     'https://api.kimi.com',
                             endpointName: 'Kimi',
                             provider:     'kimi'
                         });
@@ -2814,7 +2817,7 @@
                             ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
                             { role: 'user', content: userMessage }
                         ];
-                        response = await fetch('https://api.moonshot.ai/v1/chat/completions', {
+                        response = await fetch('https://api.kimi.com/coding/v1/chat/completions', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.settings.kimiApiKey}` },
                             body: JSON.stringify({
@@ -2828,7 +2831,11 @@
                         });
                         if (!response.ok) {
                             const errBody = await response.json().catch(() => ({}));
-                            throw new Error(errBody.error?.message || `Kimi API error: ${response.status}`);
+                            const msg = errBody.error?.message || `HTTP ${response.status}`;
+                            if (response.status === 401) {
+                                throw new Error(`Kimi authentication failed ("${msg}") — open Settings → General → Kimi Integration and click "Test key" to verify your API key`);
+                            }
+                            throw new Error(`Kimi API error: ${msg}`);
                         }
                     } else {
                         // ── Ollama ─────────────────────────────────────────────
@@ -3076,6 +3083,46 @@
             }
 
             closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+
+            async testKimiKey() {
+                const key = document.getElementById('kimiApiKey').value.trim();
+                if (!key) { this.showToast('Enter an API key first', 'error'); return; }
+                const btn = document.getElementById('kimiTestBtn');
+                const origText = btn.textContent;
+                btn.textContent = 'Testing…';
+                btn.disabled = true;
+                try {
+                    const res = await fetch('https://api.kimi.com/coding/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                        body: JSON.stringify({
+                            model: 'moonshot-v1-8k',
+                            messages: [{ role: 'user', content: 'Hi' }],
+                            max_tokens: 1,
+                            stream: false
+                        })
+                    });
+                    if (res.ok) {
+                        btn.textContent = '✓ Valid';
+                        btn.style.borderColor = '#4caf50';
+                        btn.style.color = '#4caf50';
+                        this.showToast('Kimi API key is valid!', 'success');
+                        setTimeout(() => { btn.textContent = origText; btn.style.borderColor = ''; btn.style.color = ''; btn.disabled = false; }, 3000);
+                    } else {
+                        const body = await res.json().catch(() => ({}));
+                        const msg = body.error?.message || `HTTP ${res.status}`;
+                        btn.textContent = '✗ Failed';
+                        btn.style.borderColor = 'var(--error)';
+                        btn.style.color = 'var(--error)';
+                        this.showToast(`Kimi key rejected: ${msg}`, 'error');
+                        setTimeout(() => { btn.textContent = origText; btn.style.borderColor = ''; btn.style.color = ''; btn.disabled = false; }, 3000);
+                    }
+                } catch (e) {
+                    btn.textContent = origText;
+                    btn.disabled = false;
+                    this.showToast('Could not reach Kimi API: ' + e.message, 'error');
+                }
+            }
 
             saveSettings() {
                 this.saveEndpointsFromUI();

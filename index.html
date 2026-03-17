@@ -1149,10 +1149,28 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Proxy URL <span>Your Cloudflare Worker URL</span></label>
-                            <input type="text" class="form-input" id="kimiProxyUrl" placeholder="https://kimi-proxy.your-name.workers.dev" autocomplete="off">
+                            <input type="text" class="form-input" id="kimiProxyUrl" placeholder="http://localhost:8787" autocomplete="off">
                             <div style="margin-top:6px;font-size:0.78rem;color:var(--text-secondary);line-height:1.5;">
-                                Deploy <strong>kimi-proxy-worker.js</strong> to Cloudflare Workers.
+                                Run <code>python3 kimi-local-proxy.py</code> locally, or deploy <strong>kimi-proxy-worker.js</strong> to Cloudflare Workers.
                             </div>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">LiteLLM Integration</div>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-info"><div class="toggle-label">Enable LiteLLM</div><div class="toggle-description">Add LiteLLM models to the model selector</div></div>
+                            <div class="toggle-switch" id="litellmEnabledToggle" onclick="chatApp.toggleSetting('litellmEnabled')"></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 8px;">
+                            <label class="form-label">API Key <span>Your LiteLLM API key</span></label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="password" class="form-input" id="litellmApiKey" placeholder="sk-…" autocomplete="off" style="flex:1;">
+                                <button type="button" onclick="chatApp.testLiteLLMKey()" id="litellmTestBtn" style="flex-shrink:0;padding:10px 16px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--text-secondary);font-size:0.85rem;cursor:pointer;white-space:nowrap;transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">Test key</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Endpoint URL <span>LiteLLM server URL</span></label>
+                            <input type="text" class="form-input" id="litellmEndpoint" placeholder="https://llm.nexiant.ai" autocomplete="off">
                         </div>
                     </div>
                 </div>
@@ -2403,6 +2421,44 @@
                     anyConnected = true;
                 }
 
+                // ── LiteLLM models ───────────────────────────────────────────
+                const litellmEnabled = this.settings.toggles?.litellmEnabled;
+                const litellmApiKey  = this.settings.litellmApiKey;
+                const litellmEndpoint = this.settings.litellmEndpoint || 'https://llm.nexiant.ai';
+                if (litellmEnabled && litellmApiKey) {
+                    // Try to fetch models from LiteLLM /models endpoint
+                    try {
+                        const res = await fetch(`${litellmEndpoint}/models`, {
+                            headers: { 'Authorization': `Bearer ${litellmApiKey}` }
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const models = data.data || [];
+                            models.forEach(m => {
+                                this.models.push({
+                                    name:         m.id,
+                                    endpoint:     litellmEndpoint,
+                                    endpointName: 'LiteLLM',
+                                    provider:     'litellm'
+                                });
+                            });
+                            anyConnected = true;
+                        }
+                    } catch (e) {
+                        // Fallback to common LiteLLM models
+                        const LITELLM_MODELS = ['gpt-4o', 'gpt-4o-mini', 'claude-3-opus', 'claude-3-sonnet'];
+                        LITELLM_MODELS.forEach(id => {
+                            this.models.push({
+                                name:         id,
+                                endpoint:     litellmEndpoint,
+                                endpointName: 'LiteLLM',
+                                provider:     'litellm'
+                            });
+                        });
+                        anyConnected = true;
+                    }
+                }
+
                 this.updateModelSelect();
                 this.updateStatus(anyConnected);
 
@@ -2850,6 +2906,39 @@
                             }
                             throw new Error(`Kimi API error: ${msg}`);
                         }
+                    } else if (this.currentModel.provider === 'litellm') {
+                        // ── LiteLLM ────────────────────────────────────────────
+                        if (!this.settings.litellmApiKey) {
+                            this.hideTypingIndicator();
+                            this.showToast('No LiteLLM API key — add it in Settings', 'error');
+                            return;
+                        }
+                        const litellmEndpoint = (this.settings.litellmEndpoint || 'https://llm.nexiant.ai').replace(/\/$/, '');
+                        const chatMessages = [
+                            { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
+                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
+                            { role: 'user', content: userMessage }
+                        ];
+                        response = await fetch(`${litellmEndpoint}/chat/completions`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.settings.litellmApiKey}` },
+                            body: JSON.stringify({
+                                model:       this.currentModel.name,
+                                messages:    chatMessages,
+                                stream:      true,
+                                temperature: parseFloat(this.settings.temperature),
+                                max_tokens:  this.settings.maxTokens
+                            }),
+                            signal
+                        });
+                        if (!response.ok) {
+                            const errBody = await response.json().catch(() => ({}));
+                            const msg = errBody.error?.message || `HTTP ${response.status}`;
+                            if (response.status === 401) {
+                                throw new Error(`LiteLLM authentication failed ("${msg}") — check your API key`);
+                            }
+                            throw new Error(`LiteLLM API error: ${msg}`);
+                        }
                     } else {
                         // ── Ollama ─────────────────────────────────────────────
                         response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
@@ -2901,9 +2990,9 @@
                     streamRenderer = new StreamRenderer(responseContainer);
 
                     // ── Unified streaming loop ─────────────────────────────────
-                    // Buffer handles both NDJSON (Ollama) and SSE (Kimi/OpenAI) since
+                    // Buffer handles both NDJSON (Ollama) and SSE (Kimi/LiteLLM/OpenAI) since
                     // both are newline-delimited and a read() chunk may span lines.
-                    const isKimi = this.currentModel.provider === 'kimi';
+                    const isKimi = this.currentModel.provider === 'kimi' || this.currentModel.provider === 'litellm';
                     let lineBuffer = '';
 
                     while (true) {
@@ -3139,6 +3228,48 @@
                 }
             }
 
+            async testLiteLLMKey() {
+                const key      = document.getElementById('litellmApiKey').value.trim();
+                const endpoint = document.getElementById('litellmEndpoint').value.trim().replace(/\/$/, '');
+                if (!key) { this.showToast('Enter an API key first', 'error'); return; }
+                if (!endpoint) { this.showToast('Enter an endpoint URL first', 'error'); return; }
+                const btn = document.getElementById('litellmTestBtn');
+                const origText = btn.textContent;
+                btn.textContent = 'Testing…';
+                btn.disabled = true;
+                try {
+                    const res = await fetch(`${endpoint}/chat/completions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages: [{ role: 'user', content: 'Hi' }],
+                            max_tokens: 1,
+                            stream: false
+                        })
+                    });
+                    if (res.ok) {
+                        btn.textContent = '✓ Valid';
+                        btn.style.borderColor = '#4caf50';
+                        btn.style.color = '#4caf50';
+                        this.showToast('LiteLLM API key is valid!', 'success');
+                        setTimeout(() => { btn.textContent = origText; btn.style.borderColor = ''; btn.style.color = ''; btn.disabled = false; }, 3000);
+                    } else {
+                        const body = await res.json().catch(() => ({}));
+                        const msg = body.error?.message || `HTTP ${res.status}`;
+                        btn.textContent = '✗ Failed';
+                        btn.style.borderColor = 'var(--error)';
+                        btn.style.color = 'var(--error)';
+                        this.showToast(`LiteLLM key rejected: ${msg}`, 'error');
+                        setTimeout(() => { btn.textContent = origText; btn.style.borderColor = ''; btn.style.color = ''; btn.disabled = false; }, 3000);
+                    }
+                } catch (e) {
+                    btn.textContent = origText;
+                    btn.disabled = false;
+                    this.showToast('Could not reach LiteLLM endpoint: ' + e.message, 'error');
+                }
+            }
+
             saveSettings() {
                 this.saveEndpointsFromUI();
                 this.settings.systemPrompt = document.getElementById('systemPrompt').value.trim();
@@ -3151,8 +3282,10 @@
                 this.settings.thinkingStyle = document.getElementById('thinkingStyleSelect').value;
                 this.settings.kimiApiKey   = document.getElementById('kimiApiKey').value.trim();
                 this.settings.kimiProxyUrl = document.getElementById('kimiProxyUrl').value.trim().replace(/\/$/, '');
+                this.settings.litellmApiKey = document.getElementById('litellmApiKey').value.trim();
+                this.settings.litellmEndpoint = document.getElementById('litellmEndpoint').value.trim().replace(/\/$/, '');
                 if (!this.settings.toggles) this.settings.toggles = {};
-                ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'kimiEnabled'].forEach(key => {
+                ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'kimiEnabled', 'litellmEnabled'].forEach(key => {
                     const toggle = document.getElementById(`${key}Toggle`);
                     if (toggle) this.settings.toggles[key] = toggle.classList.contains('active');
                 });
@@ -3192,8 +3325,8 @@
                             { url: 'http://localhost:11434', name: 'Local', enabled: true }
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
-                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '',
-                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false }
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '', kimiProxyUrl: 'http://localhost:8787', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
+                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false, litellmEnabled: false }
                     };
                     this.renderEndpoints();
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;
@@ -3209,9 +3342,12 @@
                     document.getElementById('thinkingStyleSelect').value = 'cot';
                     document.getElementById('kimiApiKey').value   = '';
                     document.getElementById('kimiProxyUrl').value = '';
+                    document.getElementById('litellmApiKey').value   = '';
+                    document.getElementById('litellmEndpoint').value = 'https://llm.nexiant.ai';
                     // Activate all standard toggles, then explicitly deactivate opt-in ones
                     document.querySelectorAll('.toggle-switch').forEach(toggle => toggle.classList.add('active'));
                     document.getElementById('kimiEnabledToggle').classList.remove('active');
+                    document.getElementById('litellmEnabledToggle').classList.remove('active');
                     localStorage.setItem('chatSettings', JSON.stringify(this.settings));
                     this.showToast('Settings reset to default', 'success');
                 }
@@ -3244,14 +3380,14 @@
                         ];
                         delete parsed.apiUrl;
                     }
-                    const defaultToggles = { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false };
+                    const defaultToggles = { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false, litellmEnabled: false };
                     this.settings = {
                         endpoints: [
                             { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
                             { url: 'http://localhost:11434', name: 'Local', enabled: true }
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
-                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '',
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '', kimiProxyUrl: 'http://localhost:8787', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
                         ...parsed,
                         // Always deep-merge toggles so new keys get their defaults
                         // even when loading settings saved before those keys existed.
@@ -3271,6 +3407,8 @@
                     document.getElementById('thinkingStyleSelect').value = this.settings.thinkingStyle || 'cot';
                     document.getElementById('kimiApiKey').value   = this.settings.kimiApiKey   || '';
                     document.getElementById('kimiProxyUrl').value = this.settings.kimiProxyUrl || '';
+                    document.getElementById('litellmApiKey').value   = this.settings.litellmApiKey   || '';
+                    document.getElementById('litellmEndpoint').value = this.settings.litellmEndpoint || 'https://llm.nexiant.ai';
                     if (this.settings.toggles) {
                         Object.entries(this.settings.toggles).forEach(([key, value]) => {
                             const toggle = document.getElementById(`${key}Toggle`);

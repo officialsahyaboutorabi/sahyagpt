@@ -2802,6 +2802,12 @@
                     // ── Fetch (provider-specific) ──────────────────────────────
                     let response;
                     if (this.currentModel.provider === 'kimi') {
+                        // Guard: ensure API key is present before hitting the network
+                        if (!this.settings.kimiApiKey) {
+                            this.hideTypingIndicator();
+                            this.showToast('No Kimi API key — add it in Settings → General → Kimi Integration', 'error');
+                            return;
+                        }
                         // Build OpenAI-format messages array from history + current turn
                         const chatMessages = [
                             { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
@@ -3174,14 +3180,18 @@
                         ];
                         delete parsed.apiUrl;
                     }
-                    this.settings = { 
+                    const defaultToggles = { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, kimiEnabled: false };
+                    this.settings = {
                         endpoints: [
                             { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
                             { url: 'http://localhost:11434', name: 'Local', enabled: true }
                         ],
-                        systemPrompt: 'You are a helpful AI assistant.', 
-                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true }, 
-                        ...parsed 
+                        systemPrompt: 'You are a helpful AI assistant.',
+                        temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', kimiApiKey: '',
+                        ...parsed,
+                        // Always deep-merge toggles so new keys get their defaults
+                        // even when loading settings saved before those keys existed.
+                        toggles: { ...defaultToggles, ...(parsed.toggles || {}) }
                     };
                     this.renderEndpoints();
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;

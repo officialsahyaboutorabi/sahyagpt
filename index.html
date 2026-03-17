@@ -2534,8 +2534,14 @@
                     this.addMessage('ai', fullResponse);
                 } catch (error) {
                     if (error.name === 'AbortError') {
-                        // Use the accumulated raw text (not animated HTML) for saving
+                        // User stopped generation — save whatever arrived
                         if (fullResponse.trim()) this.addMessage('ai', fullResponse);
+                    } else if (error instanceof TypeError && fullResponse.trim()) {
+                        // "Error in input stream" — browser throws this when Ollama
+                        // closes the TCP connection after finishing the stream (common
+                        // on Firefox / some Chrome builds).  All content was already
+                        // received and rendered; just save the message silently.
+                        this.addMessage('ai', fullResponse);
                     } else {
                         console.error('Error streaming response:', error);
                         this.hideTypingIndicator();

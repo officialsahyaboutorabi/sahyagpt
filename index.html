@@ -326,6 +326,9 @@
         .action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 2px; width: 32px; height: 32px; padding: 0; background: transparent; border: none; border-radius: 50%; color: var(--text-secondary); cursor: pointer; transition: all 0.1s ease; flex-shrink: 0; }
         .action-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+        .action-btn.continue-btn { color: var(--accent); animation: pulse-accent 2s infinite; }
+        .action-btn.continue-btn:hover { background: rgba(255, 79, 0, 0.15); color: var(--accent); }
+        @keyframes pulse-accent { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .message-avatar { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; position: relative; order: 1; }
         .message.user .message-avatar { background: linear-gradient(135deg, var(--accent), #ff8c00); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; }
         .message-content { flex: 1; max-width: calc(100% - 60px); order: 2; }
@@ -2996,6 +2999,226 @@
             likeMessage(index) { this.showToast('Thanks for your feedback!', 'success'); }
             dislikeMessage(index) { this.showToast('Thanks for your feedback!', 'success'); }
 
+            /**
+             * Check if an AI response appears to be incomplete.
+             * Detects unclosed code blocks, mid-sentence endings, etc.
+             */
+            isIncompleteResponse(content) {
+                if (!content || content.trim().length === 0) return false;
+                
+                const trimmed = content.trim();
+                
+                // Check for unclosed code blocks (odd number of triple backticks)
+                const codeBlockMatches = trimmed.match(/```/g);
+                if (codeBlockMatches && codeBlockMatches.length % 2 !== 0) {
+                    return true;
+                }
+                
+                // Check for unclosed inline code
+                const inlineCodeMatches = trimmed.match(/`/g);
+                if (inlineCodeMatches && inlineCodeMatches.length % 2 !== 0) {
+                    return true;
+                }
+                
+                // Check for incomplete sentences (doesn't end with proper punctuation)
+                // Look for endings that suggest the response was cut off
+                const sentenceEndings = /[.!?]\s*$/;
+                const listOrCodeEnding = /(\n\s*[-*+]\s*\w+\s*$|\n\s*\d+\.\s*\w+\s*$|`{3}\w*\s*$)/;
+                
+                // If it doesn't end with sentence punctuation and isn't a code block start
+                if (!sentenceEndings.test(trimmed) && !trimmed.endsWith('```')) {
+                    // Check if it looks like it was cut off mid-thought
+                    const lastLine = trimmed.split('\n').pop().trim();
+                    // Ends with a word but no punctuation
+                    if (/\w+$/.test(lastLine) && !/[.!?,;:]$/.test(lastLine)) {
+                        return true;
+                    }
+                    // Ends mid-list
+                    if (/^\s*[-*+]\s*\w+$/.test(lastLine) || /^\s*\d+\.\s*\w+$/.test(lastLine)) {
+                        return true;
+                    }
+                }
+                
+                // Check for unclosed HTML tags (basic check)
+                const openTags = (trimmed.match(/<[a-zA-Z][^>/]*>/g) || []).length;
+                const closeTags = (trimmed.match(/<\/[a-zA-Z][^>]*>/g) || []).length;
+                if (openTags > closeTags) {
+                    return true;
+                }
+                
+                // Check for "continuing" phrases at the end
+                const continuationPhrases = /\b(let me|i will|i'll|to be continued|more on this|in the next|coming up|stay tuned|we'll cover|next, we|additionally|furthermore|moreover|finally|in conclusion|to summarize|in summary)\s*$/i;
+                if (continuationPhrases.test(trimmed)) {
+                    return true;
+                }
+                
+                return false;
+            }
+
+            /**
+             * Continue an incomplete AI response by sending a continue prompt.
+             */
+            async continueResponse(index) {
+                const msg = this.messages[index];
+                if (!msg || msg.role !== 'ai') return;
+                
+                // Find the corresponding user message
+                let userIndex = -1;
+                for (let i = index - 1; i >= 0; i--) {
+                    if (this.messages[i].role === 'user') {
+                        userIndex = i;
+                        break;
+                    }
+                }
+                
+                if (userIndex === -1) {
+                    this.showToast('Cannot find original prompt', 'error');
+                    return;
+                }
+                
+                const originalUserMsg = this.messages[userIndex];
+                
+                // Show typing indicator and update UI
+                this.showTypingIndicator();
+                this.updatePromptSubmitButton(true);
+                this.isGenerating = true;
+                
+                try {
+                    // Build conversation context for continuation
+                    const conversationContext = [
+                        { role: 'user', content: originalUserMsg.content },
+                        { role: 'assistant', content: msg.content },
+                        { role: 'user', content: 'Please continue from where you left off.' }
+                    ];
+                    
+                    // Add images if present in original message
+                    let images = [];
+                    if (originalUserMsg.images && originalUserMsg.images.length > 0) {
+                        images = originalUserMsg.images;
+                    }
+                    
+                    this.showToast('Continuing response...', 'success');
+                    
+                    // Stream the continuation
+                    const continuation = await this.streamContinuation(conversationContext, images);
+                    
+                    // Append the continuation to the original message
+                    if (continuation && continuation.trim()) {
+                        msg.content = msg.content + '\n\n' + continuation.trim();
+                        this.saveMessages();
+                        this.renderMessages();
+                        this.showToast('Response continued', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error continuing response:', error);
+                    this.showToast('Error continuing: ' + error.message, 'error');
+                } finally {
+                    this.isGenerating = false;
+                    this.hideTypingIndicator();
+                    this.updatePromptSubmitButton(false);
+                }
+            }
+
+            /**
+             * Stream a continuation response given conversation context.
+             */
+            async streamContinuation(contextMessages, images = []) {
+                let fullResponse = '';
+                this.abortController = new AbortController();
+                const signal = this.abortController.signal;
+                
+                const isLiteLLM = this.currentModel && this.currentModel.provider === 'litellm';
+                
+                try {
+                    if (isLiteLLM) {
+                        // LiteLLM/OpenAI format
+                        const response = await fetch(this.settings.litellmEndpoint + '/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.settings.litellmApiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: this.currentModel.id,
+                                messages: contextMessages,
+                                stream: true
+                            }),
+                            signal
+                        });
+                        
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            
+                            const chunk = decoder.decode(value, { stream: true });
+                            const lines = chunk.split('\n').filter(line => line.trim());
+                            
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const data = line.slice(6);
+                                    if (data === '[DONE]') continue;
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        const content = parsed.choices?.[0]?.delta?.content;
+                                        if (content) {
+                                            fullResponse += content;
+                                        }
+                                    } catch (e) {}
+                                }
+                            }
+                        }
+                    } else {
+                        // Ollama format
+                        const formattedMessages = contextMessages.map(m => ({
+                            role: m.role === 'ai' ? 'assistant' : m.role,
+                            content: m.content
+                        }));
+                        
+                        const response = await fetch(this.settings.ollamaEndpoint + '/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: this.currentModel.id,
+                                messages: formattedMessages,
+                                stream: true
+                            }),
+                            signal
+                        });
+                        
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            
+                            const chunk = decoder.decode(value, { stream: true });
+                            const lines = chunk.split('\n').filter(line => line.trim());
+                            
+                            for (const line of lines) {
+                                try {
+                                    const parsed = JSON.parse(line);
+                                    if (parsed.message?.content) {
+                                        fullResponse += parsed.message.content;
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    }
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        throw error;
+                    }
+                } finally {
+                    this.abortController = null;
+                }
+                
+                return fullResponse;
+            }
+
             addMessage(role, content, images = []) {
                 const message = { role, content, timestamp: Date.now(), images };
                 this.messages.push(message);
@@ -3048,7 +3271,11 @@
                 }
                 
                 const userActions = msg.role === 'user' ? `<div class="message-actions"><button class="action-btn" onclick="chatApp.editMessage(${index})" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>` : '';
-                const aiActions = msg.role === 'ai' ? `<div class="message-actions"><button class="action-btn" onclick="chatApp.regenerateResponse(${index})" title="Regenerate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V15H4.31241M4.31241 15H9M4.31241 15C5.51251 18.073 8.50203 20.25 12 20.25C15.8582 20.25 19.0978 17.6016 20 14.0236M20 4V9H19.6876M19.6876 9H15M19.6876 9C18.4875 5.92698 15.498 3.75 12 3.75C8.14184 3.75 4.90224 6.3984 4 9.9764"></path></svg></button><button class="action-btn" onclick="chatApp.readAloud(${index})" title="Read aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg></button><button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button><button class="action-btn" onclick="chatApp.shareMessage(${index})" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button><button class="action-btn" onclick="chatApp.likeMessage(${index})" title="Like"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button><button class="action-btn" onclick="chatApp.dislikeMessage(${index})" title="Dislike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg></button></div>` : '';
+                
+                // Check if AI message is incomplete and add continue button
+                const isIncomplete = msg.role === 'ai' && this.isIncompleteResponse(msg.content);
+                const continueButton = isIncomplete ? `<button class="action-btn continue-btn" onclick="chatApp.continueResponse(${index})" title="Continue response"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg></button>` : '';
+                const aiActions = msg.role === 'ai' ? `<div class="message-actions">${continueButton}<button class="action-btn" onclick="chatApp.regenerateResponse(${index})" title="Regenerate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V15H4.31241M4.31241 15H9M4.31241 15C5.51251 18.073 8.50203 20.25 12 20.25C15.8582 20.25 19.0978 17.6016 20 14.0236M20 4V9H19.6876M19.6876 9H15M19.6876 9C18.4875 5.92698 15.498 3.75 12 3.75C8.14184 3.75 4.90224 6.3984 4 9.9764"></path></svg></button><button class="action-btn" onclick="chatApp.readAloud(${index})" title="Read aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg></button><button class="action-btn" onclick="chatApp.copyMessage(${index})" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button><button class="action-btn" onclick="chatApp.shareMessage(${index})" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button><button class="action-btn" onclick="chatApp.likeMessage(${index})" title="Like"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button><button class="action-btn" onclick="chatApp.dislikeMessage(${index})" title="Dislike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg></button></div>` : '';
                 // Build the message shell — for AI, leave the bubble empty so renderAIContent can populate it
                 div.innerHTML = `${avatar}<div class="message-content"><div class="message-header"><span class="message-author">${msg.role === 'user' ? 'You' : 'AI Assistant'}</span><span class="message-time">${time}</span></div><div class="message-bubble">${msg.role === 'user' ? userContentHtml : ''}</div></div>${msg.role === 'user' ? userActions : aiActions}`;
                 if (msg.role === 'ai') {

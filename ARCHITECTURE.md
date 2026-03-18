@@ -179,9 +179,15 @@ renderFileAttachments() (display chips)
     ↓
 On Submit: processAttachedFiles()
     ↓
-Read File Content (text or dataURL for images)
+├─ Text Files → Read as text → Include in message content
+├─ Images → Read as dataURL → Store in pendingImageFiles[]
+└─ Other → Reference by name/size
     ↓
-Include in Message
+addMessage('user', content, images)
+    ↓
+Render with inline image display (createMessageElement)
+    ↓
+Click image → openImagePreview() → Fullscreen modal
 ```
 
 ### 3. Settings Persistence Flow
@@ -264,6 +270,43 @@ Populate UI Elements
 - Template: `skills/SKILL_TEMPLATE.md`
 - Examples: `skills/ui-developer.md`
 - Downloadable from Skills sidebar section
+- 100+ skills from BB_Skills repository
+
+**Sidebar Sections**:
+- **Create Skills**: Template download and skill creation interface
+- **Skills Library**: Browse and download all available skills
+
+### 7. Image Preview Modal
+
+**Features**:
+- Click any image in chat to open fullscreen preview
+- Escape key to close
+- Click outside to close
+- Smooth fade animation
+- Image caption display
+
+**Implementation**:
+- CSS overlay with backdrop blur
+- Modal container with close button
+- Global functions: `openImagePreview()`, `closeImagePreview()`
+
+### 8. Enhanced Sidebar Navigation
+
+**Structure**:
+- **Chat History**: Collapsible section with navigation title
+- **Create Skills**: Template download and new skill creation
+- **Skills Library**: Browse all 100+ available skills
+- Each section has consistent nav-title styling
+
+**Nav Title Component**:
+```html
+<div class="nav-title">
+    <div class="title-label">
+        <svg class="nav-icon">...</svg>
+        <span>Section Name</span>
+    </div>
+</div>
+```
 
 ---
 
@@ -301,17 +344,25 @@ ChatApp (Main Controller)
 │   ├── messages[]
 │   ├── chats[]
 │   ├── settings{}
-│   └── attachedFiles[]
+│   ├── attachedFiles[]
+│   └── pendingImageFiles[]
 ├── UI Components
 │   ├── initPromptInput()
 │   ├── renderMessages()
-│   └── renderFileAttachments()
+│   ├── renderFileAttachments()
+│   └── createMessageElement()
 ├── Provider Integration
 │   ├── fetchModels()
 │   └── streamResponse()
+├── Skills System
+│   ├── viewSkills()
+│   ├── createNewSkill()
+│   ├── downloadSkill()
+│   └── downloadSkillTemplate()
 └── Utilities
     ├── formatFileSize()
     ├── escapeHtml()
+    ├── processAttachedFiles()
     └── save/loadSettings()
 
 StreamRenderer (Text Animation)

@@ -2,3 +2,4 @@ workingreleases_backup/
 .DS_Store
 index.html.backup.*
 index.html.backup.*
+*.backup.sidebar

@@ -3078,60 +3078,42 @@
                 
                 const originalUserMsg = this.messages[userIndex];
                 
-                // Show typing indicator and update UI
-                this.showTypingIndicator();
-                this.updatePromptSubmitButton(true);
+                // Update UI state
                 this.isGenerating = true;
+                this.updatePromptSubmitButton(true);
+                this.showToast('Continuing...', 'success');
                 
-                try {
-                    // Build conversation context for continuation
-                    const conversationContext = [
-                        { role: 'user', content: originalUserMsg.content },
-                        { role: 'assistant', content: msg.content },
-                        { role: 'user', content: 'Please continue from where you left off.' }
-                    ];
-                    
-                    // Add images if present in original message
-                    let images = [];
-                    if (originalUserMsg.images && originalUserMsg.images.length > 0) {
-                        images = originalUserMsg.images;
-                    }
-                    
-                    this.showToast('Continuing response...', 'success');
-                    
-                    // Stream the continuation
-                    const continuation = await this.streamContinuation(conversationContext, images);
-                    
-                    // Append the continuation to the original message
-                    if (continuation && continuation.trim()) {
-                        msg.content = msg.content + '\n\n' + continuation.trim();
-                        this.saveMessages();
-                        this.renderMessages();
-                        this.showToast('Response continued', 'success');
-                    }
-                } catch (error) {
-                    console.error('Error continuing response:', error);
-                    this.showToast('Error continuing: ' + error.message, 'error');
-                } finally {
+                // Get the message bubble element for live streaming
+                const messageEl = document.querySelector(`.message[data-index="${index}"]`);
+                const bubble = messageEl?.querySelector('.message-bubble');
+                if (!bubble) {
+                    this.showToast('Cannot find message element', 'error');
                     this.isGenerating = false;
-                    this.hideTypingIndicator();
                     this.updatePromptSubmitButton(false);
+                    return;
                 }
-            }
-
-            /**
-             * Stream a continuation response given conversation context.
-             */
-            async streamContinuation(contextMessages, images = []) {
-                let fullResponse = '';
+                
+                // Store original content to append to
+                const originalContent = msg.content;
+                let continuationContent = '';
+                
+                // Create a temporary renderer for the continuation
+                const tempDiv = document.createElement('div');
+                bubble.appendChild(tempDiv);
+                
                 this.abortController = new AbortController();
                 const signal = this.abortController.signal;
-                
                 const isLiteLLM = this.currentModel && this.currentModel.provider === 'litellm';
                 
                 try {
                     if (isLiteLLM) {
-                        // LiteLLM/OpenAI format
+                        // LiteLLM/OpenAI format - proper message structure
+                        const messages = [
+                            { role: 'user', content: originalUserMsg.content },
+                            { role: 'assistant', content: originalContent },
+                            { role: 'user', content: 'Continue from where you left off.' }
+                        ];
+                        
                         const response = await fetch(this.settings.litellmEndpoint + '/chat/completions', {
                             method: 'POST',
                             headers: {
@@ -3140,11 +3122,16 @@
                             },
                             body: JSON.stringify({
                                 model: this.currentModel.id,
-                                messages: contextMessages,
+                                messages: messages,
                                 stream: true
                             }),
                             signal
                         });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                        }
                         
                         const reader = response.body.getReader();
                         const decoder = new TextDecoder();
@@ -3164,7 +3151,10 @@
                                         const parsed = JSON.parse(data);
                                         const content = parsed.choices?.[0]?.delta?.content;
                                         if (content) {
-                                            fullResponse += content;
+                                            continuationContent += content;
+                                            // Update the message content live
+                                            msg.content = originalContent + continuationContent;
+                                            this.renderAIContent(bubble, msg.content);
                                         }
                                     } catch (e) {}
                                 }
@@ -3172,21 +3162,26 @@
                         }
                     } else {
                         // Ollama format
-                        const formattedMessages = contextMessages.map(m => ({
-                            role: m.role === 'ai' ? 'assistant' : m.role,
-                            content: m.content
-                        }));
+                        const messages = [
+                            { role: 'user', content: originalUserMsg.content },
+                            { role: 'assistant', content: originalContent },
+                            { role: 'user', content: 'Continue from where you left off.' }
+                        ];
                         
                         const response = await fetch(this.settings.ollamaEndpoint + '/api/chat', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 model: this.currentModel.id,
-                                messages: formattedMessages,
+                                messages: messages,
                                 stream: true
                             }),
                             signal
                         });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
                         
                         const reader = response.body.getReader();
                         const decoder = new TextDecoder();
@@ -3202,21 +3197,37 @@
                                 try {
                                     const parsed = JSON.parse(line);
                                     if (parsed.message?.content) {
-                                        fullResponse += parsed.message.content;
+                                        continuationContent += parsed.message.content;
+                                        // Update the message content live
+                                        msg.content = originalContent + continuationContent;
+                                        this.renderAIContent(bubble, msg.content);
                                     }
                                 } catch (e) {}
                             }
                         }
                     }
+                    
+                    // Final save after completion
+                    this.saveMessages();
+                    this.renderMessages(); // Re-render to update the continue button visibility
+                    this.showToast('Response continued', 'success');
+                    
                 } catch (error) {
-                    if (error.name !== 'AbortError') {
-                        throw error;
+                    if (error.name === 'AbortError') {
+                        // User cancelled - save what we have
+                        if (continuationContent.trim()) {
+                            this.saveMessages();
+                            this.renderMessages();
+                        }
+                    } else {
+                        console.error('Error continuing response:', error);
+                        this.showToast('Error: ' + error.message, 'error');
                     }
                 } finally {
+                    this.isGenerating = false;
                     this.abortController = null;
+                    this.updatePromptSubmitButton(false);
                 }
-                
-                return fullResponse;
             }
 
             addMessage(role, content, images = []) {

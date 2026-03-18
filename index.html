@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>SahyaGPT - Ollama Interface</title>
+    <!-- Prevent FOUC (Flash of Unstyled Content) -->
+    <style>
+        /* Critical CSS - Sidebar immediately visible */
+        .sidebar { opacity: 1 !important; visibility: visible !important; display: flex !important; }
+        .sidebar-content { display: flex !important; flex-direction: column !important; }
+        .nav-section, .sidebar-section { display: block !important; }
+        .new-chat-btn { display: flex !important; }
+    </style>
     <!-- SB Sans Text Font -->
     <style>
         @font-face {
@@ -1182,6 +1193,8 @@
 <base target="_blank">
 </head>
 <body>
+    <!-- Immediate visibility script - prevents sidebar flash on load -->
+    <script>(function(){var s=document.getElementById('sidebar');if(s){s.style.opacity='1';s.style.visibility='visible';s.style.display='flex';}})();</script>
     <div id="starfield-container"><canvas id="starfield-canvas"></canvas></div>
     <div class="noise-overlay"></div>
     <div class="app-container">
@@ -4394,6 +4407,20 @@ When the user requests this skill:
             if (e.key === 'Escape') {
                 closeImagePreview();
             }
+        });
+        
+        // Ensure sidebar remains visible after all scripts load
+        window.addEventListener('load', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.style.opacity = '1';
+                sidebar.style.visibility = 'visible';
+                sidebar.style.display = 'flex';
+            }
+            // Ensure all sidebar sections are visible
+            document.querySelectorAll('.nav-section, .sidebar-section').forEach(el => {
+                el.style.display = 'block';
+            });
         });
     </script>
 </body>

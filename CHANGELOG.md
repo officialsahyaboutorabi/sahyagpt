@@ -51,6 +51,14 @@ All notable changes to the SahyaGPT project will be documented in this file.
 - **XSS Prevention** - All user content properly escaped
 - **Content Security** - Images displayed as data URLs (no external requests)
 
+### Fixed
+
+#### GitHub Pages Build
+- **Added `.nojekyll` file** - Disables Jekyll processing to prevent build failures
+- **Restored all 38 skills** - BB_Skills repository files in folder structure
+- **Skills folder structure** - Each skill has its own folder with `SKILL.md` inside
+- **Static file serving** - GitHub Pages now serves skills as static assets
+
 ## [1.0.0] - 2025-03-18
 
 ### Initial Release
@@ -89,3 +97,4 @@ The following files are essential and must not be removed:
 
 - **CNAME** - Custom domain configuration for GitHub Pages
 - **404.html** - Custom error page for the application
+- **.nojekyll** - Disables Jekyll processing (required for skills to work)

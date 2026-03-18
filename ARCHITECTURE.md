@@ -270,7 +270,7 @@ Populate UI Elements
 - Template: `skills/SKILL_TEMPLATE.md`
 - Examples: `skills/ui-developer.md`
 - Downloadable from Skills sidebar section
-- 100+ skills from BB_Skills repository
+- 38 skills from BB_Skills repository
 
 **Sidebar Sections**:
 - **Create Skills**: Template download and skill creation interface
@@ -547,11 +547,61 @@ The `streamResponse()` method normalizes both formats into tokens that are fed t
 
 ---
 
+## GitHub Pages Deployment
+
+### Configuration
+
+The project is deployed to GitHub Pages with the following setup:
+
+**Repository Settings:**
+- Source: GitHub Actions
+- Custom Domain: `sbgpt.qzz.io` (via CNAME file)
+
+### Critical Files
+
+**.nojekyll**
+- Empty file that disables Jekyll processing
+- Required because the `skills/` folder contains markdown files that would cause Jekyll build failures
+- Without this file, GitHub Pages would attempt to process all skill files and fail
+
+**CNAME**
+- Contains custom domain: `sbgpt.qzz.io`
+- Required for custom domain to work on GitHub Pages
+
+**404.html**
+- Custom error page for the SPA
+- GitHub Pages serves this for all unmatched routes
+
+### Skills Storage
+
+Skills are stored in the `skills/` directory with the following structure:
+
+```
+skills/
+├── SKILL_TEMPLATE.md          # Base template for new skills
+├── brainstorming/
+│   └── SKILL.md               # Skill definition
+├── code-review/
+│   └── SKILL.md
+├── ... (38 total skills)
+└── superpowers/
+    ├── brainstorming/
+    │   └── SKILL.md
+    └── ...
+```
+
+**Access Pattern:**
+- Skills are fetched as static files via `fetch()` or download links
+- Each skill folder contains a `SKILL.md` file
+- The `downloadSkill()` method constructs paths like `skills/{folder}/SKILL.md`
+
+---
+
 ## License
 
 MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.0*
+*Architecture Documentation v1.1*
 *Last Updated: March 2026*

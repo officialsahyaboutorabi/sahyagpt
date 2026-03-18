@@ -59,6 +59,16 @@ All notable changes to the SahyaGPT project will be documented in this file.
 - **Skills folder structure** - Each skill has its own folder with `SKILL.md` inside
 - **Static file serving** - GitHub Pages now serves skills as static assets
 
+### Added
+
+#### Sidebar Button Styling
+- **`.download-skills-template-btn`** - Custom styling for Download Template button
+- **`.create-new-skills-btn`** - Custom styling for Create New Skill button  
+- **`.view-skills-btn`** - Custom styling for View Skills button
+- Consistent glassmorphism design with backdrop blur
+- Hover effects with background transition
+- Proper spacing and alignment for sidebar buttons
+
 ## [1.0.0] - 2025-03-18
 
 ### Initial Release

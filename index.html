@@ -453,6 +453,77 @@
         .message-bubble th { background: var(--bg-hover); font-weight: 600; }
         .loading-shimmer { background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* ============================================
+           Sidebar Button Fixes
+           ============================================ */
+        .download-skills-template-btn {
+            margin: 16px 20px;
+            padding: 12px 16px;
+            background: transparent;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: "SB Sans Text";
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .download-skills-template-btn:hover {
+            background: rgba(23, 23, 23, 0.9);
+            border-color: var(--border);
+        }
+
+.create-new-skills-btn {
+  margin: 16px 20px;
+  padding: 12px 16px;
+  background: transparent;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: "SB Sans Text";
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.create-new-skills-btn:hover {
+  background: rgba(23, 23, 23, 0.9);
+  border-color: var(--border);
+}
+
+.view-skills-btn {
+  margin: 16px 20px;
+  padding: 12px 16px;
+  background: transparent;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: "SB Sans Text";
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.view-skills-btn:hover {
+  background: rgba(23, 23, 23, 0.9);
+  border-color: var(--border);
+}
 
         /* ============================================
            PROMPT SUGGESTIONS STYLES
@@ -1125,11 +1196,11 @@
                         </div>
                     </div>
                     <div class="skills-list" id="createSkillsList">
-                        <button class="new-chat-btn" style="margin: 0 0 8px 0;" onclick="chatApp.downloadSkillTemplate()">
+                        <button class="download-skills-template-btn" onclick="chatApp.downloadSkillTemplate()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             Download Template
                         </button>
-                        <button class="new-chat-btn" style="margin: 0;" onclick="chatApp.createNewSkill()">
+                        <button class="create-new-skills-btn" onclick="chatApp.createNewSkill()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             Create New Skill
                         </button>
@@ -1146,7 +1217,7 @@
                         </div>
                     </div>
                     <div class="skills-list" id="skillsList">
-                        <button class="new-chat-btn" style="margin: 0;" onclick="chatApp.viewSkills()">
+                        <button class="view-skills-btn" onclick="chatApp.viewSkills()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                             View Skills (38)
                         </button>

@@ -2,6 +2,44 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.2.0] - 2026-03-16
+
+### Added
+
+#### Imagine Page - AI Image/Video Generation
+- **New page: `imagine.html`** - Dedicated interface for AI image and video generation
+- **HuggingFace Integration** - Uses HuggingFace Inference API for generation
+- **Dual Mode Toggle** - Switch between Image and Video generation modes
+  - Animated sliding orange background for mode indicator
+  - Min-width buttons to prevent text reflow during animation
+- **Aspect Ratio Selector** - Grid of common ratios (2:3, 3:2, 1:1, 9:16, 16:9)
+- **Drag & Drop Upload** - For video generation (image-to-video)
+- **Results Gallery** - Grid display of generated images/videos
+- **Action Buttons** - Save, upscale, and regenerate for each result
+- **API Settings Modal** - HuggingFace API key configuration
+
+#### UI/UX Improvements
+- **Synchronized Navigation** - Sidebar structure identical across index.html and imagine.html
+- **Same-Tab Navigation** - Removed `<base target="_blank">` for internal navigation
+- **Cache Control** - Meta tags to prevent caching issues during updates
+
+### Fixed
+
+#### Mode Toggle Slider
+- **Slider positioning** - Fixed slider going outside container bounds when selecting "Video"
+- **Used `left` property** instead of `transform: translateX()` for predictable positioning
+- **Maintained 4px padding** - Slider now stays properly within toggle container padding
+
+#### GitHub Pages
+- **`.nojekyll` file** - Prevents Jekyll processing (fixes skills/ folder build issues)
+
+### Changed
+
+- **ARCHITECTURE.md** - Added ImagineApp class documentation, Imagine page architecture
+- **Infinite scroll fix** - Constrained `.main-content` to `height: 100vh` with proper overflow
+
+---
+
 ## [1.1.0] - 2025-03-18
 
 ### Added

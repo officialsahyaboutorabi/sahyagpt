@@ -25,11 +25,15 @@ SahyaGPT is a modern, feature-rich chat interface for AI language models. It's b
 
 ```
 sahyagpt/
-├── index.html              # Main application file (SPA)
+├── index.html              # Main chat application (SPA)
+├── imagine.html           # AI Image/Video generation interface
 ├── 404.html               # Custom 404 error page
 ├── fonts.css              # Custom font definitions
 ├── sw.js                  # Service Worker (PWA support)
 ├── ARCHITECTURE.md        # This documentation file
+├── CHANGELOG.md           # Version history
+├── .nojekyll              # Disables Jekyll processing for GitHub Pages
+├── CNAME                  # Custom domain configuration
 ├── skills/                # Skill templates and documentation
 │   ├── SKILL_TEMPLATE.md  # Template for creating new skills
 │   └── ui-developer.md    # UI Developer skill example
@@ -308,6 +312,47 @@ Populate UI Elements
 </div>
 ```
 
+### 9. Imagine Page (Image/Video Generation)
+
+**File**: `imagine.html`
+
+A dedicated interface for AI-generated images and videos using HuggingFace Inference API.
+
+**Features**:
+- **Mode Toggle**: Switch between Image and Video generation
+  - Animated slider with orange background
+  - Smooth CSS transitions (cubic-bezier easing)
+  - Equal 4px padding maintained on both sides
+- **Aspect Ratio Grid**: Visual selector for output dimensions
+  - 2:3, 3:2, 1:1, 9:16, 16:9 presets
+  - Maps to specific pixel dimensions (512x768, etc.)
+- **Image Upload**: Drag & drop zone for video generation source
+  - File validation (images only)
+  - Preview thumbnail display
+- **Results Gallery**: Grid of generated content
+  - Image/video cards with metadata
+  - Action buttons: Download, Upscale, Redo
+- **API Integration**: HuggingFace Inference API
+  - Text-to-image (e.g., FLUX.1-dev)
+  - Image-to-video (e.g., WAN 2.1)
+  - 4x upscaling support
+
+**Architecture**:
+```
+imagine.html (SPA)
+├── Starfield Background (shared with index.html)
+├── Sidebar Navigation (identical structure to index.html)
+├── Header
+│   ├── Mode Toggle (Image/Video)
+│   └── Status Indicator
+├── Main Content
+│   ├── Upload Section (video mode only)
+│   ├── Prompt Input
+│   ├── Aspect Ratio Selector
+│   └── Generate Button
+└── Results Gallery
+```
+
 ---
 
 ## Technology Stack
@@ -388,6 +433,27 @@ AIAvatar (Canvas Animation)
 ChainOfThought (Multi-step Display)
 ├── addStep()
 └── ChainOfThoughtStepEl class
+
+ImagineApp (Image/Video Generation Controller)
+├── State Management
+│   ├── currentMode ('image' | 'video')
+│   ├── selectedRatio ('2:3' | '3:2' | '1:1' | '9:16' | '16:9')
+│   ├── uploadedImage (File | null)
+│   ├── results[]
+│   └── isGenerating (boolean)
+├── UI Components
+│   ├── updateModeSlider() - Animated mode toggle
+│   ├── selectAspectRatio() - Ratio grid selection
+│   ├── handleImageUpload() - Drag & drop handling
+│   └── renderResults() - Gallery display
+├── API Integration
+│   ├── generateImage() - HuggingFace text-to-image
+│   ├── generateVideo() - HuggingFace image-to-video
+│   └── upscaleImage() - 4x upscaling
+└── Utilities
+    ├── saveSettings() - API key persistence
+    ├── downloadImage() - Save to disk
+    └── formatFileSize()
 ```
 
 ---
@@ -483,7 +549,8 @@ The `streamResponse()` method normalizes both formats into tokens that are fed t
 3. `ToolCard` - Tool result display
 4. `ChainOfThought` - Multi-step reasoning
 5. `ReasoningRenderer` - Collapsible thinking blocks
-6. `ChatApp` - Main application controller
+6. `ChatApp` - Main chat application controller
+7. `ImagineApp` - Image/Video generation controller (imagine.html)
 
 **Helper Functions**:
 - `parseThinking()` - Extracts `<think>` blocks
@@ -603,5 +670,5 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.1*
-*Last Updated: March 2026*
+*Architecture Documentation v1.2*
+*Last Updated: March 16, 2026*

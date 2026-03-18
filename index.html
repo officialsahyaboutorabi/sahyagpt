@@ -3452,7 +3452,7 @@ When the user requests this skill:
             }
 
             createNewSkill() {
-                const modalHtml = \`
+                const modalHtml = `
                     <div class="modal-overlay active" id="createSkillModal" onclick="if(event.target.id === 'createSkillModal') chatApp.closeCreateSkillModal()">
                         <div class="modal" style="max-width: 700px; max-height: 85vh;">
                             <div class="modal-header">
@@ -3621,7 +3621,7 @@ When the user requests this skill:
                             </div>
                         </div>
                     </div>
-                \`;
+                `;
                 
                 const modalDiv = document.createElement('div');
                 modalDiv.innerHTML = modalHtml;
@@ -3640,21 +3640,21 @@ When the user requests this skill:
                 let content = document.getElementById('newSkillContent').value;
                 
                 // Update metadata in content
-                content = content.replace(/name: .*/, \`name: \${name}\`);
-                content = content.replace(/description: .*/, \`description: \${description || 'Brief description of what this skill does'}\`);
-                content = content.replace(/author: .*/, \`author: \${author}\`);
+                content = content.replace(/name: .*/, `name: ${name}`);
+                content = content.replace(/description: .*/, `description: ${description || 'Brief description of what this skill does'}`);
+                content = content.replace(/author: .*/, `author: ${author}`);
                 
                 const blob = new Blob([content], { type: 'text/markdown' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = \`\${name}-SKILL.md\`;
+                link.download = `${name}-SKILL.md`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
                 
-                this.showToast(\`Skill '\${name}' downloaded!\`, 'success');
+                this.showToast(`Skill '${name}' downloaded!`, 'success');
                 this.closeCreateSkillModal();
             }
 
@@ -4190,7 +4190,7 @@ When the user requests this skill:
                 modal = document.createElement('div');
                 modal.id = 'imagePreviewModal';
                 modal.className = 'image-preview-overlay';
-                modal.innerHTML = \`
+                modal.innerHTML = `
                     <div class="image-preview-container">
                         <button class="image-preview-close" onclick="closeImagePreview()">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -4198,7 +4198,7 @@ When the user requests this skill:
                         <img src="" alt="" class="image-preview-img" id="imagePreviewImg">
                         <div class="image-preview-caption" id="imagePreviewCaption"></div>
                     </div>
-                \`;
+                `;
                 modal.onclick = function(e) {
                     if (e.target === modal) closeImagePreview();
                 };

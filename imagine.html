@@ -241,10 +241,11 @@
         .mode-slider {
             position: absolute;
             top: 4px;
+            left: 4px;
             bottom: 4px;
             background: var(--accent);
             border-radius: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
             z-index: 0;
         }
         .mode-btn {
@@ -1318,15 +1319,20 @@
                 const activeBtn = document.querySelector('.mode-btn.active');
                 if (!slider || !activeBtn) return;
                 
-                const toggle = slider.parentElement;
-                const toggleRect = toggle.getBoundingClientRect();
-                const btnRect = activeBtn.getBoundingClientRect();
+                // Get position relative to toggle container
+                const left = activeBtn.offsetLeft;
+                const width = activeBtn.offsetWidth;
                 
-                const left = btnRect.left - toggleRect.left;
-                const width = btnRect.width;
-                
-                slider.style.transform = `translateX(${left}px)`;
+                // Use left property instead of transform for more predictable positioning
+                slider.style.left = `${left}px`;
                 slider.style.width = `${width}px`;
+            }
+            
+            initModeSlider() {
+                // Delay to ensure DOM is fully rendered
+                requestAnimationFrame(() => {
+                    this.updateModeSlider();
+                });
             }
             
             getAspectRatioDimensions(ratio) {

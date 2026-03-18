@@ -236,6 +236,16 @@
             border-radius: 12px;
             padding: 4px;
             gap: 4px;
+            position: relative;
+        }
+        .mode-slider {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            background: var(--accent);
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            z-index: 0;
         }
         .mode-btn {
             padding: 8px 20px;
@@ -246,15 +256,16 @@
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: color 0.2s ease;
             font-family: inherit;
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
+            z-index: 1;
         }
         .mode-btn:hover { color: var(--text-primary); }
         .mode-btn.active {
-            background: var(--accent);
             color: white;
         }
         .mode-btn svg { width: 16px; height: 16px; }
@@ -922,6 +933,7 @@
                 </div>
                 
                 <div class="mode-toggle">
+                    <div class="mode-slider" id="modeSlider"></div>
                     <button class="mode-btn active" data-mode="image" onclick="imagineApp.switchMode('image')">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -1232,6 +1244,9 @@
                 this.loadSettings();
                 this.renderResults();
                 this.updateHistory();
+                
+                // Initialize mode slider position after a short delay to ensure DOM is ready
+                setTimeout(() => this.updateModeSlider(), 50);
             }
             
             setupEventListeners() {
@@ -1269,6 +1284,9 @@
                     btn.classList.toggle('active', btn.dataset.mode === mode);
                 });
                 
+                // Move slider to active button
+                this.updateModeSlider();
+                
                 const uploadSection = document.getElementById('uploadSection');
                 if (uploadSection) {
                     uploadSection.style.display = mode === 'video' ? 'block' : 'none';
@@ -1291,6 +1309,22 @@
                 document.querySelectorAll('.aspect-option').forEach(opt => {
                     opt.classList.toggle('active', opt.dataset.ratio === ratio);
                 });
+            }
+            
+            updateModeSlider() {
+                const slider = document.getElementById('modeSlider');
+                const activeBtn = document.querySelector('.mode-btn.active');
+                if (!slider || !activeBtn) return;
+                
+                const toggle = slider.parentElement;
+                const toggleRect = toggle.getBoundingClientRect();
+                const btnRect = activeBtn.getBoundingClientRect();
+                
+                const left = btnRect.left - toggleRect.left;
+                const width = btnRect.width;
+                
+                slider.style.transform = `translateX(${left}px)`;
+                slider.style.width = `${width}px`;
             }
             
             getAspectRatioDimensions(ratio) {
@@ -1809,6 +1843,17 @@
         } else {
             imagineApp = new ImagineApp();
         }
+        
+        // Update mode slider on window resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (typeof imagineApp !== 'undefined' && imagineApp.updateModeSlider) {
+                    imagineApp.updateModeSlider();
+                }
+            }, 100);
+        });
         
         // Ensure sidebar remains visible after all scripts load
         window.addEventListener('load', function() {

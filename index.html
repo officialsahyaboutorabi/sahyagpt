@@ -416,8 +416,11 @@
         .message-bubble ul, .message-bubble ol { margin: 12px 0; padding-left: 24px; }
         .message-bubble li { margin-bottom: 6px; }
         .message-bubble blockquote { border-left: 3px solid var(--border); padding-left: 16px; margin: 16px 0; color: var(--text-secondary); }
-        .message-bubble a { color: var(--border); text-decoration: none; }
-        .message-bubble a:hover { text-decoration: underline; }
+        .message-bubble a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .message-bubble a:hover { text-decoration: none; }
         .message-bubble table { width: 100%; border-collapse: collapse; margin: 16px 0; }
         .message-bubble th, .message-bubble td { padding: 10px 14px; border: 1px solid var(--border); text-align: left; }
         .message-bubble th { background: var(--bg-hover); font-weight: 600; }

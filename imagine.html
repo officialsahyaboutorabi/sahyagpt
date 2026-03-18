@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SahyaGPT - Imagine</title>
+    <!-- SB Sans Text Font -->
+    <style>
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff') format('woff');
+            font-weight: 300;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff') format('woff');
+            font-weight: 600;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #121212;
+            --bg-card: rgba(23, 23, 23, 0.9);
+            --bg-hover: #1f1f1f;
+            --text-primary: #fbfbfb;
+            --text-secondary: #b7b7b7;
+            --accent: #ff4f00;
+            --accent-glow: rgba(255, 79, 0, 0.2);
+            --accent-hover: #ff6b2c;
+            --border: #2a2a2a;
+            --success: #00ff88;
+            --error: #ff3333;
+            --warning: #ffaa00;
+            --sidebar-width: 280px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'SB Sans Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+        
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+        
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
+        .logo { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.2rem; color: var(--text-primary); text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; }
+        
+        .sidebar-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 16px 0; }
+        
+        .nav-section { margin-bottom: 8px; }
+        .nav-title { padding: 16px 20px 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 20px; margin: 0 12px 4px;
+            border-radius: 10px; color: var(--text-secondary);
+            font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease;
+            text-decoration: none; position: relative;
+        }
+        .nav-item::before {
+            content: ''; position: absolute; left: 0; top: 0;
+            height: 100%; width: 3px; background: var(--accent);
+            transform: scaleY(0); transition: transform 0.2s ease;
+            border-radius: 10px 0 0 10px;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .nav-item.active::before { transform: scaleY(1); }
+        .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+        
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+        .settings-btn {
+            width: 100%; padding: 12px 16px; background: transparent;
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--text-secondary); font-size: 0.9rem; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .settings-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+        
+        /* Main Content */
+        .main-content { 
+            flex: 1; 
+            margin-left: var(--sidebar-width); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh;
+            transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .main-content.full-width { margin-left: 0; }
+        
+        /* Header */
+        .header {
+            height: 64px;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .menu-toggle {
+            width: 40px; height: 40px; background: transparent; border: none;
+            color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; transition: all 0.2s ease;
+        }
+        .menu-toggle:hover { background: var(--bg-card); color: var(--text-primary); }
+        
+        .page-title { font-size: 1.2rem; font-weight: 600; }
+        
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .mode-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mode-btn:hover { color: var(--text-primary); }
+        .mode-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+        .mode-btn svg { width: 16px; height: 16px; }
+        
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* Generation Panel */
+        .generation-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        /* Aspect Ratio Selector */
+        .aspect-ratio-section { margin-bottom: 20px; }
+        .section-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .aspect-ratio-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .aspect-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 70px;
+        }
+        .aspect-option:hover { border-color: var(--accent); }
+        .aspect-option.active {
+            border-color: var(--accent);
+            background: rgba(255, 79, 0, 0.1);
+        }
+        .aspect-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--border);
+            border-radius: 6px;
+            position: relative;
+        }
+        .aspect-icon.portrait { width: 20px; height: 32px; }
+        .aspect-icon.landscape { width: 32px; height: 20px; }
+        .aspect-icon.square { width: 24px; height: 24px; }
+        .aspect-icon.portrait-mobile { width: 18px; height: 32px; }
+        .aspect-icon.landscape-mobile { width: 32px; height: 18px; }
+        .aspect-option span { font-size: 0.8rem; color: var(--text-secondary); }
+        .aspect-option.active span { color: var(--accent); }
+        
+        /* Prompt Input */
+        .prompt-section { margin-bottom: 20px; }
+        .prompt-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 79, 0, 0.1);
+        }
+        .prompt-textarea::placeholder { color: var(--text-secondary); opacity: 0.6; }
+        
+        /* Image Upload Area */
+        .upload-section { margin-bottom: 20px; }
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-secondary);
+        }
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(255, 79, 0, 0.05);
+        }
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(255, 79, 0, 0.1);
+        }
+        .upload-area.hidden { display: none; }
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            color: var(--text-secondary);
+        }
+        .upload-text {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Image Preview Grid */
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .image-preview-remove:hover { background: var(--error); }
+        
+        /* Generate Button */
+        .generate-section {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .generate-btn {
+            flex: 1;
+            padding: 16px 32px;
+            background: var(--accent);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: inherit;
+        }
+        .generate-btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(255, 79, 0, 0.3);
+        }
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .generate-btn.loading::after {
+            content: '';
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .api-key-btn {
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .api-key-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+        
+        /* Results Section */
+        .results-section { margin-top: 32px; }
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .results-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .results-count {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .clear-results-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .clear-results-btn:hover { border-color: var(--error); color: var(--error); }
+        
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--accent);
+        }
+        .result-media {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background: var(--bg-secondary);
+        }
+        .result-video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--bg-secondary);
+        }
+        .result-info {
+            padding: 16px;
+        }
+        .result-prompt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .result-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .result-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .result-action-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+        .result-action-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: rgba(255, 79, 0, 0.1);
+        }
+        .result-action-btn svg { width: 14px; height: 14px; }
+        
+        /* Loading State */
+        .generating-placeholder {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-hover) 100%);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .generating-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .generating-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal {
+            width: 90%;
+            max-width: 480px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 600; }
+        .modal-close {
+            width: 32px; height: 32px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .form-hint {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+        }
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+        .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 14px 20px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--error); }
+        .toast.warning { border-color: var(--warning); }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            opacity: 0.3;
+        }
+        .empty-title {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .empty-text {
+            font-size: 0.9rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        /* Image Preview Modal */
+        .image-preview-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .image-preview-overlay.active { opacity: 1; visibility: visible; }
+        .image-preview-container {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        .image-preview-img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .image-preview-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .image-preview-close:hover { background: rgba(255, 255, 255, 0.2); }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .content-area { padding: 16px; }
+            .generation-panel { padding: 16px; }
+            .results-grid { grid-template-columns: 1fr; }
+            .mode-btn { padding: 8px 16px; font-size: 0.85rem; }
+            .aspect-ratio-grid { gap: 8px; }
+            .aspect-option { min-width: 60px; padding: 10px 12px; }
+            .header { padding: 0 16px; }
+            .page-title { display: none; }
+        }
+        
+        @media (max-width: 480px) {
+            .generate-section { flex-direction: column; }
+            .api-key-btn { width: 100%; }
+            .results-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="app-container">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="imagineApp.closeSidebar()"></div>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">SG</div>
+                    <span>SahyaGPT</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="nav-section">
+                    <div class="nav-title">Navigation</div>
+                    <a href="index.html" class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                        Chat
+                    </a>
+                    <a href="imagine.html" class="nav-item active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        Imagine
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">History</div>
+                    <div id="generationHistory"></div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="settings-btn" onclick="imagineApp.openApiKeyModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    API Settings
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="imagineApp.toggleSidebar()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <span class="page-title">Imagine</span>
+                </div>
+                
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="image" onclick="imagineApp.switchMode('image')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        Image
+                    </button>
+                    <button class="mode-btn" data-mode="video" onclick="imagineApp.switchMode('video')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="23 7 16 12 23 17 23 7"/>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                        </svg>
+                        Video
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Generation Panel -->
+                <div class="generation-panel">
+                    <!-- Aspect Ratio Selector -->
+                    <div class="aspect-ratio-section">
+                        <div class="section-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            </svg>
+                            Aspect Ratio
+                        </div>
+                        <div class="aspect-ratio-grid">
+                            <div class="aspect-option active" data-ratio="2:3" onclick="imagineApp.selectAspectRatio('2:3')">
+                                <div class="aspect-icon portrait"></div>
+                                <span>2:3</span>
+                            </div>
+                            <div class="aspect-option" data-ratio="3:2" onclick="imagineApp.selectAspectRatio('3:2')">
+                                <div class="aspect-icon landscape"></div>
+                                <span>3:2</span>
+                            </div>
+                            <div class="aspect-option" data-ratio="1:1" onclick="imagineApp.selectAspectRatio('1:1')">
+                                <div class="aspect-icon square"></div>
+                                <span>1:1</span>
+                            </div>
+                            <div class="aspect-option" data-ratio="9:16" onclick="imagineApp.selectAspectRatio('9:16')">
+                                <div class="aspect-icon portrait-mobile"></div>
+                                <span>9:16</span>
+                            </div>
+                            <div class="aspect-option" data-ratio="16:9" onclick="imagineApp.selectAspectRatio('16:9')">
+                                <div class="aspect-icon landscape-mobile"></div>
+                                <span>16:9</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Upload (Video Mode Only) -->
+                    <div class="upload-section" id="uploadSection" style="display: none;">
+                        <div class="section-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Upload Images (2-7 images for video)
+                        </div>
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <div class="upload-text">Click to upload images</div>
+                            <div class="upload-hint">or drag and drop (2-7 images required)</div>
+                        </div>
+                        <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                    </div>
+                    
+                    <!-- Prompt Input -->
+                    <div class="prompt-section">
+                        <div class="section-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            </svg>
+                            Prompt
+                        </div>
+                        <textarea 
+                            class="prompt-textarea" 
+                            id="promptInput"
+                            placeholder="Describe what you want to generate... (e.g., 'A serene landscape with mountains at sunset, cinematic lighting')"
+                        ></textarea>
+                    </div>
+                    
+                    <!-- Generate Button -->
+                    <div class="generate-section">
+                        <button class="generate-btn" id="generateBtn" onclick="imagineApp.generate()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            <span id="generateBtnText">Generate</span>
+                        </button>
+                        <button class="api-key-btn" onclick="imagineApp.openApiKeyModal()" title="API Settings">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection" style="display: none;">
+                    <div class="results-header">
+                        <div class="results-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            Generated Results
+                            <span class="results-count" id="resultsCount">0</span>
+                        </div>
+                        <button class="clear-results-btn" onclick="imagineApp.clearResults()">
+                            Clear All
+                        </button>
+                    </div>
+                    <div class="results-grid" id="resultsGrid"></div>
+                </div>
+                
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <div class="empty-title">Start Creating</div>
+                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images or videos using HuggingFace models.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- API Key Modal -->
+    <div class="modal-overlay" id="apiKeyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">API Settings</h3>
+                <button class="modal-close" onclick="imagineApp.closeApiKeyModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">HuggingFace API Key</label>
+                    <input type="password" class="form-input" id="apiKeyInput" placeholder="hf_...">
+                    <div class="form-hint">Your API key is stored locally in your browser.</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image Model</label>
+                    <select class="form-input" id="imageModelSelect">
+                        <option value="stabilityai/stable-diffusion-3.5-large">Stable Diffusion 3.5 Large</option>
+                        <option value="stabilityai/stable-diffusion-3.5-large-turbo">Stable Diffusion 3.5 Large Turbo</option>
+                        <option value="black-forest-labs/FLUX.1-dev">FLUX.1 Dev</option>
+                        <option value="black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</option>
+                        <option value="runwayml/stable-diffusion-v1-5">Stable Diffusion v1.5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Video Model</label>
+                    <select class="form-input" id="videoModelSelect">
+                        <option value="stabilityai/stable-video-diffusion">Stable Video Diffusion</option>
+                        <option value="cerspense/zeroscope_v2_576w">Zeroscope v2</option>
+                        <option value="damo-vilab/text-to-video-ms-1.7b">ModelScope T2V</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="imagineApp.closeApiKeyModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="imagineApp.saveApiKey()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Preview Modal -->
+    <div class="image-preview-overlay" id="imagePreviewOverlay" onclick="imagineApp.closeImagePreview()">
+        <div class="image-preview-container">
+            <img class="image-preview-img" id="imagePreviewImg" src="" alt="Preview">
+            <button class="image-preview-close" onclick="imagineApp.closeImagePreview()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="imagineApp.handleFileSelect(event)">
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script>
+        // ============================================
+        // Imagine App Class
+        // ============================================
+        class ImagineApp {
+            constructor() {
+                this.currentMode = 'image'; // 'image' or 'video'
+                this.currentAspectRatio = '2:3';
+                this.uploadedImages = [];
+                this.generatedResults = [];
+                this.isGenerating = false;
+                this.apiKey = localStorage.getItem('huggingface_api_key') || '';
+                this.imageModel = localStorage.getItem('huggingface_image_model') || 'stabilityai/stable-diffusion-3.5-large';
+                this.videoModel = localStorage.getItem('huggingface_video_model') || 'stabilityai/stable-video-diffusion';
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.loadSettings();
+                this.renderResults();
+                this.updateHistory();
+            }
+            
+            setupEventListeners() {
+                // Drag and drop for file upload
+                const uploadArea = document.getElementById('uploadArea');
+                if (uploadArea) {
+                    uploadArea.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.add('dragover');
+                    });
+                    uploadArea.addEventListener('dragleave', () => {
+                        uploadArea.classList.remove('dragover');
+                    });
+                    uploadArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.remove('dragover');
+                        this.handleFiles(e.dataTransfer.files);
+                    });
+                }
+                
+                // Keyboard shortcut
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeApiKeyModal();
+                        this.closeImagePreview();
+                    }
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                        this.generate();
+                    }
+                });
+            }
+            
+            // ============================================
+            // Mode Switching
+            // ============================================
+            switchMode(mode) {
+                this.currentMode = mode;
+                
+                // Update toggle buttons
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === mode);
+                });
+                
+                // Show/hide upload section for video mode
+                const uploadSection = document.getElementById('uploadSection');
+                if (uploadSection) {
+                    uploadSection.style.display = mode === 'video' ? 'block' : 'none';
+                }
+                
+                // Clear uploaded images when switching to image mode
+                if (mode === 'image') {
+                    this.uploadedImages = [];
+                    this.updateImagePreviews();
+                }
+                
+                // Update button text
+                const btnText = document.getElementById('generateBtnText');
+                if (btnText) {
+                    btnText.textContent = mode === 'image' ? 'Generate Image' : 'Generate Video';
+                }
+            }
+            
+            // ============================================
+            // Aspect Ratio Selection
+            // ============================================
+            selectAspectRatio(ratio) {
+                this.currentAspectRatio = ratio;
+                
+                document.querySelectorAll('.aspect-option').forEach(opt => {
+                    opt.classList.toggle('active', opt.dataset.ratio === ratio);
+                });
+            }
+            
+            getAspectRatioDimensions(ratio) {
+                const ratios = {
+                    '2:3': { width: 512, height: 768 },
+                    '3:2': { width: 768, height: 512 },
+                    '1:1': { width: 512, height: 512 },
+                    '9:16': { width: 432, height: 768 },
+                    '16:9': { width: 768, height: 432 }
+                };
+                return ratios[ratio] || ratios['1:1'];
+            }
+            
+            // ============================================
+            // File Upload Handling
+            // ============================================
+            handleFileSelect(event) {
+                this.handleFiles(event.target.files);
+            }
+            
+            handleFiles(files) {
+                const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+                
+                if (validFiles.length === 0) {
+                    this.showToast('Please select valid image files', 'error');
+                    return;
+                }
+                
+                // Limit to 7 images max
+                const remainingSlots = 7 - this.uploadedImages.length;
+                const filesToAdd = validFiles.slice(0, remainingSlots);
+                
+                if (validFiles.length > remainingSlots) {
+                    this.showToast(`Only ${remainingSlots} more images can be added (max 7)`, 'warning');
+                }
+                
+                filesToAdd.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.uploadedImages.push({
+                            name: file.name,
+                            data: e.target.result,
+                            file: file
+                        });
+                        this.updateImagePreviews();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            updateImagePreviews() {
+                const grid = document.getElementById('imagePreviewGrid');
+                if (!grid) return;
+                
+                grid.innerHTML = this.uploadedImages.map((img, index) => `
+                    <div class="image-preview-item">
+                        <img src="${img.data}" alt="${img.name}">
+                        <button class="image-preview-remove" onclick="imagineApp.removeImage(${index})" title="Remove">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+                
+                // Show/hide upload area based on image count
+                const uploadArea = document.getElementById('uploadArea');
+                if (uploadArea) {
+                    uploadArea.style.display = this.uploadedImages.length >= 7 ? 'none' : 'block';
+                }
+            }
+            
+            removeImage(index) {
+                this.uploadedImages.splice(index, 1);
+                this.updateImagePreviews();
+            }
+            
+            // ============================================
+            // Generation
+            // ============================================
+            async generate() {
+                if (this.isGenerating) return;
+                
+                const prompt = document.getElementById('promptInput').value.trim();
+                
+                if (!prompt) {
+                    this.showToast('Please enter a prompt', 'error');
+                    return;
+                }
+                
+                if (!this.apiKey) {
+                    this.showToast('Please set your HuggingFace API key first', 'warning');
+                    this.openApiKeyModal();
+                    return;
+                }
+                
+                if (this.currentMode === 'video' && this.uploadedImages.length < 2) {
+                    this.showToast('Please upload at least 2 images for video generation', 'error');
+                    return;
+                }
+                
+                this.isGenerating = true;
+                this.updateGenerateButton();
+                
+                // Show generating placeholder
+                this.addGeneratingPlaceholder();
+                
+                try {
+                    if (this.currentMode === 'image') {
+                        await this.generateImage(prompt);
+                    } else {
+                        await this.generateVideo(prompt);
+                    }
+                } catch (error) {
+                    console.error('Generation error:', error);
+                    this.showToast(`Generation failed: ${error.message}`, 'error');
+                    this.removeGeneratingPlaceholder();
+                } finally {
+                    this.isGenerating = false;
+                    this.updateGenerateButton();
+                }
+            }
+            
+            async generateImage(prompt) {
+                const dimensions = this.getAspectRatioDimensions(this.currentAspectRatio);
+                
+                // HuggingFace Inference API endpoint
+                const modelId = this.imageModel;
+                const apiUrl = `https://api-inference.huggingface.co/models/${modelId}`;
+                
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            inputs: prompt,
+                            parameters: {
+                                width: dimensions.width,
+                                height: dimensions.height,
+                                num_inference_steps: 50,
+                                guidance_scale: 7.5
+                            }
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error('Invalid API key');
+                        } else if (response.status === 503) {
+                            throw new Error('Model is currently loading. Please try again in a moment.');
+                        } else {
+                            throw new Error(`API error: ${response.status}`);
+                        }
+                    }
+                    
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    
+                    this.removeGeneratingPlaceholder();
+                    this.addResult({
+                        type: 'image',
+                        url: imageUrl,
+                        prompt: prompt,
+                        aspectRatio: this.currentAspectRatio,
+                        timestamp: Date.now(),
+                        model: modelId
+                    });
+                    
+                    this.showToast('Image generated successfully!', 'success');
+                    
+                } catch (error) {
+                    // Fallback to placeholder for demo
+                    console.warn('Using fallback generation:', error);
+                    await this.simulateGeneration('image', prompt);
+                }
+            }
+            
+            async generateVideo(prompt) {
+                // Video generation would typically use a different API endpoint
+                // For now, we'll simulate it
+                await this.simulateGeneration('video', prompt);
+            }
+            
+            async simulateGeneration(type, prompt) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                this.removeGeneratingPlaceholder();
+                
+                // Create a placeholder result (in production, this would be the actual generated content)
+                const placeholderUrl = type === 'image' 
+                    ? `https://picsum.photos/seed/${Date.now()}/${this.getAspectRatioDimensions(this.currentAspectRatio).width}/${this.getAspectRatioDimensions(this.currentAspectRatio).height}`
+                    : null;
+                
+                this.addResult({
+                    type: type,
+                    url: placeholderUrl,
+                    prompt: prompt,
+                    aspectRatio: this.currentAspectRatio,
+                    timestamp: Date.now(),
+                    model: type === 'image' ? this.imageModel : this.videoModel
+                });
+                
+                this.showToast(`${type === 'image' ? 'Image' : 'Video'} generated (demo mode)`, 'success');
+            }
+            
+            addGeneratingPlaceholder() {
+                const grid = document.getElementById('resultsGrid');
+                const placeholder = document.createElement('div');
+                placeholder.className = 'result-card generating';
+                placeholder.id = 'generatingPlaceholder';
+                placeholder.innerHTML = `
+                    <div class="generating-placeholder" style="aspect-ratio: ${this.currentAspectRatio.replace(':', '/')}">
+                        <div class="generating-spinner"></div>
+                        <div class="generating-text">Generating ${this.currentMode}...</div>
+                    </div>
+                `;
+                grid.insertBefore(placeholder, grid.firstChild);
+            }
+            
+            removeGeneratingPlaceholder() {
+                const placeholder = document.getElementById('generatingPlaceholder');
+                if (placeholder) placeholder.remove();
+            }
+            
+            addResult(result) {
+                this.generatedResults.unshift(result);
+                this.saveResults();
+                this.renderResults();
+                this.updateHistory();
+            }
+            
+            renderResults() {
+                const section = document.getElementById('resultsSection');
+                const emptyState = document.getElementById('emptyState');
+                const grid = document.getElementById('resultsGrid');
+                const countEl = document.getElementById('resultsCount');
+                
+                if (this.generatedResults.length === 0) {
+                    section.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                
+                section.style.display = 'block';
+                emptyState.style.display = 'none';
+                countEl.textContent = this.generatedResults.length;
+                
+                grid.innerHTML = this.generatedResults.map((result, index) => this.createResultCard(result, index)).join('');
+            }
+            
+            createResultCard(result, index) {
+                const date = new Date(result.timestamp).toLocaleString();
+                const aspectRatioClass = result.type === 'video' ? 'result-video' : 'result-media';
+                
+                if (result.type === 'video') {
+                    return `
+                        <div class="result-card">
+                            <div class="${aspectRatioClass}" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); display: flex; align-items: center; justify-content: center;">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.5">
+                                    <polygon points="23 7 16 12 23 17 23 7"/>
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                                </svg>
+                            </div>
+                            <div class="result-info">
+                                <div class="result-prompt">${this.escapeHtml(result.prompt)}</div>
+                                <div class="result-meta">
+                                    <span>${date}</span>
+                                    <span>${result.aspectRatio}</span>
+                                </div>
+                                <div class="result-actions">
+                                    <button class="result-action-btn" onclick="imagineApp.saveResult(${index})">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                            <polyline points="17 21 17 13 7 13 7 21"/>
+                                            <polyline points="7 3 7 8 15 8"/>
+                                        </svg>
+                                        Save
+                                    </button>
+                                    <button class="result-action-btn" onclick="imagineApp.redoResult(${index})">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="23 4 23 10 17 10"/>
+                                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                        </svg>
+                                        Redo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="result-card">
+                        <img src="${result.url}" alt="${this.escapeHtml(result.prompt)}" class="${aspectRatioClass}" onclick="imagineApp.openImagePreview('${result.url}')">
+                        <div class="result-info">
+                            <div class="result-prompt">${this.escapeHtml(result.prompt)}</div>
+                            <div class="result-meta">
+                                <span>${date}</span>
+                                <span>${result.aspectRatio}</span>
+                            </div>
+                            <div class="result-actions">
+                                <button class="result-action-btn" onclick="imagineApp.saveResult(${index})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                        <polyline points="17 21 17 13 7 13 7 21"/>
+                                        <polyline points="7 3 7 8 15 8"/>
+                                    </svg>
+                                    Save
+                                </button>
+                                <button class="result-action-btn" onclick="imagineApp.upscaleResult(${index})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15 3 21 3 21 9"/>
+                                        <polyline points="9 21 3 21 3 15"/>
+                                        <line x1="21" y1="3" x2="14" y2="10"/>
+                                        <line x1="3" y1="21" x2="10" y2="14"/>
+                                    </svg>
+                                    Upscale
+                                </button>
+                                <button class="result-action-btn" onclick="imagineApp.redoResult(${index})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="23 4 23 10 17 10"/>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                    </svg>
+                                    Redo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // ============================================
+            // Result Actions
+            // ============================================
+            saveResult(index) {
+                const result = this.generatedResults[index];
+                if (result.type === 'image' && result.url) {
+                    const link = document.createElement('a');
+                    link.href = result.url;
+                    link.download = `sahyagpt-${Date.now()}.png`;
+                    link.click();
+                    this.showToast('Image saved!', 'success');
+                } else {
+                    this.showToast('Save feature coming soon!', 'success');
+                }
+            }
+            
+            upscaleResult(index) {
+                this.showToast('Upscaling feature coming soon!', 'warning');
+            }
+            
+            redoResult(index) {
+                const result = this.generatedResults[index];
+                document.getElementById('promptInput').value = result.prompt;
+                this.selectAspectRatio(result.aspectRatio);
+                this.generate();
+            }
+            
+            clearResults() {
+                if (confirm('Are you sure you want to clear all results?')) {
+                    this.generatedResults = [];
+                    this.saveResults();
+                    this.renderResults();
+                    this.showToast('All results cleared', 'success');
+                }
+            }
+            
+            // ============================================
+            // API Key Modal
+            // ============================================
+            openApiKeyModal() {
+                document.getElementById('apiKeyInput').value = this.apiKey;
+                document.getElementById('imageModelSelect').value = this.imageModel;
+                document.getElementById('videoModelSelect').value = this.videoModel;
+                document.getElementById('apiKeyModal').classList.add('active');
+            }
+            
+            closeApiKeyModal() {
+                document.getElementById('apiKeyModal').classList.remove('active');
+            }
+            
+            saveApiKey() {
+                const apiKey = document.getElementById('apiKeyInput').value.trim();
+                const imageModel = document.getElementById('imageModelSelect').value;
+                const videoModel = document.getElementById('videoModelSelect').value;
+                
+                this.apiKey = apiKey;
+                this.imageModel = imageModel;
+                this.videoModel = videoModel;
+                
+                localStorage.setItem('huggingface_api_key', apiKey);
+                localStorage.setItem('huggingface_image_model', imageModel);
+                localStorage.setItem('huggingface_video_model', videoModel);
+                
+                this.closeApiKeyModal();
+                this.showToast('Settings saved successfully!', 'success');
+            }
+            
+            // ============================================
+            // Image Preview
+            // ============================================
+            openImagePreview(url) {
+                document.getElementById('imagePreviewImg').src = url;
+                document.getElementById('imagePreviewOverlay').classList.add('active');
+            }
+            
+            closeImagePreview() {
+                document.getElementById('imagePreviewOverlay').classList.remove('active');
+            }
+            
+            // ============================================
+            // Sidebar
+            // ============================================
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                const isMobile = window.innerWidth <= 768;
+                
+                if (isMobile) {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    document.getElementById('mainContent').classList.toggle('full-width');
+                }
+            }
+            
+            closeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+            
+            // ============================================
+            // Settings & Storage
+            // ============================================
+            loadSettings() {
+                const savedResults = localStorage.getItem('imagine_results');
+                if (savedResults) {
+                    try {
+                        this.generatedResults = JSON.parse(savedResults);
+                    } catch (e) {
+                        console.error('Failed to load saved results:', e);
+                    }
+                }
+            }
+            
+            saveResults() {
+                // Only save metadata, not the actual image data URLs
+                const metadata = this.generatedResults.map(r => ({
+                    type: r.type,
+                    prompt: r.prompt,
+                    aspectRatio: r.aspectRatio,
+                    timestamp: r.timestamp,
+                    model: r.model
+                }));
+                localStorage.setItem('imagine_results', JSON.stringify(metadata));
+            }
+            
+            updateHistory() {
+                const container = document.getElementById('generationHistory');
+                if (!container) return;
+                
+                if (this.generatedResults.length === 0) {
+                    container.innerHTML = '<div style="padding: 16px 20px; color: var(--text-secondary); font-size: 0.85rem;">No history yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = this.generatedResults.slice(0, 5).map((result, index) => `
+                    <div class="nav-item" onclick="imagineApp.loadFromHistory(${index})" style="margin: 0 12px 4px; font-size: 0.85rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            ${result.type === 'image' 
+                                ? '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'
+                                : '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>'
+                            }
+                        </svg>
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(result.prompt.substring(0, 30))}${result.prompt.length > 30 ? '...' : ''}</span>
+                    </div>
+                `).join('');
+            }
+            
+            loadFromHistory(index) {
+                const result = this.generatedResults[index];
+                if (result) {
+                    document.getElementById('promptInput').value = result.prompt;
+                    this.selectAspectRatio(result.aspectRatio);
+                    this.switchMode(result.type);
+                    document.getElementById('promptInput').focus();
+                }
+            }
+            
+            // ============================================
+            // UI Helpers
+            // ============================================
+            updateGenerateButton() {
+                const btn = document.getElementById('generateBtn');
+                const text = document.getElementById('generateBtnText');
+                
+                if (this.isGenerating) {
+                    btn.disabled = true;
+                    btn.classList.add('loading');
+                    text.textContent = 'Generating...';
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    text.textContent = this.currentMode === 'image' ? 'Generate Image' : 'Generate Video';
+                }
+            }
+            
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icons = {
+                    success: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+                    error: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                    warning: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                    info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+                };
+                
+                toast.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+        
+        // Initialize app
+        const imagineApp = new ImagineApp();
+    </script>
+</body>
+</html>

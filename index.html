@@ -138,6 +138,8 @@
             display: flex; flex-direction: column; position: fixed;
             height: 100vh; z-index: 100;
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 1 !important;
+            visibility: visible !important;
         }
         .sidebar.collapsed { transform: translateX(-100%); }
         .sidebar-header { padding: 11.5px; border-bottom: 1px solid var(--border); }
@@ -1223,7 +1225,14 @@
                             <span>Chat History</span>
                         </div>
                     </div>
-                    <div class="chat-history" id="chatHistory"></div>
+                    <div class="chat-history" id="chatHistory">
+                        <div class="history-empty" style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.5;">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <div>No chats yet</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Create Skills Section -->
@@ -2380,6 +2389,8 @@
             }
 
             init() {
+                // Render sidebar immediately before other operations
+                this.renderSidebarStatic();
                 this.avatar = new AIAvatar('aiAvatar', 80);
                 this.initPromptInput();
                 this.loadSettings();
@@ -2818,6 +2829,20 @@
 
             renderChatHistory() {
                 const container = document.getElementById('chatHistory');
+                if (!container) return;
+                
+                // If no chats, show placeholder message
+                if (!this.chats || this.chats.length === 0) {
+                    container.innerHTML = `
+                        <div class="history-empty" style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.5;">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <div>No chats yet</div>
+                        </div>`;
+                    return;
+                }
+                
                 container.innerHTML = '';
                 this.chats.forEach(chat => {
                     const item = document.createElement('div');
@@ -2839,6 +2864,17 @@
                     });
                     container.appendChild(item);
                 });
+            }
+
+            renderSidebarStatic() {
+                // Ensure sidebar is visible immediately
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.style.opacity = '1';
+                    sidebar.style.visibility = 'visible';
+                }
+                // Render chat history if container exists
+                this.renderChatHistory();
             }
 
             deleteChat(chatId) {
@@ -4295,8 +4331,21 @@ When the user requests this skill:
             }
         }
 
-        const chatApp = new ChatApp();
-        document.getElementById('settingsModal').addEventListener('click', (e) => { if (e.target.id === 'settingsModal') chatApp.closeSettings(); });
+        // Initialize app when DOM is fully loaded to prevent rendering issues
+        let chatApp;
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                chatApp = new ChatApp();
+            });
+        } else {
+            chatApp = new ChatApp();
+        }
+        
+        // Use event delegation for modal close to handle both immediate and deferred init
+        document.addEventListener('click', (e) => {
+            const settingsModal = document.getElementById('settingsModal');
+            if (e.target === settingsModal && chatApp) chatApp.closeSettings();
+        });
         document.addEventListener('click', (e) => { const dropdown = document.getElementById('modelDropdown'); if (dropdown && !dropdown.contains(e.target)) chatApp.closeDropdown(); });
         window.addEventListener('resize', () => {
             const sidebar = document.getElementById('sidebar');

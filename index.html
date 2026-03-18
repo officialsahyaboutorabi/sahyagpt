@@ -323,6 +323,15 @@
         @media (min-width: 640px) { .prompt-textarea { font-size: 16px; } }
         .prompt-textarea::placeholder { color: var(--text-secondary); }
         .prompt-input-actions { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; padding: 20px 12px 12px 12px; margin-top: 0; }
+        
+        /* File Attachment Chips */
+        .file-attachments { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 16px 0; width: 100%; }
+        .file-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary); max-width: 200px; transition: all 0.15s ease; }
+        .file-chip:hover { border-color: var(--accent); }
+        .file-chip svg { flex-shrink: 0; width: 14px; height: 14px; }
+        .file-chip-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-chip-remove { display: flex; align-items: center; justify-content: center; padding: 2px; margin-left: 2px; background: transparent; border: none; border-radius: 4px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; }
+        .file-chip-remove:hover { background: rgba(255, 51, 51, 0.1); color: var(--error); }
         .prompt-actions-left, .prompt-actions-right { display: flex; align-items: center; gap: 8px; }
         .prompt-action-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; min-width: 36px; padding: 0 12px; background: transparent; border: 1px solid var(--border); border-radius: 9999px; color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease; }
         .prompt-action-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border); }
@@ -1043,6 +1052,7 @@
                 <div class="prompt-kit-container">
                     <div class="prompt-input-wrapper" id="promptInputWrapper">
                         <div class="prompt-input-inner">
+                            <div class="file-attachments" id="fileAttachments" style="display: none;"></div>
                             <div class="prompt-textarea-wrapper">
                                 <textarea class="prompt-textarea" id="promptTextarea" placeholder="Message SahyaGPT..." rows="1"></textarea>
                             </div>
@@ -1086,7 +1096,7 @@
                 
                 <p class="input-footer">SahyaGPT can make mistakes. Consider checking important information.</p>
             </div>
-            <input type="file" id="fileInput" style="display: none;" onchange="chatApp.handleFileSelect(event)">
+            <input type="file" id="fileInput" style="display: none;" multiple onchange="chatApp.handleFileSelect(event)">
         </main>
     </div>
 
@@ -2100,6 +2110,7 @@
                 this.voiceBtn = null;
                 this.activeCategory = '';
                 this.searchMode = false;
+                this.attachedFiles = []; // Store attached files
                 this.init();
             }
 
@@ -2151,7 +2162,8 @@
             updateSubmitButtonState() {
                 if (this.promptSubmit && this.promptTextarea) {
                     const hasContent = this.promptTextarea.value.trim().length > 0;
-                    this.promptSubmit.disabled = !hasContent && !this.isGenerating;
+                    const hasFiles = this.attachedFiles.length > 0;
+                    this.promptSubmit.disabled = !hasContent && !hasFiles && !this.isGenerating;
                 }
             }
 
@@ -2165,13 +2177,23 @@
 
             async handlePromptSubmit() {
                 if (this.isGenerating) { this.stopGeneration(); return; }
-                const message = this.promptTextarea.value.trim();
+                let message = this.promptTextarea.value.trim();
+                
+                // Process attached files
+                if (this.attachedFiles.length > 0) {
+                    const fileContents = await this.processAttachedFiles();
+                    if (fileContents) {
+                        message = message ? `${message}\n\n${fileContents}` : fileContents;
+                    }
+                }
+                
                 if (!message || this.isTyping) return;
                 if (!this.currentModel) { this.showToast('Please select a model first', 'error'); return; }
                 this.lastUserMessage = message;
                 this.updateEditButton();
                 this.addMessage('user', message);
                 this.promptTextarea.value = '';
+                this.clearAttachedFiles();
                 this.autoResizePromptInput();
                 this.updateSubmitButtonState();
                 this.showTypingIndicator();
@@ -3002,31 +3024,94 @@
             triggerFileUpload() { document.getElementById('fileInput').click(); }
 
             handleFileSelect(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const content = e.target.result;
-                    const fileInfo = `[File: ${file.name}]\n\n\`\`\`\n${content}\n\`\`\``;
-                    if (this.promptTextarea) {
-                        this.promptTextarea.value = this.promptTextarea.value ? this.promptTextarea.value + '\n\n' + fileInfo : fileInfo;
-                        this.autoResizePromptInput();
-                        this.updateSubmitButtonState();
-                    }
-                    this.showToast(`File "${file.name}" uploaded successfully`, 'success');
-                };
-                reader.onerror = () => this.showToast('Failed to read file', 'error');
-                if (file.type.startsWith('text/') || file.name.match(/\.(js|py|html|css|json|md|txt|csv|xml|yaml|yml)$/i)) reader.readAsText(file);
-                else {
-                    const fileInfo = `[File attached: ${file.name} (${this.formatFileSize(file.size)})]`;
-                    if (this.promptTextarea) {
-                        this.promptTextarea.value = this.promptTextarea.value ? this.promptTextarea.value + '\n\n' + fileInfo : fileInfo;
-                        this.autoResizePromptInput();
-                        this.updateSubmitButtonState();
-                    }
-                    this.showToast(`File "${file.name}" attached`, 'success');
-                }
+                const files = Array.from(event.target.files);
+                if (!files.length) return;
+                
+                files.forEach(file => {
+                    const fileObj = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        file: file // Store the actual file object
+                    };
+                    this.attachedFiles.push(fileObj);
+                });
+                
+                this.renderFileAttachments();
+                this.updateSubmitButtonState();
+                this.showToast(`${files.length} file(s) attached`, 'success');
                 event.target.value = '';
+            }
+
+            renderFileAttachments() {
+                const container = document.getElementById('fileAttachments');
+                if (!container) return;
+                
+                if (this.attachedFiles.length === 0) {
+                    container.style.display = 'none';
+                    container.innerHTML = '';
+                    return;
+                }
+                
+                container.style.display = 'flex';
+                container.innerHTML = this.attachedFiles.map((file, index) => `
+                    <div class="file-chip" title="${file.name} (${this.formatFileSize(file.size)})">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.234 20.252 21 12.3"></path><path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"></path></svg>
+                        <span class="file-chip-name">${file.name}</span>
+                        <button class="file-chip-remove" onclick="chatApp.removeAttachedFile(${index})" title="Remove">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            removeAttachedFile(index) {
+                this.attachedFiles.splice(index, 1);
+                this.renderFileAttachments();
+                this.updateSubmitButtonState();
+            }
+
+            clearAttachedFiles() {
+                this.attachedFiles = [];
+                this.renderFileAttachments();
+            }
+
+            async processAttachedFiles() {
+                const fileContents = [];
+                
+                for (const fileObj of this.attachedFiles) {
+                    try {
+                        const content = await this.readFileContent(fileObj.file);
+                        if (content) {
+                            fileContents.push(`[File: ${fileObj.name}]\n\n\`\`\`\n${content}\n\`\`\``);
+                        } else {
+                            fileContents.push(`[File attached: ${fileObj.name} (${this.formatFileSize(fileObj.size)})]`);
+                        }
+                    } catch (err) {
+                        console.error('Error reading file:', err);
+                        fileContents.push(`[File attached: ${fileObj.name} (${this.formatFileSize(fileObj.size)}) - Error reading file]`);
+                    }
+                }
+                
+                return fileContents.join('\n\n');
+            }
+
+            readFileContent(file) {
+                return new Promise((resolve, reject) => {
+                    // Only read text files
+                    const isTextFile = file.type.startsWith('text/') || 
+                        file.name.match(/\.(js|py|html|css|json|md|txt|csv|xml|yaml|yml|tsx|jsx|ts|tsx)$/i);
+                    
+                    if (!isTextFile) {
+                        resolve(null); // Return null for non-text files
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsText(file);
+                });
             }
 
             formatFileSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / (1024 * 1024)).toFixed(1) + ' MB'; }

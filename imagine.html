@@ -807,20 +807,17 @@
     </style>
 </head>
 <body>
+    <div id="starfield-container"><canvas id="starfield-canvas"></canvas></div>
     <div class="noise-overlay"></div>
     <div class="app-container">
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="imagineApp.closeSidebar()"></div>
-        
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="index.html" class="logo">
-                    <div class="logo-icon">SG</div>
-                    <span>SahyaGPT</span>
-                </a>
+                <div class="logo"><div class="logo-icon">SG</div><span>SahyaGPT</span></div>
             </div>
-            
+            <!-- Scrollable Sidebar Content -->
             <div class="sidebar-content">
+                <!-- Navigation Section -->
                 <div class="nav-section">
                     <div class="nav-title">Navigation</div>
                     <a href="index.html" class="nav-item">
@@ -839,19 +836,22 @@
                     </a>
                 </div>
                 
-                <div class="nav-section">
-                    <div class="nav-title">History</div>
+                <!-- Generation History Section -->
+                <div class="sidebar-section">
+                    <div class="nav-title">
+                        <div class="title-label">
+                            <svg class="nav-icon" viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 81.066667c-233.301333 0-422.4 189.098667-422.4 422.4s189.098667 422.4 422.4 422.4 422.4-189.098667 422.4-422.4-189.098667-422.4-422.4-422.4z m-345.6 422.4a345.6 345.6 0 1 1 691.2 0 345.6 345.6 0 1 1-691.2 0z m379.733333-174.933334a38.4 38.4 0 0 0-76.8 0v187.733334a38.4 38.4 0 0 0 11.264 27.136l93.866667 93.866666a38.4 38.4 0 1 0 54.272-54.272L546.133333 500.352V328.533333z"/></svg>
+                            <span>History</span>
+                        </div>
+                    </div>
                     <div id="generationHistory"></div>
                 </div>
             </div>
             
             <div class="sidebar-footer">
                 <button class="settings-btn" onclick="imagineApp.openApiKeyModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                    API Settings
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Settings
                 </button>
             </div>
         </aside>
@@ -1714,6 +1714,79 @@
                 return div.innerHTML;
             }
         }
+        
+        // Starfield Animation
+        const starfieldContainer = document.getElementById('starfield-container');
+        const starfieldCanvas = document.getElementById('starfield-canvas');
+        const starfieldCtx = starfieldCanvas.getContext('2d');
+        let particles = [], shootingStars = [], rotation = 0, animationFrameId = null;
+
+        function animateStarfield() {
+            starfieldCtx.clearRect(0, 0, starfieldCanvas.width, starfieldCanvas.height);
+            rotation += 0.0003;
+            const centerX = starfieldCanvas.width + 0.1 * starfieldCanvas.height;
+            const centerY = starfieldCanvas.height + 0.5 * starfieldCanvas.height;
+            particles.forEach(p => {
+                const angle = p.angle + rotation;
+                p.x = centerX + Math.cos(angle) * p.distance;
+                p.y = centerY + Math.sin(angle) * p.distance;
+                p.opacity += p.twinkleSpeed;
+                if (p.opacity > 1 || p.opacity < 0.6) p.twinkleSpeed = -p.twinkleSpeed;
+                let gradient = starfieldCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 2 * p.radius);
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+                gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.5 * p.opacity})`);
+                gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                starfieldCtx.beginPath();
+                starfieldCtx.arc(p.x, p.y, 2 * p.radius, 0, 2 * Math.PI);
+                starfieldCtx.fillStyle = gradient;
+                starfieldCtx.fill();
+            });
+            if (Math.random() < 0.001 && shootingStars.length < 3) {
+                shootingStars.push({ x: Math.random() * starfieldCanvas.width, y: -50, length: 120 + 120 * Math.random(), speed: 3 + Math.random(), opacity: 0.9 });
+            }
+            shootingStars = shootingStars.filter(s => {
+                s.x -= s.speed; s.y += s.speed; s.opacity -= 0.01;
+                let gradient = starfieldCtx.createLinearGradient(s.x, s.y, s.x + 0.707 * s.length, s.y - 0.707 * s.length);
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${s.opacity})`);
+                gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.5 * s.opacity})`);
+                gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                starfieldCtx.beginPath();
+                starfieldCtx.moveTo(s.x, s.y);
+                starfieldCtx.lineTo(s.x + 0.707 * s.length, s.y - 0.707 * s.length);
+                starfieldCtx.strokeStyle = gradient;
+                starfieldCtx.lineWidth = 2;
+                starfieldCtx.stroke();
+                let headGradient = starfieldCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 4);
+                headGradient.addColorStop(0, `rgba(255, 255, 255, ${s.opacity})`);
+                headGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                starfieldCtx.beginPath();
+                starfieldCtx.arc(s.x, s.y, 4, 0, 2 * Math.PI);
+                starfieldCtx.fillStyle = headGradient;
+                starfieldCtx.fill();
+                return s.y < starfieldCanvas.height + 50 && s.opacity > 0;
+            });
+            animationFrameId = requestAnimationFrame(animateStarfield);
+        }
+
+        function createParticles(count, initial = false) {
+            for (let i = 0; i < count; i++) {
+                if (particles.length >= 3000) return;
+                particles.push({ x: 0, y: 0, radius: Math.random() + 0.3, opacity: initial ? 0.5 * Math.random() + 0.5 : 0, twinkleSpeed: 0.005 + 0.01 * Math.random(), angle: 2 * Math.random() * Math.PI, distance: Math.random() * Math.max(starfieldCanvas.width, starfieldCanvas.height) * 2 + 500 });
+            }
+        }
+
+        function handleStarfieldResize() {
+            const rect = starfieldContainer.getBoundingClientRect();
+            starfieldCanvas.width = rect.width;
+            starfieldCanvas.height = rect.height;
+            particles = [];
+            createParticles(800, true);
+        }
+
+        const starfieldResizeObserver = new ResizeObserver(handleStarfieldResize);
+        starfieldResizeObserver.observe(starfieldContainer);
+        handleStarfieldResize();
+        animateStarfield();
         
         // Initialize app
         const imagineApp = new ImagineApp();

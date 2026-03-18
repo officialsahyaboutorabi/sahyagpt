@@ -105,7 +105,7 @@
         :root {
             --bg-primary: #0d0d0d; --bg-secondary: #121212; --bg-card: #171717;
             --bg-hover: #1f1f1f; --bg-selected: #1f1f1f; --text-primary: #fbfbfb;
-            --text-secondary: #b7b7b7; --accent: #ff4f00; --accent-glow: rgba(255, 79, 0, 0.4);
+            --text-secondary: #b7b7b7; --accent: #ff4f00; --accent-glow: rgba(255, 107, 44, .1);
             --success: #00ff88; --error: #ff3333; --border: #2a2a2a;
             --sidebar-width: 280px; 
             --Others-SGPTOrange: rgba(255, 107, 44, .1);
@@ -416,10 +416,7 @@
         .message-bubble ul, .message-bubble ol { margin: 12px 0; padding-left: 24px; }
         .message-bubble li { margin-bottom: 6px; }
         .message-bubble blockquote { border-left: 3px solid var(--border); padding-left: 16px; margin: 16px 0; color: var(--text-secondary); }
-        .message-bubble a {
-            color: var(--accent);
-            text-decoration: none;
-        }
+        .message-bubble a { color: var(--border); text-decoration: none; }
         .message-bubble a:hover { text-decoration: underline; }
         .message-bubble table { width: 100%; border-collapse: collapse; margin: 16px 0; }
         .message-bubble th, .message-bubble td { padding: 10px 14px; border: 1px solid var(--border); text-align: left; }

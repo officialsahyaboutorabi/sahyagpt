@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Lost in Space | SahyaGPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Light.woff') format('woff');
+            font-weight: 300;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Italic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Italic.woff') format('woff');
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-SemiboldItalic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-SemiboldItalic.woff') format('woff');
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Thin.woff2') format('woff2'), 
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Thin.woff') format('woff');
+            font-weight: 100;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Semibold.woff') format('woff');
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-LightItalic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-LightItalic.woff') format('woff');
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Heavy.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Heavy.woff') format('woff');
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-BoldItalic.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-BoldItalic.woff') format('woff');
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: 'SB Sans Text';
+            src: url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Medium.woff2') format('woff2'),
+                 url('https://cdn-app.giga.chat/shared-static/0.0.0/fonts/SBSansText/SBSansText-Medium.woff') format('woff');
+            font-weight: 500;
+            font-style: normal;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #0d0d0d; --bg-secondary: #121212; --bg-card: #171717;
+            --bg-hover: #1f1f1f; --bg-selected: #1f1f1f; --text-primary: #fbfbfb;
+            --text-secondary: #b7b7b7; --accent: #ff4f00; --accent-glow: rgba(255, 107, 44, .1);
+            --success: #00ff88; --error: #ff3333; --border: #2a2a2a;
+            --sidebar-width: 280px; 
+            --Others-SGPTOrange: rgba(255, 107, 44, .1);
+            --Others-TextSelected: rgba(255, 107, 44, .2);
+        }
+
+        body {
+            font-family: 'SB Sans Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Starfield Background */
+        #starfield-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            background: var(--bg-primary);
+        }
+
+        #starfield-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Noise Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Main Container */
+        .container {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 600px;
+            width: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 404 Text */
+        .error-code {
+            font-size: 180px;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 50%, var(--text-primary) 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 4s ease infinite, glitch 3s infinite;
+            position: relative;
+            display: inline-block;
+        }
+
+        .error-code::before,
+        .error-code::after {
+            content: '404';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--error) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+        }
+
+        .error-code::before {
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+
+        .error-code::after {
+            animation: glitch-2 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); }
+            94% { transform: translate(2px, -2px); }
+            96% { transform: translate(-2px, -2px); }
+            98% { transform: translate(2px, 2px); }
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% { opacity: 0; transform: translate(0); }
+            7% { opacity: 0.3; transform: translate(-2px, 0); }
+            10% { opacity: 0; }
+            27% { opacity: 0.3; transform: translate(2px, 0); }
+            30% { opacity: 0; }
+            52% { opacity: 0.3; transform: translate(-1px, 0); }
+            55% { opacity: 0; }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% { opacity: 0; transform: translate(0); }
+            12% { opacity: 0.3; transform: translate(2px, 0); }
+            15% { opacity: 0; }
+            37% { opacity: 0.3; transform: translate(-2px, 0); }
+            40% { opacity: 0; }
+            62% { opacity: 0.3; transform: translate(1px, 0); }
+            65% { opacity: 0; }
+        }
+
+        /* AI Avatar Container */
+        .avatar-wrapper {
+            margin: 40px 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #1f1f1f, #171717, #121212);
+            box-shadow: 0 0 60px var(--accent-glow);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 80px var(--accent-glow);
+        }
+
+        .avatar canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Scan line effect */
+        .avatar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                transparent 50%,
+                rgba(255, 79, 0, 0.1) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* Speech Bubble */
+        .speech-bubble {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 100;
+        }
+
+        .speech-bubble.show {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--border);
+        }
+
+        /* Error Message */
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .error-message {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* Interactive Elements */
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff6b2c;
+            border-color: #ff6b2c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 79, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Terminal effect for error details */
+        .terminal {
+            margin-top: 30px;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: left;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: text;
+            user-select: text;
+        }
+
+        .terminal-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-prompt {
+            color: var(--accent);
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--accent);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 16px;
+            }
+            .error-code {
+                font-size: 80px;
+            }
+            .avatar {
+                width: 80px;
+                height: 80px;
+            }
+            .actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="starfield-container"><canvas id="starfield-canvas"></canvas></div>
+    <div class="noise-overlay"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="error-code" id="errorCode">404</div>
+        
+        <div class="avatar-wrapper">
+            <div class="speech-bubble" id="speechBubble">Click me for help!</div>
+            <div class="avatar" id="aiAvatar" title="Click me!">
+                <canvas id="avatarCanvas" width="240" height="240"></canvas>
+            </div>
+        </div>
+
+        <h1 class="error-title">Lost in Space</h1>
+        <p class="error-message">
+            The page you're looking for has drifted into the void.<br>
+            Our AI assistant is searching for it...
+        </p>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Go Home
+            </a>
+            <button class="btn btn-secondary" onclick="goBack()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Go Back
+            </button>
+        </div>
+
+        <div class="terminal" id="terminal" onclick="copyPath()">
+            <div class="terminal-line">
+                <span class="terminal-prompt">$</span>
+                <span id="terminalText">path: <span id="currentPath">loading...</span></span>
+                <span class="terminal-cursor"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show current path
+        document.getElementById('currentPath').textContent = window.location.pathname;
+
+        // Copy path to clipboard
+        function copyPath() {
+            const path = window.location.pathname;
+            navigator.clipboard.writeText(path).then(() => {
+                const bubble = document.getElementById('speechBubble');
+                bubble.textContent = 'Path copied to clipboard!';
+                bubble.classList.add('show');
+                setTimeout(() => bubble.classList.remove('show'), 2000);
+            });
+        }
+
+        // Go back function
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        // Speech bubble messages
+        const messages = [
+            "Click me for help!",
+            "I'm lost too!",
+            "404 means not found...",
+            "Try going home?",
+            "Is this the right URL?",
+            "Houston, we have a problem!",
+            "Where did that page go?",
+            "Searching... searching...",
+        ];
+        let messageIndex = 0;
+
+        // AI Avatar Class
+        class AIAvatar {
+            constructor(canvasId, size = 120) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.size = size;
+                this.time = 0;
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.targetX = 0;
+                this.targetY = 0;
+                this.clickCount = 0;
+                
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.width = size * 2 * dpr;
+                this.canvas.height = size * 2 * dpr;
+                this.ctx.scale(dpr, dpr);
+                
+                this.init();
+                this.animate();
+            }
+
+            init() {
+                document.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    this.targetX = (e.clientX - centerX) / 15;
+                    this.targetY = (e.clientY - centerY) / 15;
+                });
+
+                this.canvas.parentElement.addEventListener('click', () => {
+                    this.clickCount++;
+                    this.onClick();
+                });
+            }
+
+            onClick() {
+                const bubble = document.getElementById('speechBubble');
+                
+                if (this.clickCount === 1) {
+                    bubble.textContent = "That tickles!";
+                } else if (this.clickCount === 5) {
+                    bubble.textContent = "Stop clicking me!";
+                } else if (this.clickCount === 10) {
+                    bubble.textContent = "Okay, you win! Here's an Easter egg...";
+                    this.triggerEasterEgg();
+                    return;
+                } else {
+                    messageIndex = (messageIndex + 1) % messages.length;
+                    bubble.textContent = messages[messageIndex];
+                }
+                
+                bubble.classList.add('show');
+                setTimeout(() => bubble.classList.remove('show'), 3000);
+            }
+
+            triggerEasterEgg() {
+                const bubble = document.getElementById('speechBubble');
+                document.body.style.animation = 'glitch 0.5s';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                    bubble.textContent = "Just kidding, there's no egg! 🥚";
+                    setTimeout(() => bubble.classList.remove('show'), 3000);
+                }, 500);
+            }
+
+            animate() {
+                this.time += 0.02;
+                this.mouseX += (this.targetX - this.mouseX) * 0.1;
+                this.mouseY += (this.targetY - this.mouseY) * 0.1;
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+
+            draw() {
+                const ctx = this.ctx;
+                const centerX = this.size;
+                const centerY = this.size;
+                const baseRadius = this.size - 4;
+
+                ctx.clearRect(0, 0, this.size * 2, this.size * 2);
+
+                // Background gradient
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, baseRadius);
+                gradient.addColorStop(0, '#1f1f1f');
+                gradient.addColorStop(0.7, '#171717');
+                gradient.addColorStop(1, '#121212');
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Glow ring
+                const glowIntensity = 0.3 + Math.sin(this.time) * 0.1;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255, 79, 0, ${glowIntensity})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Inner ring
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius * 0.85, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 79, 0, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Floating animation
+                const floatX = Math.sin(this.time * 0.5) * 2;
+                const floatY = Math.cos(this.time * 0.7) * 2;
+
+                // Eye positions
+                const eyeOffsetX = 25 + floatX;
+                const eyeOffsetY = -8 + floatY;
+                const eyeRadius = 18;
+
+                // Eye shadows
+                ctx.beginPath();
+                ctx.arc(centerX - eyeOffsetX, centerY + eyeOffsetY, eyeRadius + 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(centerX + eyeOffsetX, centerY + eyeOffsetY, eyeRadius + 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fill();
+
+                // Eye glow
+                const eyeGlow = 0.6 + Math.sin(this.time * 2) * 0.2;
+
+                // Left eye
+                const leftEyeX = centerX - eyeOffsetX + Math.max(-6, Math.min(6, this.mouseX));
+                const leftEyeY = centerY + eyeOffsetY + Math.max(-4, Math.min(4, this.mouseY));
+                ctx.beginPath();
+                ctx.arc(leftEyeX, leftEyeY, eyeRadius, 0, Math.PI * 2);
+                const leftGradient = ctx.createRadialGradient(leftEyeX - 4, leftEyeY - 4, 0, leftEyeX, leftEyeY, eyeRadius);
+                leftGradient.addColorStop(0, '#ffffff');
+                leftGradient.addColorStop(0.3, `rgba(255, 79, 0, ${eyeGlow})`);
+                leftGradient.addColorStop(1, '#666666');
+                ctx.fillStyle = leftGradient;
+                ctx.fill();
+
+                // Right eye
+                const rightEyeX = centerX + eyeOffsetX + Math.max(-6, Math.min(6, this.mouseX));
+                const rightEyeY = centerY + eyeOffsetY + Math.max(-4, Math.min(4, this.mouseY));
+                ctx.beginPath();
+                ctx.arc(rightEyeX, rightEyeY, eyeRadius, 0, Math.PI * 2);
+                const rightGradient = ctx.createRadialGradient(rightEyeX - 4, rightEyeY - 4, 0, rightEyeX, rightEyeY, eyeRadius);
+                rightGradient.addColorStop(0, '#ffffff');
+                rightGradient.addColorStop(0.3, `rgba(255, 79, 0, ${eyeGlow})`);
+                rightGradient.addColorStop(1, '#666666');
+                ctx.fillStyle = rightGradient;
+                ctx.fill();
+
+                // Mouth
+                const mouthY = centerY + 22 + floatY * 0.5;
+                const mouthWidth = 24;
+                const mouthOpen = 0.5 + Math.sin(this.time * 3) * 0.2;
+                
+                // Sad mouth for 404
+                ctx.beginPath();
+                ctx.arc(centerX, mouthY + 5, mouthWidth, Math.PI * 0.8, Math.PI * 0.2);
+                ctx.strokeStyle = 'rgba(255, 79, 0, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Antennae
+                ctx.beginPath();
+                ctx.moveTo(centerX - 30, centerY - 30);
+                ctx.lineTo(centerX - 40, centerY - 50);
+                ctx.lineTo(centerX - 40, centerY - 65);
+                ctx.strokeStyle = 'rgba(255, 79, 0, 0.3)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(centerX + 30, centerY - 30);
+                ctx.lineTo(centerX + 40, centerY - 50);
+                ctx.lineTo(centerX + 40, centerY - 65);
+                ctx.stroke();
+
+                // Antenna dots
+                const dotPulse = 0.5 + Math.sin(this.time * 4) * 0.3;
+                ctx.beginPath();
+                ctx.arc(centerX - 40, centerY - 65, 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 79, 0, ${dotPulse})`;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(centerX + 40, centerY - 65, 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 79, 0, ${dotPulse})`;
+                ctx.fill();
+            }
+        }
+
+        // Initialize avatar
+        const avatar = new AIAvatar('avatarCanvas', 120);
+
+        // Show speech bubble after a delay
+        setTimeout(() => {
+            const bubble = document.getElementById('speechBubble');
+            bubble.classList.add('show');
+            setTimeout(() => bubble.classList.remove('show'), 4000);
+        }, 1000);
+
+        // Starfield Animation
+        const starfieldCanvas = document.getElementById('starfield-canvas');
+        const starfieldCtx = starfieldCanvas.getContext('2d');
+        let particles = [];
+        let rotation = 0;
+
+        function resizeStarfield() {
+            starfieldCanvas.width = window.innerWidth;
+            starfieldCanvas.height = window.innerHeight;
+            createParticles();
+        }
+
+        function createParticles() {
+            particles = [];
+            for (let i = 0; i < 200; i++) {
+                particles.push({
+                    x: Math.random() * starfieldCanvas.width,
+                    y: Math.random() * starfieldCanvas.height,
+                    radius: Math.random() * 1.5 + 0.5,
+                    opacity: Math.random() * 0.5 + 0.5,
+                    twinkleSpeed: 0.005 + Math.random() * 0.01,
+                    speed: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+
+        function animateStarfield() {
+            starfieldCtx.fillStyle = 'rgba(13, 13, 13, 0.3)';
+            starfieldCtx.fillRect(0, 0, starfieldCanvas.width, starfieldCanvas.height);
+
+            particles.forEach(p => {
+                p.y += p.speed;
+                p.opacity += p.twinkleSpeed;
+                if (p.opacity > 1 || p.opacity < 0.3) p.twinkleSpeed = -p.twinkleSpeed;
+                
+                if (p.y > starfieldCanvas.height) {
+                    p.y = 0;
+                    p.x = Math.random() * starfieldCanvas.width;
+                }
+
+                starfieldCtx.beginPath();
+                starfieldCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                starfieldCtx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                starfieldCtx.fill();
+            });
+
+            requestAnimationFrame(animateStarfield);
+        }
+
+        window.addEventListener('resize', resizeStarfield);
+        resizeStarfield();
+        animateStarfield();
+
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Glitch effect on 404 text occasionally
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                const errorCode = document.getElementById('errorCode');
+                errorCode.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+                setTimeout(() => {
+                    errorCode.style.transform = 'translate(0, 0)';
+                }, 100);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

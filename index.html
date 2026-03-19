@@ -3133,9 +3133,10 @@
                         // LiteLLM/OpenAI format
                         // Include the partial assistant response and a simple continue prompt
                         const messages = [
+                            { role: 'system', content: 'You are continuing a response that was cut off. Do not rewrite, modify, or repeat any of the previous content. Only generate the new continuation text.' },
                             { role: 'user', content: originalUserMsg.content },
                             { role: 'assistant', content: originalContent },
-                            { role: 'user', content: 'Continue from where you left off.' }
+                            { role: 'user', content: 'Continue exactly from where you stopped. Do not repeat anything.' }
                         ];
                         
                         const response = await fetch(this.settings.litellmEndpoint + '/chat/completions', {
@@ -3187,9 +3188,10 @@
                     } else {
                         // Ollama format
                         const messages = [
+                            { role: 'system', content: 'You are continuing a response that was cut off. Do not rewrite, modify, or repeat any of the previous content. Only generate the new continuation text.' },
                             { role: 'user', content: originalUserMsg.content },
                             { role: 'assistant', content: originalContent },
-                            { role: 'user', content: 'Continue from where you left off.' }
+                            { role: 'user', content: 'Continue exactly from where you stopped. Do not repeat anything.' }
                         ];
                         
                         const response = await fetch(this.settings.ollamaEndpoint + '/api/chat', {

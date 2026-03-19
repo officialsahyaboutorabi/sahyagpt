@@ -3129,16 +3129,13 @@
                 const signal = this.abortController.signal;
                 
                 try {
-                    // Get last 500 chars of original content to establish context without repeating
-                    const contextWindow = originalContent.slice(-500);
-                    const continuationPrompt = `Your previous response was cut off. Here is the ending of what you wrote:\n\n---\n${contextWindow}\n---\n\nContinue EXACTLY from where you left off. Do NOT repeat anything from above. Just write the continuation.`;
-                    
                     if (isLiteLLM) {
-                        // LiteLLM/OpenAI format - proper message structure
-                        // Only send the original user message + the continuation prompt
+                        // LiteLLM/OpenAI format
+                        // Include the partial assistant response and a simple continue prompt
                         const messages = [
                             { role: 'user', content: originalUserMsg.content },
-                            { role: 'user', content: continuationPrompt }
+                            { role: 'assistant', content: originalContent },
+                            { role: 'user', content: 'Continue from where you left off.' }
                         ];
                         
                         const response = await fetch(this.settings.litellmEndpoint + '/chat/completions', {
@@ -3191,7 +3188,8 @@
                         // Ollama format
                         const messages = [
                             { role: 'user', content: originalUserMsg.content },
-                            { role: 'user', content: continuationPrompt }
+                            { role: 'assistant', content: originalContent },
+                            { role: 'user', content: 'Continue from where you left off.' }
                         ];
                         
                         const response = await fetch(this.settings.ollamaEndpoint + '/api/chat', {

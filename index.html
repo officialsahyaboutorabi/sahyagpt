@@ -3078,6 +3078,17 @@
                 
                 const originalUserMsg = this.messages[userIndex];
                 
+                // Get the model and provider used for the original message
+                const modelId = msg.model || (this.currentModel ? this.currentModel.id : null);
+                const provider = msg.provider || (this.currentModel ? this.currentModel.provider : null);
+                if (!modelId) {
+                    this.showToast('Cannot determine model for continuation', 'error');
+                    return;
+                }
+                
+                // Detect provider - LiteLLM models often have '/' in their name
+                const isLiteLLM = provider === 'litellm' || modelId.includes('/');
+                
                 // Update UI state
                 this.isGenerating = true;
                 this.updatePromptSubmitButton(true);
@@ -3097,13 +3108,8 @@
                 const originalContent = msg.content;
                 let continuationContent = '';
                 
-                // Create a temporary renderer for the continuation
-                const tempDiv = document.createElement('div');
-                bubble.appendChild(tempDiv);
-                
                 this.abortController = new AbortController();
                 const signal = this.abortController.signal;
-                const isLiteLLM = this.currentModel && this.currentModel.provider === 'litellm';
                 
                 try {
                     if (isLiteLLM) {
@@ -3121,7 +3127,7 @@
                                 'Authorization': `Bearer ${this.settings.litellmApiKey}`
                             },
                             body: JSON.stringify({
-                                model: this.currentModel.id,
+                                model: modelId,
                                 messages: messages,
                                 stream: true
                             }),
@@ -3172,7 +3178,7 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                model: this.currentModel.id,
+                                model: modelId,
                                 messages: messages,
                                 stream: true
                             }),
@@ -3230,8 +3236,14 @@
                 }
             }
 
-            addMessage(role, content, images = []) {
+            addMessage(role, content, images = [], modelId = null, provider = null) {
                 const message = { role, content, timestamp: Date.now(), images };
+                if (modelId) {
+                    message.model = modelId;
+                }
+                if (provider) {
+                    message.provider = provider;
+                }
                 this.messages.push(message);
                 if (this.messages.length === 1 && role === 'user') {
                     const chat = this.chats.find(c => c.id === this.currentChatId);
@@ -3564,11 +3576,15 @@
                     // Finalize both renderers
                     if (reasoningRenderer) reasoningRenderer.finalize();
                     streamRenderer.finalize();
-                    this.addMessage('ai', fullResponse);
+                    const modelId = this.currentModel ? this.currentModel.id : null;
+                    const provider = this.currentModel ? this.currentModel.provider : null;
+                    this.addMessage('ai', fullResponse, [], modelId, provider);
                 } catch (error) {
                     if (error.name === 'AbortError') {
                         // User stopped generation — save whatever arrived
-                        if (fullResponse.trim()) this.addMessage('ai', fullResponse);
+                        const modelId = this.currentModel ? this.currentModel.id : null;
+                        const provider = this.currentModel ? this.currentModel.provider : null;
+                        if (fullResponse.trim()) this.addMessage('ai', fullResponse, [], modelId, provider);
                     } else if (error instanceof TypeError && fullResponse.trim()) {
                         // "Error in input stream" — browser throws this when Ollama
                         // closes the TCP connection after finishing the stream (common
@@ -3576,7 +3592,9 @@
                         // received and rendered; finalize to proper HTML then save.
                         if (reasoningRenderer) reasoningRenderer.finalize();
                         if (streamRenderer) streamRenderer.finalize();
-                        this.addMessage('ai', fullResponse);
+                        const modelId = this.currentModel ? this.currentModel.id : null;
+                        const provider = this.currentModel ? this.currentModel.provider : null;
+                        this.addMessage('ai', fullResponse, [], modelId, provider);
                     } else {
                         console.error('Error streaming response:', error);
                         this.hideTypingIndicator();

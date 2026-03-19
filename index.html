@@ -3558,14 +3558,15 @@
                         const folderId = this.settings.yandexgptFolderId;
                         const modelUri = `gpt://${folderId}/${this.currentModel.name}/latest`;
                         const proxyUrl = this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev';
-                        // YandexGPT uses OpenAI-compatible API at ai.api.cloud.yandex.net/v1
-                        // Folder ID is passed as OpenAI-Project header (OpenAI compatibility)
-                        const chatMessages = [
-                            { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
-                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
-                            { role: 'user', content: userMessage }
-                        ];
-                        response = await fetch(`${proxyUrl}/chat/completions`, {
+                        // YandexGPT uses Responses API (not chat/completions)
+                        // Build conversation history as a single input string
+                        const conversationHistory = this.messages.map(m => {
+                            if (m.role === 'user') return `User: ${m.content}`;
+                            return `Assistant: ${m.content}`;
+                        }).join('\n\n');
+                        const fullInput = conversationHistory ? `${conversationHistory}\n\nUser: ${userMessage}` : userMessage;
+                        
+                        response = await fetch(`${proxyUrl}/responses`, {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json', 
@@ -3573,11 +3574,11 @@
                                 'OpenAI-Project': folderId
                             },
                             body: JSON.stringify({
-                                model:       modelUri,
-                                messages:    chatMessages,
-                                stream:      true,
-                                temperature: parseFloat(this.settings.temperature),
-                                max_tokens:  this.settings.maxTokens
+                                model:             modelUri,
+                                instructions:      this.settings.systemPrompt || 'You are a helpful AI assistant.',
+                                input:             fullInput,
+                                temperature:       parseFloat(this.settings.temperature),
+                                max_output_tokens: this.settings.maxTokens
                             }),
                             signal
                         });

@@ -1447,6 +1447,21 @@
                             <input type="text" class="form-input" id="litellmEndpoint" placeholder="https://llm.nexiant.ai" autocomplete="off">
                         </div>
                     </div>
+                    <div class="settings-group" style="margin-top: 24px;">
+                        <div class="settings-group-title">YandexGPT (Alice AI)</div>
+                        <div class="setting-item">
+                            <div class="toggle-info"><div class="toggle-label">Enable YandexGPT</div><div class="toggle-description">Add YandexGPT Pro and Lite models</div></div>
+                            <div class="toggle-switch" id="yandexgptEnabledToggle" onclick="chatApp.toggleSetting('yandexgptEnabled')"></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 8px;">
+                            <label class="form-label">API Key <span>Your Yandex Cloud API key</span></label>
+                            <input type="password" class="form-input" id="yandexgptApiKey" placeholder="AQVN…" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Folder ID <span>Yandex Cloud folder/catalog ID</span></label>
+                            <input type="text" class="form-input" id="yandexgptFolderId" placeholder="b1g…" autocomplete="off">
+                        </div>
+                    </div>
                 </div>
                 <div class="settings-section" id="tab-model">
                     <div class="settings-group">
@@ -2725,6 +2740,19 @@
                     }
                 }
 
+                // ── YandexGPT models ─────────────────────────────────────────
+                const yandexgptEnabled = this.settings.toggles?.yandexgptEnabled;
+                const yandexgptApiKey  = this.settings.yandexgptApiKey;
+                const yandexgptFolderId = this.settings.yandexgptFolderId;
+                if (yandexgptEnabled && yandexgptApiKey && yandexgptFolderId) {
+                    // YandexGPT doesn't have a models endpoint, so we add static models
+                    this.models.push(
+                        { name: 'yandexgpt', endpoint: 'https://llm.api.cloud.yandex.net', endpointName: 'YandexGPT Pro', provider: 'yandexgpt' },
+                        { name: 'yandexgpt-lite', endpoint: 'https://llm.api.cloud.yandex.net', endpointName: 'YandexGPT Lite', provider: 'yandexgpt' }
+                    );
+                    anyConnected = true;
+                }
+
                 this.updateModelSelect();
                 this.updateStatus(anyConnected);
 
@@ -3486,6 +3514,47 @@
                             }
                             throw new Error(`LiteLLM error: ${msg}`);
                         }
+                    } else if (this.currentModel.provider === 'yandexgpt') {
+                        // ── YandexGPT ───────────────────────────────────────────
+                        if (!this.settings.yandexgptApiKey || !this.settings.yandexgptFolderId) {
+                            this.hideTypingIndicator();
+                            this.showToast('YandexGPT API key and Folder ID required — add them in Settings', 'error');
+                            return;
+                        }
+                        const folderId = this.settings.yandexgptFolderId;
+                        const modelUri = `gpt://${folderId}/${this.currentModel.name}/latest`;
+                        // YandexGPT uses 'text' field instead of 'content'
+                        const chatMessages = [
+                            { role: 'system', text: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
+                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, text: m.content })),
+                            { role: 'user', text: userMessage }
+                        ];
+                        response = await fetch('https://llm.api.cloud.yandex.net/foundationModels/v1/completion', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'Authorization': `Api-Key ${this.settings.yandexgptApiKey}`,
+                                'x-folder-id': folderId
+                            },
+                            body: JSON.stringify({
+                                modelUri:    modelUri,
+                                messages:    chatMessages,
+                                completionOptions: {
+                                    stream:      true,
+                                    temperature: parseFloat(this.settings.temperature),
+                                    maxTokens:   this.settings.maxTokens
+                                }
+                            }),
+                            signal
+                        });
+                        if (!response.ok) {
+                            const errBody = await response.json().catch(() => ({}));
+                            const msg = errBody.error?.message || `HTTP ${response.status}`;
+                            if (response.status === 401) {
+                                throw new Error(`YandexGPT authentication failed — check your API key`);
+                            }
+                            throw new Error(`YandexGPT error: ${msg}`);
+                        }
                     } else {
                         // ── Ollama ─────────────────────────────────────────────
                         response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
@@ -3540,6 +3609,7 @@
                     // Buffer handles both NDJSON (Ollama) and SSE (LiteLLM/OpenAI) since
                     // both are newline-delimited and a read() chunk may span lines.
                     const isOpenAIFormat = this.currentModel.provider === 'litellm';
+                    const isYandexGPT = this.currentModel.provider === 'yandexgpt';
                     let lineBuffer = '';
 
                     while (true) {
@@ -3562,6 +3632,11 @@
                                 let data;
                                 try { data = JSON.parse(trimmed.slice(6)); } catch (e) { continue; }
                                 token = data.choices?.[0]?.delta?.content ?? null;
+                            } else if (isYandexGPT) {
+                                // YandexGPT format: {"result":{"alternatives":[{"message":{"text":"..."}}]}}
+                                let data;
+                                try { data = JSON.parse(trimmed); } catch (e) { continue; }
+                                token = data.result?.alternatives?.[0]?.message?.text ?? null;
                             } else {
                                 // NDJSON: {"response":"...","done":false}
                                 let data;
@@ -4343,8 +4418,10 @@ When the user requests this skill:
                 this.settings.thinkingStyle = document.getElementById('thinkingStyleSelect').value;
                 this.settings.litellmApiKey = document.getElementById('litellmApiKey').value.trim();
                 this.settings.litellmEndpoint = document.getElementById('litellmEndpoint').value.trim().replace(/\/$/, '');
+                this.settings.yandexgptApiKey = document.getElementById('yandexgptApiKey').value.trim();
+                this.settings.yandexgptFolderId = document.getElementById('yandexgptFolderId').value.trim();
                 if (!this.settings.toggles) this.settings.toggles = {};
-                ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'litellmEnabled'].forEach(key => {
+                ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'litellmEnabled', 'yandexgptEnabled'].forEach(key => {
                     const toggle = document.getElementById(`${key}Toggle`);
                     if (toggle) this.settings.toggles[key] = toggle.classList.contains('active');
                 });
@@ -4385,7 +4462,8 @@ When the user requests this skill:
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
                         temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
-                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, litellmEnabled: false }
+                        yandexgptApiKey: '', yandexgptFolderId: '',
+                        toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, litellmEnabled: false, yandexgptEnabled: false }
                     };
                     this.renderEndpoints();
                     document.getElementById('systemPrompt').value = this.settings.systemPrompt;
@@ -4401,9 +4479,12 @@ When the user requests this skill:
                     document.getElementById('thinkingStyleSelect').value = 'cot';
                     document.getElementById('litellmApiKey').value   = '';
                     document.getElementById('litellmEndpoint').value = 'https://llm.nexiant.ai';
+                    document.getElementById('yandexgptApiKey').value   = '';
+                    document.getElementById('yandexgptFolderId').value = '';
                     // Activate all standard toggles, then explicitly deactivate opt-in ones
                     document.querySelectorAll('.toggle-switch').forEach(toggle => toggle.classList.add('active'));
                     document.getElementById('litellmEnabledToggle').classList.remove('active');
+                    document.getElementById('yandexgptEnabledToggle').classList.remove('active');
                     localStorage.setItem('chatSettings', JSON.stringify(this.settings));
                     this.showToast('Settings reset to default', 'success');
                 }
@@ -4436,7 +4517,7 @@ When the user requests this skill:
                         ];
                         delete parsed.apiUrl;
                     }
-                    const defaultToggles = { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, litellmEnabled: false };
+                    const defaultToggles = { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, litellmEnabled: false, yandexgptEnabled: false };
                     this.settings = {
                         endpoints: [
                             { url: 'https://apisahyagpt.qzz.io', name: 'SahyaGPT Main', enabled: true },
@@ -4444,6 +4525,7 @@ When the user requests this skill:
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
                         temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
+                        yandexgptApiKey: '', yandexgptFolderId: '',
                         ...parsed,
                         // Always deep-merge toggles so new keys get their defaults
                         // even when loading settings saved before those keys existed.
@@ -4463,6 +4545,8 @@ When the user requests this skill:
                     document.getElementById('thinkingStyleSelect').value = this.settings.thinkingStyle || 'cot';
                     document.getElementById('litellmApiKey').value   = this.settings.litellmApiKey   || '';
                     document.getElementById('litellmEndpoint').value = this.settings.litellmEndpoint || 'https://llm.nexiant.ai';
+                    document.getElementById('yandexgptApiKey').value   = this.settings.yandexgptApiKey   || '';
+                    document.getElementById('yandexgptFolderId').value = this.settings.yandexgptFolderId || '';
                     if (this.settings.toggles) {
                         Object.entries(this.settings.toggles).forEach(([key, value]) => {
                             const toggle = document.getElementById(`${key}Toggle`);

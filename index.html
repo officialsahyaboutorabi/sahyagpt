@@ -1462,14 +1462,14 @@
                             <input type="text" class="form-input" id="yandexgptFolderId" placeholder="b1g…" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Proxy URL <span class="required" style="color: var(--accent);">* Required</span></label>
-                            <input type="text" class="form-input" id="yandexgptProxyUrl" placeholder="https://your-proxy.com/v1" autocomplete="off">
+                            <label class="form-label">Proxy URL <span>(optional, uses default if empty)</span></label>
+                            <input type="text" class="form-input" id="yandexgptProxyUrl" placeholder="https://yandexgpt-proxy.sahyagpt.workers.dev" autocomplete="off">
                         </div>
                         <div class="form-group" style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(255, 79, 0, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--accent);">
-                            <p><strong>⚠️ CORS Proxy Required</strong></p>
-                            <p style="margin-top: 4px;">Yandex Cloud API blocks all browser requests. You MUST use a proxy server.</p>
-                            <p style="margin-top: 8px;"><strong>Option 1:</strong> Deploy <a href="https://github.com/yandex-cloud-examples/yc-openai-proxy" target="_blank" style="color: var(--accent);">Yandex OpenAI Proxy</a></p>
-                            <p><strong>Option 2:</strong> Use a CORS proxy service (development only)</p>
+                            <p><strong>ℹ️ About YandexGPT Proxy</strong></p>
+                            <p style="margin-top: 4px;">Yandex Cloud API blocks browser requests. A proxy is required.</p>
+                            <p style="margin-top: 8px;">✅ <strong>Default proxy available</strong> - leave empty to use shared proxy</p>
+                            <p>🔒 <strong>For privacy:</strong> <a href="YANDEXGPT_PROXY.md" target="_blank" style="color: var(--accent);">Deploy your own proxy</a></p>
                         </div>
                     </div>
                 </div>
@@ -2754,12 +2754,13 @@
                 const yandexgptEnabled = this.settings.toggles?.yandexgptEnabled;
                 const yandexgptApiKey  = this.settings.yandexgptApiKey;
                 const yandexgptFolderId = this.settings.yandexgptFolderId;
-                const yandexgptProxyUrl = this.settings.yandexgptProxyUrl;
-                if (yandexgptEnabled && yandexgptApiKey && yandexgptFolderId && yandexgptProxyUrl) {
-                    // YandexGPT requires a CORS proxy for browser access
+                if (yandexgptEnabled && yandexgptApiKey && yandexgptFolderId) {
+                    // YandexGPT uses OpenAI-compatible API at ai.api.cloud.yandex.net
+                    // CORS proxy is auto-configured to use the included proxy worker
+                    const proxyUrl = this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev';
                     this.models.push(
-                        { name: 'yandexgpt', endpoint: yandexgptProxyUrl, endpointName: 'YandexGPT Pro', provider: 'yandexgpt', folderId: yandexgptFolderId },
-                        { name: 'yandexgpt-lite', endpoint: yandexgptProxyUrl, endpointName: 'YandexGPT Lite', provider: 'yandexgpt', folderId: yandexgptFolderId }
+                        { name: 'yandexgpt', endpoint: proxyUrl, endpointName: 'YandexGPT Pro', provider: 'yandexgpt', folderId: yandexgptFolderId },
+                        { name: 'yandexgpt-lite', endpoint: proxyUrl, endpointName: 'YandexGPT Lite', provider: 'yandexgpt', folderId: yandexgptFolderId }
                     );
                     anyConnected = true;
                 }
@@ -3186,7 +3187,7 @@
                     if (isLiteLLM) {
                         // LiteLLM/OpenAI format (also used by YandexGPT)
                         const endpoint = provider === 'yandexgpt' 
-                            ? this.settings.yandexgptProxyUrl
+                            ? (this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev')
                             : (this.settings.litellmEndpoint || 'https://llm.nexiant.ai');
                         const authHeader = provider === 'yandexgpt'
                             ? `Api-Key ${this.settings.yandexgptApiKey}`
@@ -3535,15 +3536,15 @@
                         }
                     } else if (this.currentModel.provider === 'yandexgpt') {
                         // ── YandexGPT ───────────────────────────────────────────
-                        if (!this.settings.yandexgptApiKey || !this.settings.yandexgptFolderId || !this.settings.yandexgptProxyUrl) {
+                        if (!this.settings.yandexgptApiKey || !this.settings.yandexgptFolderId) {
                             this.hideTypingIndicator();
-                            this.showToast('YandexGPT requires API Key, Folder ID, and Proxy URL — add them in Settings', 'error');
+                            this.showToast('YandexGPT API key and Folder ID required — add them in Settings', 'error');
                             return;
                         }
                         const folderId = this.settings.yandexgptFolderId;
                         const modelUri = `gpt://${folderId}/${this.currentModel.name}/latest`;
-                        const proxyUrl = this.settings.yandexgptProxyUrl;
-                        // YandexGPT uses OpenAI-compatible API through a CORS proxy
+                        const proxyUrl = this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev';
+                        // YandexGPT uses OpenAI-compatible API at ai.api.cloud.yandex.net/v1
                         const chatMessages = [
                             { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
                             ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),

@@ -2,7 +2,7 @@
 
 ## Overview
 
-SahyaGPT is a modern, feature-rich chat interface for AI language models. It's built as a single-page application (SPA) using vanilla JavaScript, HTML, and CSS. The application supports multiple AI providers (Ollama, LiteLLM) and provides a sleek, responsive UI with advanced features like file attachments, web search, and extensible skills.
+SahyaGPT is a modern, feature-rich chat interface for AI language models. It's built as a single-page application (SPA) using vanilla JavaScript, HTML, and CSS. The application supports multiple AI providers (Ollama, LiteLLM, YandexGPT) and provides a sleek, responsive UI with advanced features like file attachments, web search, extensible skills, AI image/video generation, and intelligent continuation of incomplete responses.
 
 ---
 
@@ -25,19 +25,23 @@ SahyaGPT is a modern, feature-rich chat interface for AI language models. It's b
 
 ```
 sahyagpt/
-├── index.html              # Main chat application (SPA)
-├── imagine.html           # AI Image/Video generation interface
-├── 404.html               # Custom 404 error page
-├── fonts.css              # Custom font definitions
-├── sw.js                  # Service Worker (PWA support)
-├── ARCHITECTURE.md        # This documentation file
-├── CHANGELOG.md           # Version history
-├── .nojekyll              # Disables Jekyll processing for GitHub Pages
-├── CNAME                  # Custom domain configuration
-├── skills/                # Skill templates and documentation
-│   ├── SKILL_TEMPLATE.md  # Template for creating new skills
-│   └── ui-developer.md    # UI Developer skill example
-└── backups/               # Backup versions (not in production)
+├── index.html                   # Main chat application (SPA)
+├── imagine.html                # AI Image/Video generation interface
+├── 404.html                    # Custom 404 error page
+├── fonts.css                   # Custom font definitions
+├── sw.js                       # Service Worker (PWA support)
+├── ARCHITECTURE.md             # This documentation file
+├── CHANGELOG.md                # Version history
+├── YANDEXGPT_PROXY.md          # YandexGPT proxy setup guide
+├── .nojekyll                   # Disables Jekyll processing for GitHub Pages
+├── CNAME                       # Custom domain configuration
+├── yandexgpt-proxy.js          # Cloudflare Worker proxy for YandexGPT
+├── yandexgpt-proxy-deno.ts     # Deno Deploy proxy for YandexGPT
+├── yandexgpt-proxy-node.js     # Node.js proxy for YandexGPT
+├── skills/                     # Skill templates and documentation
+│   ├── SKILL_TEMPLATE.md       # Template for creating new skills
+│   └── ui-developer.md         # UI Developer skill example
+└── backups/                    # Backup versions (not in production)
 ```
 
 ---
@@ -353,6 +357,42 @@ imagine.html (SPA)
 └── Results Gallery
 ```
 
+### 10. Continue Button for Incomplete Responses
+
+**Detection Logic**:
+- Unclosed code blocks (odd number of triple backticks)
+- Mid-sentence endings (doesn't end with punctuation)
+- Unclosed HTML tags
+- Continuation phrases at the end
+
+**Implementation**:
+- **UI**: Orange pulsing button appears in message actions bar
+- **Trigger**: `isIncompleteResponse()` analyzes message content
+- **Continuation**: Sends conversation context + continue prompt
+- **Streaming**: Updates existing message bubble in real-time
+- **Providers**: Works with Ollama, LiteLLM, and YandexGPT
+
+### 11. YandexGPT Integration
+
+**File**: `index.html` (settings and streaming logic)
+
+Integration with Yandex Cloud Foundation Models (Alice AI).
+
+**Supported Models**:
+- `yandexgpt` - YandexGPT Pro (flagship)
+- `yandexgpt-lite` - YandexGPT Lite (faster)
+- `aliceai-llm/latest` - Alice AI (alice.yandex.ru)
+
+**CORS Proxy** (required for browser):
+- `yandexgpt-proxy.js` - Cloudflare Worker deployment
+- `yandexgpt-proxy-deno.ts` - Deno Deploy deployment  
+- `yandexgpt-proxy-node.js` - Node.js/Express server
+
+**API Details**:
+- Endpoint: `https://ai.api.cloud.yandex.net/v1/responses`
+- Auth: `Api-Key` header + `OpenAI-Project` header (folder ID)
+- Model URI: `gpt://<folder-id>/<model-name>/latest`
+
 ---
 
 ## Technology Stack
@@ -492,6 +532,8 @@ ImagineApp (Image/Video Generation Controller)
 ```javascript
 if (this.currentModel.provider === 'litellm') {
     // Use OpenAI-compatible SSE format
+} else if (this.currentModel.provider === 'yandexgpt') {
+    // Use YandexGPT Responses API
 } else {
     // Use Ollama NDJSON format
 }
@@ -511,8 +553,45 @@ data: {"choices": [{"delta": {"content": "token"}}]}
 data: [DONE]
 ```
 
+**YandexGPT (Responses API)**:
+```
+POST /v1/responses
+{
+    "model": "gpt://folder-id/model-name/latest",
+    "instructions": "system prompt",
+    "input": "user message",
+    "temperature": 0.7,
+    "max_output_tokens": 2048
+}
+```
+
 ### Unified Parsing
 The `streamResponse()` method normalizes both formats into tokens that are fed to `StreamRenderer`.
+
+### Supported Providers
+
+| Provider | Endpoint | Authentication | Models |
+|----------|----------|----------------|--------|
+| **Ollama** | Local/Custom URL | None | Any local model |
+| **LiteLLM** | `https://llm.nexiant.ai` | Bearer Token | Cloud models (GPT-4, Claude, etc.) |
+| **YandexGPT** | `https://ai.api.cloud.yandex.net/v1` | Api-Key + OpenAI-Project | yandexgpt, yandexgpt-lite, aliceai-llm |
+
+#### YandexGPT Specifics
+
+**CORS Requirement**: Yandex Cloud API blocks browser requests. A CORS proxy is required.
+
+**Proxy Options**:
+1. **Cloudflare Worker** - Deploy `yandexgpt-proxy.js` (recommended)
+2. **Deno Deploy** - Deploy `yandexgpt-proxy-deno.ts`
+3. **Node.js Server** - Run `yandexgpt-proxy-node.js`
+
+**Authentication**:
+- Header: `Authorization: Api-Key <key>`
+- Header: `OpenAI-Project: <folder-id>` (Yandex Cloud folder)
+
+**Model URI Format**: `gpt://<folder-id>/<model-name>/latest`
+
+See `YANDEXGPT_PROXY.md` for detailed setup instructions.
 
 ---
 
@@ -670,5 +749,5 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.2*
+*Architecture Documentation v1.3*
 *Last Updated: March 16, 2026*

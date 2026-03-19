@@ -2,6 +2,44 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.3.0] - 2026-03-16
+
+### Added
+
+#### Continue Button for Incomplete Responses
+- **Detect incomplete AI responses** - Automatically detects cut-off responses
+  - Unclosed code blocks (odd number of triple backticks)
+  - Mid-sentence endings
+  - Unclosed HTML tags
+  - Continuation phrases at the end
+- **Continue button UI** - Orange pulsing button appears on incomplete messages
+- **Live continuation** - Streams continuation directly into existing message bubble
+- **Smart context handling** - Builds conversation history for natural continuation
+- **Works with all providers** - Ollama, LiteLLM, and YandexGPT
+
+#### YandexGPT (Alice AI) Integration
+- **New provider: YandexGPT** - Full integration with Yandex Cloud Foundation Models
+- **Available models:**
+  - `yandexgpt` - YandexGPT Pro (flagship model)
+  - `yandexgpt-lite` - YandexGPT Lite (faster)
+  - `aliceai-llm/latest` - Alice AI (as seen in alice.yandex.ru)
+- **CORS Proxy Support** - Includes proxy deployment files for browser compatibility
+  - `yandexgpt-proxy.js` - Cloudflare Worker proxy
+  - `yandexgpt-proxy-deno.ts` - Deno Deploy proxy
+  - `yandexgpt-proxy-node.js` - Node.js/Express proxy
+  - `YANDEXGPT_PROXY.md` - Setup guide
+- **Settings UI** - API Key, Folder ID, and optional Proxy URL fields
+- **Uses Responses API** - `/v1/responses` endpoint for compatibility
+
+### Fixed
+
+#### Continue Button Improvements
+- **Model detection** - Uses stored model from message for continuation
+- **Provider-specific handling** - Proper endpoint selection per provider
+- **Real-time updates** - Message updates live as continuation streams
+
+---
+
 ## [1.2.0] - 2026-03-16
 
 ### Added

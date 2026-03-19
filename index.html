@@ -2758,10 +2758,24 @@
                     // YandexGPT uses OpenAI-compatible API at ai.api.cloud.yandex.net
                     // CORS proxy is auto-configured to use the included proxy worker
                     const proxyUrl = this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev';
-                    this.models.push(
-                        { name: 'yandexgpt', endpoint: proxyUrl, endpointName: 'YandexGPT Pro', provider: 'yandexgpt', folderId: yandexgptFolderId },
-                        { name: 'yandexgpt-lite', endpoint: proxyUrl, endpointName: 'YandexGPT Lite', provider: 'yandexgpt', folderId: yandexgptFolderId }
-                    );
+                    const customModel = this.settings.yandexgptCustomModel;
+                    if (customModel) {
+                        // Use custom model name if specified
+                        this.models.push({
+                            name: customModel,
+                            endpoint: proxyUrl,
+                            endpointName: 'YandexGPT (Custom)',
+                            provider: 'yandexgpt',
+                            folderId: yandexgptFolderId
+                        });
+                    } else {
+                        // Default models
+                        this.models.push(
+                            { name: 'yandexgpt', endpoint: proxyUrl, endpointName: 'YandexGPT Pro', provider: 'yandexgpt', folderId: yandexgptFolderId },
+                            { name: 'yandexgpt-lite', endpoint: proxyUrl, endpointName: 'YandexGPT Lite', provider: 'yandexgpt', folderId: yandexgptFolderId },
+                            { name: 'aliceai-llm/latest', endpoint: proxyUrl, endpointName: 'Alice AI', provider: 'yandexgpt', folderId: yandexgptFolderId }
+                        );
+                    }
                     anyConnected = true;
                 }
 

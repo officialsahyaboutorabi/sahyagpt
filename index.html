@@ -3129,15 +3129,26 @@
                 const signal = this.abortController.signal;
                 
                 try {
+                    // Build conversation history up to this point
+                    const conversationHistory = [];
+                    for (let i = 0; i <= userIndex; i++) {
+                        const m = this.messages[i];
+                        if (m.role === 'user') {
+                            conversationHistory.push({ role: 'user', content: m.content });
+                        } else if (m.role === 'ai') {
+                            // For the incomplete message, include partial content as assistant
+                            if (i === index) {
+                                conversationHistory.push({ role: 'assistant', content: originalContent });
+                            } else {
+                                conversationHistory.push({ role: 'assistant', content: m.content });
+                            }
+                        }
+                    }
+                    // Add continue prompt
+                    conversationHistory.push({ role: 'user', content: 'Continue exactly from where you stopped. Do not rewrite or repeat any previous content.' });
+                    
                     if (isLiteLLM) {
                         // LiteLLM/OpenAI format
-                        // Include the partial assistant response and a simple continue prompt
-                        const messages = [
-                            { role: 'system', content: 'You are continuing a response that was cut off. Do not rewrite, modify, or repeat any of the previous content. Only generate the new continuation text.' },
-                            { role: 'user', content: originalUserMsg.content },
-                            { role: 'assistant', content: originalContent },
-                            { role: 'user', content: 'Continue exactly from where you stopped. Do not repeat anything.' }
-                        ];
                         
                         const response = await fetch(this.settings.litellmEndpoint + '/chat/completions', {
                             method: 'POST',
@@ -3147,7 +3158,7 @@
                             },
                             body: JSON.stringify({
                                 model: modelId,
-                                messages: messages,
+                                messages: conversationHistory,
                                 stream: true
                             }),
                             signal
@@ -3187,19 +3198,12 @@
                         }
                     } else {
                         // Ollama format
-                        const messages = [
-                            { role: 'system', content: 'You are continuing a response that was cut off. Do not rewrite, modify, or repeat any of the previous content. Only generate the new continuation text.' },
-                            { role: 'user', content: originalUserMsg.content },
-                            { role: 'assistant', content: originalContent },
-                            { role: 'user', content: 'Continue exactly from where you stopped. Do not repeat anything.' }
-                        ];
-                        
                         const response = await fetch(this.settings.ollamaEndpoint + '/api/chat', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 model: modelId,
-                                messages: messages,
+                                messages: conversationHistory,
                                 stream: true
                             }),
                             signal

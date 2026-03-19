@@ -3131,21 +3131,18 @@
                 try {
                     // Build conversation history up to this point
                     const conversationHistory = [];
-                    for (let i = 0; i <= userIndex; i++) {
+                    for (let i = 0; i < index; i++) {
                         const m = this.messages[i];
                         if (m.role === 'user') {
                             conversationHistory.push({ role: 'user', content: m.content });
                         } else if (m.role === 'ai') {
-                            // For the incomplete message, include partial content as assistant
-                            if (i === index) {
-                                conversationHistory.push({ role: 'assistant', content: originalContent });
-                            } else {
-                                conversationHistory.push({ role: 'assistant', content: m.content });
-                            }
+                            conversationHistory.push({ role: 'assistant', content: m.content });
                         }
                     }
-                    // Add continue prompt
-                    conversationHistory.push({ role: 'user', content: 'Continue exactly from where you stopped. Do not rewrite or repeat any previous content.' });
+                    // Add the partial response as user context (not assistant) to prevent regeneration
+                    // Then ask AI to complete it
+                    const continuePrompt = `The following is the beginning of your response that got cut off:\n\n<previous_response>\n${originalContent}\n</previous_response>\n\nComplete your response by continuing directly from where it ends above. Output ONLY the new text - do not repeat anything from <previous_response>.`;
+                    conversationHistory.push({ role: 'user', content: continuePrompt });
                     
                     if (isLiteLLM) {
                         // LiteLLM/OpenAI format
@@ -3188,9 +3185,10 @@
                                         const content = parsed.choices?.[0]?.delta?.content;
                                         if (content) {
                                             continuationContent += content;
-                                            // Update the message content live
+                                            // Update the message content live - append new content to original
                                             msg.content = originalContent + continuationContent;
                                             this.renderAIContent(bubble, msg.content);
+                                            this.scrollToBottom();
                                         }
                                     } catch (e) {}
                                 }
@@ -3231,6 +3229,7 @@
                                         // Update the message content live
                                         msg.content = originalContent + continuationContent;
                                         this.renderAIContent(bubble, msg.content);
+                                        this.scrollToBottom();
                                     }
                                 } catch (e) {}
                             }

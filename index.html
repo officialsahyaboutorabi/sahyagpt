@@ -3079,10 +3079,27 @@
                 const originalUserMsg = this.messages[userIndex];
                 
                 // Get the model and provider used for the original message
-                const modelId = msg.model || (this.currentModel ? this.currentModel.id : null);
-                const provider = msg.provider || (this.currentModel ? this.currentModel.provider : null);
+                // First try stored values, then currentModel, then dropdown text
+                let modelId = msg.model || (this.currentModel ? this.currentModel.name : null);
+                let provider = msg.provider || (this.currentModel ? this.currentModel.provider : null);
+                
+                // If still no model, try reading from dropdown
                 if (!modelId) {
-                    this.showToast('Cannot determine model for continuation', 'error');
+                    const dropdownText = document.getElementById('dropdownText');
+                    if (dropdownText && dropdownText.textContent && dropdownText.textContent !== 'Loading models...' && dropdownText.textContent !== 'Select model') {
+                        modelId = dropdownText.textContent.trim();
+                    }
+                }
+                
+                // If still no model, check if we can find it in the models list by matching
+                if (!modelId && this.models.length > 0) {
+                    // Use first available model as last resort
+                    modelId = this.models[0].name;
+                    provider = this.models[0].provider;
+                }
+                
+                if (!modelId) {
+                    this.showToast('Cannot determine model for continuation. Please select a model from the dropdown.', 'error');
                     return;
                 }
                 
@@ -3576,13 +3593,13 @@
                     // Finalize both renderers
                     if (reasoningRenderer) reasoningRenderer.finalize();
                     streamRenderer.finalize();
-                    const modelId = this.currentModel ? this.currentModel.id : null;
+                    const modelId = this.currentModel ? this.currentModel.name : null;
                     const provider = this.currentModel ? this.currentModel.provider : null;
                     this.addMessage('ai', fullResponse, [], modelId, provider);
                 } catch (error) {
                     if (error.name === 'AbortError') {
                         // User stopped generation — save whatever arrived
-                        const modelId = this.currentModel ? this.currentModel.id : null;
+                        const modelId = this.currentModel ? this.currentModel.name : null;
                         const provider = this.currentModel ? this.currentModel.provider : null;
                         if (fullResponse.trim()) this.addMessage('ai', fullResponse, [], modelId, provider);
                     } else if (error instanceof TypeError && fullResponse.trim()) {
@@ -3592,7 +3609,7 @@
                         // received and rendered; finalize to proper HTML then save.
                         if (reasoningRenderer) reasoningRenderer.finalize();
                         if (streamRenderer) streamRenderer.finalize();
-                        const modelId = this.currentModel ? this.currentModel.id : null;
+                        const modelId = this.currentModel ? this.currentModel.name : null;
                         const provider = this.currentModel ? this.currentModel.provider : null;
                         this.addMessage('ai', fullResponse, [], modelId, provider);
                     } else {

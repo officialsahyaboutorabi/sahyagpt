@@ -1461,6 +1461,15 @@
                             <label class="form-label">Folder ID <span>Yandex Cloud folder/catalog ID</span></label>
                             <input type="text" class="form-input" id="yandexgptFolderId" placeholder="b1g…" autocomplete="off">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Proxy URL <span>CORS proxy (required for browser)</span></label>
+                            <input type="text" class="form-input" id="yandexgptProxyUrl" placeholder="https://your-proxy.com/v1" autocomplete="off">
+                        </div>
+                        <div class="form-group" style="font-size: 0.8rem; color: var(--text-secondary);">
+                            <p>⚠️ <strong>CORS Required:</strong> Yandex Cloud API blocks browser requests. You need a proxy server.</p>
+                            <p style="margin-top: 4px;">Option 1: Use a CORS proxy service</p>
+                            <p>Option 2: Deploy the <a href="https://github.com/yandex-cloud-examples/yc-openai-proxy" target="_blank" style="color: var(--accent);">Yandex OpenAI Proxy</a></p>
+                        </div>
                     </div>
                 </div>
                 <div class="settings-section" id="tab-model">
@@ -2745,10 +2754,11 @@
                 const yandexgptApiKey  = this.settings.yandexgptApiKey;
                 const yandexgptFolderId = this.settings.yandexgptFolderId;
                 if (yandexgptEnabled && yandexgptApiKey && yandexgptFolderId) {
-                    // YandexGPT doesn't have a models endpoint, so we add static models
+                    // YandexGPT uses OpenAI-compatible API
+                    const proxyUrl = this.settings.yandexgptProxyUrl || 'https://llm.api.cloud.yandex.net/v1';
                     this.models.push(
-                        { name: 'yandexgpt', endpoint: 'https://llm.api.cloud.yandex.net', endpointName: 'YandexGPT Pro', provider: 'yandexgpt' },
-                        { name: 'yandexgpt-lite', endpoint: 'https://llm.api.cloud.yandex.net', endpointName: 'YandexGPT Lite', provider: 'yandexgpt' }
+                        { name: 'yandexgpt', endpoint: proxyUrl, endpointName: 'YandexGPT Pro', provider: 'yandexgpt', folderId: yandexgptFolderId },
+                        { name: 'yandexgpt-lite', endpoint: proxyUrl, endpointName: 'YandexGPT Lite', provider: 'yandexgpt', folderId: yandexgptFolderId }
                     );
                     anyConnected = true;
                 }
@@ -3131,8 +3141,8 @@
                     return;
                 }
                 
-                // Detect provider - LiteLLM models often have '/' in their name
-                const isLiteLLM = provider === 'litellm' || modelId.includes('/');
+                // Detect provider - LiteLLM/YandexGPT models often have '/' in their name
+                const isLiteLLM = provider === 'litellm' || provider === 'yandexgpt' || modelId.includes('/');
                 
                 // Update UI state
                 this.isGenerating = true;
@@ -3173,13 +3183,21 @@
                     conversationHistory.push({ role: 'user', content: continuePrompt });
                     
                     if (isLiteLLM) {
-                        // LiteLLM/OpenAI format
+                        // LiteLLM/OpenAI format (also used by YandexGPT)
+                        const endpoint = provider === 'yandexgpt' 
+                            ? (this.settings.yandexgptProxyUrl || 'https://llm.api.cloud.yandex.net/v1')
+                            : (this.settings.litellmEndpoint || 'https://llm.nexiant.ai');
+                        const authHeader = provider === 'yandexgpt'
+                            ? `Api-Key ${this.settings.yandexgptApiKey}`
+                            : `Bearer ${this.settings.litellmApiKey}`;
+                        const folderIdHeader = provider === 'yandexgpt' ? { 'x-folder-id': this.settings.yandexgptFolderId } : {};
                         
-                        const response = await fetch(this.settings.litellmEndpoint + '/chat/completions', {
+                        const response = await fetch(endpoint + '/chat/completions', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${this.settings.litellmApiKey}`
+                                'Authorization': authHeader,
+                                ...folderIdHeader
                             },
                             body: JSON.stringify({
                                 model: modelId,
@@ -3523,13 +3541,14 @@
                         }
                         const folderId = this.settings.yandexgptFolderId;
                         const modelUri = `gpt://${folderId}/${this.currentModel.name}/latest`;
-                        // YandexGPT uses 'text' field instead of 'content'
+                        const proxyUrl = this.settings.yandexgptProxyUrl || 'https://llm.api.cloud.yandex.net/v1';
+                        // YandexGPT now supports OpenAI-compatible API
                         const chatMessages = [
-                            { role: 'system', text: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
-                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, text: m.content })),
-                            { role: 'user', text: userMessage }
+                            { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
+                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
+                            { role: 'user', content: userMessage }
                         ];
-                        response = await fetch('https://llm.api.cloud.yandex.net/foundationModels/v1/completion', {
+                        response = await fetch(`${proxyUrl}/chat/completions`, {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json', 
@@ -3537,13 +3556,11 @@
                                 'x-folder-id': folderId
                             },
                             body: JSON.stringify({
-                                modelUri:    modelUri,
+                                model:       modelUri,
                                 messages:    chatMessages,
-                                completionOptions: {
-                                    stream:      true,
-                                    temperature: parseFloat(this.settings.temperature),
-                                    maxTokens:   this.settings.maxTokens
-                                }
+                                stream:      true,
+                                temperature: parseFloat(this.settings.temperature),
+                                max_tokens:  this.settings.maxTokens
                             }),
                             signal
                         });
@@ -3608,8 +3625,7 @@
                     // ── Unified streaming loop ─────────────────────────────────
                     // Buffer handles both NDJSON (Ollama) and SSE (LiteLLM/OpenAI) since
                     // both are newline-delimited and a read() chunk may span lines.
-                    const isOpenAIFormat = this.currentModel.provider === 'litellm';
-                    const isYandexGPT = this.currentModel.provider === 'yandexgpt';
+                    const isOpenAIFormat = this.currentModel.provider === 'litellm' || this.currentModel.provider === 'yandexgpt';
                     let lineBuffer = '';
 
                     while (true) {
@@ -3632,11 +3648,6 @@
                                 let data;
                                 try { data = JSON.parse(trimmed.slice(6)); } catch (e) { continue; }
                                 token = data.choices?.[0]?.delta?.content ?? null;
-                            } else if (isYandexGPT) {
-                                // YandexGPT format: {"result":{"alternatives":[{"message":{"text":"..."}}]}}
-                                let data;
-                                try { data = JSON.parse(trimmed); } catch (e) { continue; }
-                                token = data.result?.alternatives?.[0]?.message?.text ?? null;
                             } else {
                                 // NDJSON: {"response":"...","done":false}
                                 let data;
@@ -4420,6 +4431,7 @@ When the user requests this skill:
                 this.settings.litellmEndpoint = document.getElementById('litellmEndpoint').value.trim().replace(/\/$/, '');
                 this.settings.yandexgptApiKey = document.getElementById('yandexgptApiKey').value.trim();
                 this.settings.yandexgptFolderId = document.getElementById('yandexgptFolderId').value.trim();
+                this.settings.yandexgptProxyUrl = document.getElementById('yandexgptProxyUrl').value.trim().replace(/\/$/, '');
                 if (!this.settings.toggles) this.settings.toggles = {};
                 ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'litellmEnabled', 'yandexgptEnabled'].forEach(key => {
                     const toggle = document.getElementById(`${key}Toggle`);
@@ -4462,7 +4474,7 @@ When the user requests this skill:
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
                         temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
-                        yandexgptApiKey: '', yandexgptFolderId: '',
+                        yandexgptApiKey: '', yandexgptFolderId: '', yandexgptProxyUrl: '',
                         toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, litellmEnabled: false, yandexgptEnabled: false }
                     };
                     this.renderEndpoints();
@@ -4481,6 +4493,7 @@ When the user requests this skill:
                     document.getElementById('litellmEndpoint').value = 'https://llm.nexiant.ai';
                     document.getElementById('yandexgptApiKey').value   = '';
                     document.getElementById('yandexgptFolderId').value = '';
+                    document.getElementById('yandexgptProxyUrl').value = '';
                     // Activate all standard toggles, then explicitly deactivate opt-in ones
                     document.querySelectorAll('.toggle-switch').forEach(toggle => toggle.classList.add('active'));
                     document.getElementById('litellmEnabledToggle').classList.remove('active');
@@ -4525,7 +4538,7 @@ When the user requests this skill:
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
                         temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
-                        yandexgptApiKey: '', yandexgptFolderId: '',
+                        yandexgptApiKey: '', yandexgptFolderId: '', yandexgptProxyUrl: '',
                         ...parsed,
                         // Always deep-merge toggles so new keys get their defaults
                         // even when loading settings saved before those keys existed.
@@ -4547,6 +4560,7 @@ When the user requests this skill:
                     document.getElementById('litellmEndpoint').value = this.settings.litellmEndpoint || 'https://llm.nexiant.ai';
                     document.getElementById('yandexgptApiKey').value   = this.settings.yandexgptApiKey   || '';
                     document.getElementById('yandexgptFolderId').value = this.settings.yandexgptFolderId || '';
+                    document.getElementById('yandexgptProxyUrl').value = this.settings.yandexgptProxyUrl || '';
                     if (this.settings.toggles) {
                         Object.entries(this.settings.toggles).forEach(([key, value]) => {
                             const toggle = document.getElementById(`${key}Toggle`);

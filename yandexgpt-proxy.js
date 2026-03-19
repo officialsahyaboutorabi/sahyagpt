@@ -1,25 +1,19 @@
 /**
  * YandexGPT CORS Proxy Worker
  * 
- * This Cloudflare Worker proxies requests from the browser to Yandex Cloud API,
- * bypassing CORS restrictions.
- * 
- * To deploy:
- * 1. Go to https://workers.cloudflare.com/
- * 2. Create a new worker
- * 3. Copy and paste this code
- * 4. Deploy and get your worker URL
- * 5. Enter the URL in SahyaGPT settings (or use the default)
+ * Deploy to Cloudflare Workers:
+ * 1. Go to https://dash.cloudflare.com/ → Workers & Pages → Create Worker
+ * 2. Paste this code
+ * 3. Save and Deploy
  */
 
-// Configuration
 const YANDEX_API_BASE = 'https://ai.api.cloud.yandex.net/v1';
 
-// CORS headers to allow browser requests
+// CORS headers to allow browser requests from any origin
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-folder-id, x-data-logging-enabled',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, OpenAI-Project, x-data-logging-enabled',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -39,36 +33,51 @@ export default {
       const targetPath = url.pathname;
       const targetUrl = `${YANDEX_API_BASE}${targetPath}`;
 
+      // Get headers from incoming request
+      const authHeader = request.headers.get('Authorization');
+      const folderId = request.headers.get('OpenAI-Project');
+      
+      // Build headers for Yandex API
+      const targetHeaders = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (authHeader) {
+        targetHeaders['Authorization'] = authHeader;
+      }
+      if (folderId) {
+        targetHeaders['OpenAI-Project'] = folderId;
+      }
+
       // Forward the request to Yandex API
       const modifiedRequest = new Request(targetUrl, {
         method: request.method,
-        headers: {
-          // Forward original headers
-          'Content-Type': request.headers.get('Content-Type') || 'application/json',
-          'Authorization': request.headers.get('Authorization'),
-          'x-folder-id': request.headers.get('x-folder-id'),
-          'x-data-logging-enabled': request.headers.get('x-data-logging-enabled') || 'false',
-        },
+        headers: targetHeaders,
         body: request.body,
       });
 
       // Fetch from Yandex API
       const response = await fetch(modifiedRequest);
 
-      // Create new response with CORS headers
-      const modifiedResponse = new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: {
-          ...Object.fromEntries(response.headers),
-          ...corsHeaders,
-        },
+      // Create response headers with CORS
+      const responseHeaders = new Headers(response.headers);
+      
+      // Add CORS headers to response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        responseHeaders.set(key, value);
       });
 
-      return modifiedResponse;
+      // Return response with CORS headers
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: responseHeaders,
+      });
 
     } catch (error) {
       console.error('Proxy error:', error);
+      
+      // Return error with CORS headers
       return new Response(
         JSON.stringify({ 
           error: 'Proxy error', 

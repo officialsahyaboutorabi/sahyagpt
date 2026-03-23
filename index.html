@@ -3556,7 +3556,7 @@
                             return;
                         }
                         const folderId = this.settings.yandexgptFolderId;
-                        const modelUri = `gpt://${folderId}/${this.currentModel.name}/latest`;
+                        const modelUri = `gpt://${folderId}/${this.currentModel.name}`;
                         const proxyUrl = this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev';
                         // YandexGPT uses Responses API (not chat/completions)
                         // Build conversation history as a single input string

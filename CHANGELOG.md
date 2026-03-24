@@ -2,6 +2,48 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.5.0] - 2026-03-24
+
+### Added
+
+#### Comprehensive Skills System
+- **SkillsManager Class** - Complete skill management system
+  - Built-in skills: Brainstorming, Code Review, Debugging, Writing, Explain Like I'm 5, Socratic Tutor
+  - Custom skills: Create, edit, delete, import, and export your own skills
+  - Skills stored in localStorage for persistence
+  - Active skill applied to all LLM conversations via system prompt injection
+
+#### Skills Library Modal
+- **Interactive skill browser** with search and filter capabilities
+- **Skill selector dropdown** in modal header for quick skill activation
+- **Grouped by category**: General, Development, Learning, Design, Analysis, Custom
+- **Visual indicators**: Green styling for active skills, checkmarks for selection
+- **Skill actions**: Apply, Edit, Delete, Export per skill
+
+#### Skill Editor Modal
+- **Create and edit custom skills** with full markdown support
+- **Metadata fields**: Name, category, description
+- **Content editor**: Full instructions for AI behavior
+- **YAML frontmatter support** for skill imports
+
+#### File Import/Export
+- **Import skills** from markdown files (.md, .markdown, .txt)
+- **Parse frontmatter** for name, description, category, content
+- **Export skills** as downloadable markdown files
+- **Template download** for creating new skills
+
+#### Chat Integration
+- **Active skill indicator** in header showing currently applied skill
+- **System prompt injection** - Skill content appended to system prompt
+- **One-click deactivation** from header indicator or skills modal
+- **Persistent activation** across chat sessions
+
+### Changed
+- **Sidebar organization**: Removed inline Apply Skill button, moved to Skills Library modal
+- **Skills Library UI**: Reorganized with Apply Skill dropdown selector
+
+---
+
 ## [1.4.0] - 2026-03-24
 
 ### Added

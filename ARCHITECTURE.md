@@ -271,18 +271,72 @@ Populate UI Elements
 - Token extraction and routing to renderers
 - Thinking block detection and separation
 
-### 6. Extensible Skills System
+### 6. Comprehensive Skills System
 
-**Structure**:
-- Markdown-based skill definitions
-- Template: `skills/SKILL_TEMPLATE.md`
-- Examples: `skills/ui-developer.md`
-- Downloadable from Skills sidebar section
-- 38 skills from BB_Skills repository
+**Architecture**: SkillsManager class + ChatApp integration
 
-**Sidebar Sections**:
-- **Create Skills**: Template download and skill creation interface
-- **Skills Library**: Browse and download all available skills
+**Components**:
+- **SkillsManager**: Central controller for skill CRUD operations
+- **Built-in Skills**: 6 pre-defined skills (Brainstorming, Code Review, Debugging, Writing, ELI5, Socratic Tutor)
+- **Custom Skills**: User-created skills stored in localStorage
+- **Skills Library Modal**: Browse, search, and activate skills
+- **Skill Editor Modal**: Create and edit custom skills
+- **Active Skill Integration**: Skill content injected into system prompt
+
+**Data Flow**:
+```
+User Selects Skill
+    ↓
+SkillsManager.applySkill(skillId)
+    ↓
+Store active skill in localStorage
+    ↓
+Update UI indicators (header badge, Apply Skill button)
+    ↓
+ChatApp.getSystemPromptWithSkill()
+    ↓
+Append skill content to system prompt
+    ↓
+Send to LLM with enhanced instructions
+```
+
+**Storage**:
+- **localStorage Key**: `sahyagpt_custom_skills` - Array of custom skill objects
+- **localStorage Key**: `sahyagpt_active_skill` - Currently active skill ID/name
+
+**Skill Object Structure**:
+```javascript
+{
+    id: 'skill_timestamp',
+    name: 'Skill Name',
+    description: 'What this skill does',
+    category: 'Development',
+    content: 'Full skill instructions for AI...',
+    builtin: false,
+    createdAt: '2026-03-24T...'
+}
+```
+
+**File Format (Markdown with YAML Frontmatter)**:
+```markdown
+---
+name: "my-skill"
+description: "Brief description"
+version: "1.0.0"
+category: "Development"
+---
+
+# Skill Name
+
+## Instructions
+When this skill is active...
+```
+
+**UI Components**:
+- **Apply Skill Button**: Dropdown selector in Skills Library modal
+- **Active Skill Indicator**: Header badge showing current skill
+- **Skill Cards**: Display in library with actions (Apply, Edit, Delete, Export)
+- **Skill Editor**: Form for creating/editing skills
 
 ### 7. Image Preview Modal
 
@@ -459,7 +513,8 @@ ChatApp (Main Controller)
 │   ├── chats[]
 │   ├── settings{}
 │   ├── attachedFiles[]
-│   └── pendingImageFiles[]
+│   ├── pendingImageFiles[]
+│   └── skillsManager (SkillsManager instance)
 ├── UI Components
 │   ├── initPromptInput()
 │   ├── initScrollButton()
@@ -471,17 +526,49 @@ ChatApp (Main Controller)
 │   └── hideScrollToBottomButton()
 ├── Provider Integration
 │   ├── fetchModels()
-│   └── streamResponse()
-├── Skills System
-│   ├── viewSkills()
+│   ├── streamResponse()
+│   └── getSystemPromptWithSkill()
+├── Skills (delegated to SkillsManager)
+│   ├── downloadSkillTemplate()
 │   ├── createNewSkill()
-│   ├── downloadSkill()
-│   └── downloadSkillTemplate()
+│   └── viewSkills()
 └── Utilities
     ├── formatFileSize()
     ├── escapeHtml()
     ├── processAttachedFiles()
     └── save/loadSettings()
+
+SkillsManager (Skill Management)
+├── State Management
+│   ├── builtInSkills[] (6 pre-defined skills)
+│   ├── customSkills[] (user-created)
+│   └── activeSkill (currently applied)
+├── Skill CRUD
+│   ├── createNewSkill()
+│   ├── editSkill(skillId)
+│   ├── deleteSkill(skillId)
+│   ├── exportSkill(skillId)
+│   └── importSkillFromFile()
+├── UI Methods
+│   ├── openSkillsLibrary()
+│   ├── openSkillEditor(skill)
+│   ├── renderSkillsList()
+│   ├── renderSkillSelectorOptions()
+│   ├── toggleSkillSelector()
+│   └── closeSkillSelector()
+├── Skill Activation
+│   ├── applySkill(skillId)
+│   ├── clearActiveSkill()
+│   ├── updateActiveSkillUI()
+│   └── getActiveSkillContent()
+├── Persistence
+│   ├── loadCustomSkills()
+│   ├── saveCustomSkills()
+│   └── loadActiveSkill()
+└── Utilities
+    ├── parseSkillMarkdown()
+    ├── updateSkillsCount()
+    └── escapeHtml()
 
 StreamRenderer (Text Animation)
 ├── update(fullText)
@@ -782,5 +869,5 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.4*
+*Architecture Documentation v1.5*
 *Last Updated: March 24, 2026*

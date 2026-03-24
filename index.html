@@ -2486,6 +2486,7 @@
                 this.activeCategory = '';
                 this.searchMode = false;
                 this.attachedFiles = []; // Store attached files
+                this.skillsManager = null; // Will be initialized in init()
                 this.init();
             }
 
@@ -2493,10 +2494,16 @@
                 // Render sidebar immediately before other operations
                 this.renderSidebarStatic();
                 this.avatar = new AIAvatar('aiAvatar', 80);
+                this.skillsManager = new SkillsManager(this);
                 this.initPromptInput();
                 this.initScrollButton();
                 this.loadSettings();
                 this.loadChats();
+                // Initialize skills UI
+                setTimeout(() => {
+                    this.skillsManager.updateActiveSkillUI();
+                    this.skillsManager.updateSkillsCount();
+                }, 100);
                 this.fetchModels();
                 marked.setOptions({
                     highlight: function(code, lang) {
@@ -3690,6 +3697,15 @@ Using the search results above as your primary source of information, provide a 
                 this.scrollToBottom();
             }
 
+            getSystemPromptWithSkill() {
+                let systemPrompt = this.settings.systemPrompt || 'You are a helpful AI assistant.';
+                const activeSkillContent = this.skillsManager?.getActiveSkillContent();
+                if (activeSkillContent) {
+                    systemPrompt = `${systemPrompt}\n\n--- SKILL INSTRUCTIONS ---\n\n${activeSkillContent}\n\n--- END SKILL INSTRUCTIONS ---`;
+                }
+                return systemPrompt;
+            }
+
             async streamResponse(userMessage, options = {}) {
                 this.isTyping = true;
                 this.isGenerating = true;
@@ -3704,6 +3720,7 @@ Using the search results above as your primary source of information, provide a 
                     return;
                 }
                 
+                const systemPromptWithSkill = this.getSystemPromptWithSkill();
                 let fullResponse = '';
                 // Declared here so catch/finally can always reach them
                 let streamRenderer = null;
@@ -3720,7 +3737,7 @@ Using the search results above as your primary source of information, provide a 
                         }
                         const litellmEndpoint = (this.settings.litellmEndpoint || 'https://llm.nexiant.ai').replace(/\/$/, '');
                         const chatMessages = [
-                            { role: 'system', content: this.settings.systemPrompt || 'You are a helpful AI assistant.' },
+                            { role: 'system', content: systemPromptWithSkill },
                             ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
                             { role: 'user', content: userMessage }
                         ];
@@ -3774,7 +3791,7 @@ Using the search results above as your primary source of information, provide a 
                             },
                             body: JSON.stringify({
                                 model:             modelUri,
-                                instructions:      this.settings.systemPrompt || 'You are a helpful AI assistant.',
+                                instructions:      systemPromptWithSkill,
                                 input:             fullInput,
                                 temperature:       parseFloat(this.settings.temperature),
                                 max_output_tokens: this.settings.maxTokens
@@ -3793,7 +3810,7 @@ Using the search results above as your primary source of information, provide a 
                         // ── Ollama ─────────────────────────────────────────────
                         response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ model: this.currentModel.name, prompt: userMessage, system: this.settings.systemPrompt, temperature: parseFloat(this.settings.temperature), stream: true }),
+                            body: JSON.stringify({ model: this.currentModel.name, prompt: userMessage, system: systemPromptWithSkill, temperature: parseFloat(this.settings.temperature), stream: true }),
                             signal: signal
                         });
                         if (!response.ok) throw new Error('Failed to get response from Ollama');
@@ -4117,146 +4134,25 @@ Using the search results above as your primary source of information, provide a 
             formatFileSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / (1024 * 1024)).toFixed(1) + ' MB'; }
 
             downloadSkillTemplate() {
-                const skillTemplate = `---
-name: skill-name
-version: 1.0.0
-description: Brief description of what this skill does
-author: Your Name
-license: MIT
----
-
-# Skill Name
-
-Brief overview of the skill and its purpose.
-
-## Skill Composition
-
-This skill combines:
-- **Capability 1** - Description
-- **Capability 2** - Description
-- **Capability 3** - Description
-
----
-
-## When to Use
-
-Activate this skill when:
-- Use case 1
-- Use case 2
-- Use case 3
-
----
-
-## Capability Matrix
-
-` + '```' + `
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    SKILL CAPABILITIES                                   │
-└─────────────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────┬─────────────────────────────────────────────────┐
-│  CATEGORY 1          │  • Capability 1                                 │
-│                      │  • Capability 2                                 │
-│                      │  • Capability 3                                 │
-├──────────────────────┼─────────────────────────────────────────────────┤
-│  CATEGORY 2          │  • Capability 4                                 │
-│                      │  • Capability 5                                 │
-│                      │  • Capability 6                                 │
-└──────────────────────┴─────────────────────────────────────────────────┘
-` + '```' + `
-
----
-
-## Development Phases
-
-### Phase 1: Discovery & Planning
-
-**Objective:** Understand requirements and plan the solution
-
-**Activities:**
-1. Requirement gathering
-2. Architecture design
-3. Feasibility analysis
-
-**Deliverables:**
-- Architecture diagram
-- Implementation plan
-
----
-
-### Phase 2: Implementation
-
-**Objective:** Build the solution
-
-**Activities:**
-1. Core development
-2. Testing
-3. Documentation
-
-**Deliverables:**
-- Working code
-- Test suite
-
----
-
-## Quality Standards
-
-### Technical Excellence
-- ✓ Clean code architecture
-- ✓ Proper error handling
-- ✓ Comprehensive testing
-- ✓ Performance optimized
-
-### Documentation
-- ✓ Clear README
-- ✓ Usage examples
-- ✓ API documentation
-
----
-
-## Quick Reference
-
-` + '```' + `
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    QUICK REFERENCE                                      │
-└─────────────────────────────────────────────────────────────────────────┘
-
-COMMANDS:
-- /command1    → Description
-- /command2    → Description
-- /command3    → Description
-
-USAGE:
-skill-name <action> [options]
-` + '```' + `
-
----
-
-## Activation
-
-When the user requests this skill:
-
-1. **Acknowledge the request**
-2. **Identify the phase**
-3. **Apply relevant capabilities**
-4. **Deliver production-ready output**
-
----
-
-*Skill Template v1.0 - Replace content with your skill-specific information*`;
-
-                const blob = new Blob([skillTemplate], { type: 'text/markdown' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'SKILL_TEMPLATE.md';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                
-                this.showToast('Skill template downloaded!', 'success');
+                if (this.skillsManager) {
+                    this.skillsManager.downloadTemplate();
+                }
             }
+
+            createNewSkill() {
+                if (this.skillsManager) {
+                    this.skillsManager.createNewSkill();
+                }
+            }
+
+            viewSkills() {
+                if (this.skillsManager) {
+                    this.skillsManager.viewSkills();
+                }
+            }
+
+            // Legacy skill template method - replaced by skillsManager
+            _legacyDownloadSkillTemplate() {
 
             createNewSkill() {
                 const modalHtml = `
@@ -5050,6 +4946,643 @@ When the user requests this skill:
             }
         }
         
+        // ================================================================
+        // SKILLS MANAGER - Create, Edit, Upload, and Apply Skills
+        // ================================================================
+        class SkillsManager {
+            constructor(chatApp) {
+                this.chatApp = chatApp;
+                this.customSkills = this.loadCustomSkills();
+                this.activeSkill = this.loadActiveSkill();
+                this.builtInSkills = this.getBuiltInSkills();
+                // Initialize Apply Skill button state
+                setTimeout(() => this.updateActiveSkillUI(), 50);
+            }
+
+            loadCustomSkills() {
+                const saved = localStorage.getItem('sahyagpt_custom_skills');
+                if (saved) {
+                    try { return JSON.parse(saved); } catch (e) { console.error('Failed to parse skills:', e); }
+                }
+                return [];
+            }
+
+            saveCustomSkills() {
+                localStorage.setItem('sahyagpt_custom_skills', JSON.stringify(this.customSkills));
+            }
+
+            loadActiveSkill() {
+                const saved = localStorage.getItem('sahyagpt_active_skill');
+                if (saved) {
+                    try { return JSON.parse(saved); } catch (e) {}
+                }
+                return null;
+            }
+
+            getAllSkills() {
+                return [...this.builtInSkills, ...this.customSkills];
+            }
+
+            getBuiltInSkills() {
+                return [
+                    { id: 'brainstorming', name: 'Brainstorming', description: 'Generate creative ideas through structured brainstorming', content: this.getBrainstormingContent(), category: 'General', builtin: true },
+                    { id: 'code-review', name: 'Code Review', description: 'Review code for quality, bugs, and improvements', content: this.getCodeReviewContent(), category: 'Development', builtin: true },
+                    { id: 'debugging', name: 'Debugging Assistant', description: 'Systematically debug and find root causes', content: this.getDebuggingContent(), category: 'Development', builtin: true },
+                    { id: 'writing', name: 'Writing Helper', description: 'Help write and edit content', content: this.getWritingContent(), category: 'General', builtin: true },
+                    { id: 'explain', name: 'Explain Like I\'m 5', description: 'Explain complex topics in simple terms', content: this.getExplainContent(), category: 'Learning', builtin: true },
+                    { id: 'tutor', name: 'Socratic Tutor', description: 'Teach by asking guiding questions', content: this.getTutorContent(), category: 'Learning', builtin: true },
+                ];
+            }
+
+            getBrainstormingContent() {
+                return `You are a brainstorming facilitator. When the user asks for ideas or creative thinking:
+
+1. First, clarify the objective and understand constraints
+2. Generate 5-10 diverse ideas from different angles
+3. For each idea, briefly explain the concept and potential benefits
+4. Group related ideas together
+5. Highlight the most promising 2-3 ideas with reasoning
+
+Be encouraging and creative while keeping ideas practical and actionable.`;
+            }
+
+            getCodeReviewContent() {
+                return `You are a senior code reviewer. When reviewing code:
+
+1. **Bugs & Issues** - Identify logic errors, edge cases, potential crashes
+2. **Readability** - Assess if code is clear, well-named, and maintainable
+3. **Performance** - Point out inefficient algorithms or operations
+4. **Security** - Flag SQL injection, XSS, unsafe eval, hardcoded secrets
+5. **Best Practices** - Suggest idiomatic patterns and improvements
+
+Format your review with clear sections. Be constructive, not critical. Provide specific code examples when suggesting changes.`;
+            }
+
+            getDebuggingContent() {
+                return `You are a debugging expert. When helping debug issues:
+
+1. **Gather Info** - Ask clarifying questions about symptoms, error messages, and context
+2. **Reproduce** - Help identify steps to consistently recreate the issue
+3. **Isolate** - Systematically narrow down the root cause (binary search approach)
+4. **Test Hypotheses** - Suggest specific tests to verify potential causes
+5. **Fix & Verify** - Propose solutions and help verify they work
+
+Think out loud about your debugging process. Ask for logs, stack traces, or specific code sections as needed.`;
+            }
+
+            getWritingContent() {
+                return `You are a writing assistant. When helping with writing:
+
+1. **Understand Purpose** - Clarify the goal, audience, and tone
+2. **Structure** - Suggest an appropriate outline or flow
+3. **Draft** - Help write clear, engaging content
+4. **Refine** - Improve clarity, flow, word choice, and impact
+5. **Polish** - Fix grammar, punctuation, and style issues
+
+Provide specific, actionable suggestions. Explain why changes improve the writing.`;
+            }
+
+            getExplainContent() {
+                return `You are an expert explainer who breaks down complex topics into simple terms.
+
+When explaining:
+1. Use analogies and everyday examples
+2. Avoid jargon - or explain it immediately when used
+3. Build understanding step by step
+4. Use "imagine if..." scenarios
+5. Check for understanding with simple questions
+
+Make the user feel smart for understanding something complex, not dumb for not knowing it initially.`;
+            }
+
+            getTutorContent() {
+                return `You are a Socratic tutor who teaches through guided questions.
+
+When tutoring:
+1. Never give the answer directly
+2. Ask probing questions that lead the student to discover the answer
+3. Build on what they already know
+4. Use "What do you think would happen if...?" style questions
+5. Confirm their correct reasoning and gently correct misconceptions
+6. Summarize key insights they discovered themselves
+
+Your goal is to help the student learn how to think, not just what to think.`;
+            }
+
+            downloadTemplate() {
+                const template = `---
+name: "my-custom-skill"
+description: "Brief description of what this skill does"
+version: "1.0.0"
+category: "General"
+---
+
+# My Custom Skill
+
+## Purpose
+This skill helps with... (describe what the skill does)
+
+## When to Use
+Activate this skill when:
+- Use case 1
+- Use case 2
+- Use case 3
+
+## Instructions
+When this skill is active:
+
+1. **Step 1** - Description of what to do
+2. **Step 2** - Description of what to do
+3. **Step 3** - Description of what to do
+
+## Guidelines
+- Guideline 1
+- Guideline 2
+- Guideline 3
+
+## Example Interaction
+
+**User:** Example user input
+
+**Assistant:** Example of how you should respond with this skill active`;
+                this.downloadFile(template, 'skill-template.md', 'text/markdown');
+                this.chatApp.showToast('Skill template downloaded', 'success');
+            }
+
+            downloadFile(content, filename, type) {
+                const blob = new Blob([content], { type });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            createNewSkill() {
+                this.openSkillEditor();
+            }
+
+            viewSkills() {
+                this.openSkillsLibrary();
+            }
+
+            openSkillEditor(skill = null) {
+                const isEdit = skill !== null;
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay active';
+                modal.id = 'skillEditorModal';
+                modal.innerHTML = `
+                    <div class="modal" style="max-width: 700px; height: clamp(500px, 90vh, 800px);">
+                        <div class="modal-header">
+                            <h2 class="modal-title">${isEdit ? 'Edit Skill' : 'Create New Skill'}</h2>
+                            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                        <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                            <div class="form-group">
+                                <label class="form-label">Skill Name <span style="color: var(--error);">*</span></label>
+                                <input type="text" class="form-input" id="skillName" placeholder="e.g., React Expert" value="${isEdit ? this.escapeHtml(skill.name) : ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" id="skillCategory">
+                                    <option value="General" ${isEdit && skill.category === 'General' ? 'selected' : ''}>General</option>
+                                    <option value="Development" ${isEdit && skill.category === 'Development' ? 'selected' : ''}>Development</option>
+                                    <option value="Design" ${isEdit && skill.category === 'Design' ? 'selected' : ''}>Design</option>
+                                    <option value="Writing" ${isEdit && skill.category === 'Writing' ? 'selected' : ''}>Writing</option>
+                                    <option value="Learning" ${isEdit && skill.category === 'Learning' ? 'selected' : ''}>Learning</option>
+                                    <option value="Analysis" ${isEdit && skill.category === 'Analysis' ? 'selected' : ''}>Analysis</option>
+                                    <option value="Custom" ${isEdit && skill.category === 'Custom' ? 'selected' : ''}>Custom</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description <span>Brief summary</span></label>
+                                <input type="text" class="form-input" id="skillDescription" placeholder="What this skill helps with..." value="${isEdit ? this.escapeHtml(skill.description) : ''}">
+                            </div>
+                            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                                <label class="form-label">Skill Content <span style="color: var(--error);">*</span> <span>Full instructions for the AI</span></label>
+                                <textarea class="form-textarea" id="skillContent" placeholder="Enter the skill instructions here... This is what the AI will know when this skill is active." style="flex: 1; min-height: 200px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">${isEdit ? this.escapeHtml(skill.content) : ''}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="reset-btn" onclick="document.getElementById('skillEditorModal')?.closest('.modal-overlay')?.remove()">Cancel</button>
+                            <button class="save-btn" id="saveSkillBtn">${isEdit ? 'Update' : 'Create'} Skill</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                modal.querySelector('#saveSkillBtn').addEventListener('click', () => {
+                    const name = modal.querySelector('#skillName').value.trim();
+                    const category = modal.querySelector('#skillCategory').value;
+                    const description = modal.querySelector('#skillDescription').value.trim();
+                    const content = modal.querySelector('#skillContent').value.trim();
+
+                    if (!name) { this.chatApp.showToast('Please enter a skill name', 'error'); return; }
+                    if (!content) { this.chatApp.showToast('Please enter skill content', 'error'); return; }
+
+                    if (isEdit && !skill.builtin) {
+                        const index = this.customSkills.findIndex(s => s.id === skill.id);
+                        if (index !== -1) {
+                            this.customSkills[index] = { ...skill, name, category, description, content, updatedAt: new Date().toISOString() };
+                        }
+                    } else {
+                        const newSkill = {
+                            id: 'skill_' + Date.now(),
+                            name,
+                            category,
+                            description: description || name,
+                            content,
+                            builtin: false,
+                            createdAt: new Date().toISOString()
+                        };
+                        this.customSkills.push(newSkill);
+                    }
+
+                    this.saveCustomSkills();
+                    modal.remove();
+                    this.chatApp.showToast(isEdit ? 'Skill updated' : 'Skill created', 'success');
+                    this.updateSkillsLibraryUI();
+                    this.updateSkillsCount();
+                });
+            }
+
+            openSkillsLibrary() {
+                const skills = this.getAllSkills();
+                const activeSkillId = this.activeSkill?.id;
+
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay active';
+                modal.id = 'skillsLibraryModal';
+                modal.innerHTML = `
+                    <div class="modal" style="max-width: 850px; height: clamp(500px, 90vh, 850px);">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Skills Library (${skills.length})</h2>
+                            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                                <button class="prompt-action-btn" onclick="chatApp.skillsManager.openSkillEditor()" style="background: rgba(255, 79, 0, 0.1); border-color: var(--accent); color: var(--accent);">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    Create New
+                                </button>
+                                <button class="prompt-action-btn" onclick="chatApp.skillsManager.importSkillFromFile()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    Import
+                                </button>
+                                <div style="position: relative;">
+                                    <button class="prompt-action-btn" id="skillSelectorBtn" onclick="chatApp.skillsManager.toggleSkillSelector()" style="${this.activeSkill ? 'background: rgba(0, 255, 136, 0.1); border-color: var(--success); color: var(--success);' : ''}">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                        ${this.activeSkill ? this.escapeHtml(this.activeSkill.name) : 'Apply Skill'}
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </button>
+                                    <div id="skillSelectorDropdown" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 280px; max-height: 400px; overflow-y: auto; background: rgba(23, 23, 23, 0.98); border: 1px solid var(--border); border-radius: 12px; padding: 8px; z-index: 1000; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);">
+                                        ${this.renderSkillSelectorOptions()}
+                                    </div>
+                                </div>
+                                ${this.activeSkill ? `
+                                    <button class="prompt-action-btn" onclick="chatApp.skillsManager.clearActiveSkill()" style="color: var(--error);">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        Clear
+                                    </button>
+                                ` : ''}
+                                <div style="flex: 1; min-width: 150px;"></div>
+                                <input type="text" class="form-input" id="skillSearchInput" placeholder="Search skills..." style="max-width: 220px;">
+                            </div>
+                            <div id="skillsListContainer">
+                                ${this.renderSkillsList(skills, activeSkillId)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                const searchInput = modal.querySelector('#skillSearchInput');
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase();
+                    const filtered = skills.filter(s => 
+                        s.name.toLowerCase().includes(query) ||
+                        s.description.toLowerCase().includes(query) ||
+                        s.category.toLowerCase().includes(query)
+                    );
+                    modal.querySelector('#skillsListContainer').innerHTML = this.renderSkillsList(filtered, activeSkillId);
+                });
+            }
+
+            renderSkillSelectorOptions() {
+                const skills = this.getAllSkills();
+                const grouped = {};
+                skills.forEach(skill => {
+                    const cat = skill.category || 'General';
+                    if (!grouped[cat]) grouped[cat] = [];
+                    grouped[cat].push(skill);
+                });
+
+                return Object.entries(grouped).map(([category, catSkills]) => `
+                    <div style="margin-bottom: 8px;">
+                        <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px;">${this.escapeHtml(category)}</div>
+                        ${catSkills.map(skill => `
+                            <div onclick="chatApp.skillsManager.applySkill('${skill.id}'); chatApp.skillsManager.closeSkillSelector();" 
+                                 style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; ${this.activeSkill?.id === skill.id ? 'background: rgba(0, 255, 136, 0.1);' : ''}"
+                                 onmouseover="this.style.background='rgba(255, 79, 0, 0.1)'" 
+                                 onmouseout="this.style.background='${this.activeSkill?.id === skill.id ? 'rgba(0, 255, 136, 0.1)' : 'transparent'}'">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; ${this.activeSkill?.id === skill.id ? 'color: var(--success);' : 'color: var(--text-secondary);'}"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">${this.escapeHtml(skill.name)}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(skill.description)}</div>
+                                </div>
+                                ${this.activeSkill?.id === skill.id ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            }
+
+            toggleSkillSelector() {
+                const dropdown = document.getElementById('skillSelectorDropdown');
+                const btn = document.getElementById('skillSelectorBtn');
+                if (dropdown && btn) {
+                    const isOpen = dropdown.style.display === 'block';
+                    dropdown.style.display = isOpen ? 'none' : 'block';
+                    btn.querySelector('svg:last-child').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                    
+                    // Close dropdown when clicking outside
+                    if (!isOpen) {
+                        const closeOnClickOutside = (e) => {
+                            if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                                dropdown.style.display = 'none';
+                                btn.querySelector('svg:last-child').style.transform = 'rotate(0deg)';
+                                document.removeEventListener('click', closeOnClickOutside);
+                            }
+                        };
+                        setTimeout(() => document.addEventListener('click', closeOnClickOutside), 0);
+                    }
+                }
+            }
+
+            closeSkillSelector() {
+                const dropdown = document.getElementById('skillSelectorDropdown');
+                const btn = document.getElementById('skillSelectorBtn');
+                if (dropdown) dropdown.style.display = 'none';
+                if (btn) btn.querySelector('svg:last-child').style.transform = 'rotate(0deg)';
+            }
+
+            renderSkillsList(skills, activeSkillId) {
+                if (skills.length === 0) {
+                    return `<div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 20px; opacity: 0.3;">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <div style="font-size: 1.1rem; margin-bottom: 8px;">No skills found</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Create a new skill or import from file</div>
+                    </div>`;
+                }
+
+                const grouped = {};
+                skills.forEach(skill => {
+                    const cat = skill.category || 'General';
+                    if (!grouped[cat]) grouped[cat] = [];
+                    grouped[cat].push(skill);
+                });
+
+                return Object.entries(grouped).map(([category, catSkills]) => `
+                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 8px; height: 8px; border-radius: 2px; background: var(--accent);"></span>
+                        ${this.escapeHtml(category)}
+                        <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;">${catSkills.length}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+                        ${catSkills.map(skill => `
+                            <div class="skill-card" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(18, 18, 18, 0.85); border: 1px solid ${activeSkillId === skill.id ? 'var(--accent)' : 'var(--border)'}; border-radius: 12px; transition: all 0.2s ease; ${activeSkillId === skill.id ? 'background: rgba(255, 79, 0, 0.05);' : ''}">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <h3 style="font-size: 1rem; font-weight: 600; margin: 0; color: var(--text-primary);">${this.escapeHtml(skill.name)}</h3>
+                                        ${skill.builtin ? '<span style="font-size: 0.7rem; padding: 3px 10px; background: var(--border); border-radius: 10px; color: var(--text-secondary);">Built-in</span>' : '<span style="font-size: 0.7rem; padding: 3px 10px; background: rgba(255, 79, 0, 0.15); border-radius: 10px; color: var(--accent);">Custom</span>'}
+                                        ${activeSkillId === skill.id ? '<span style="font-size: 0.7rem; padding: 3px 10px; background: rgba(0, 255, 136, 0.15); border-radius: 10px; color: var(--success);">Active</span>' : ''}
+                                    </div>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">${this.escapeHtml(skill.description)}</p>
+                                </div>
+                                <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                                    <button class="action-btn" onclick="chatApp.skillsManager.applySkill('${skill.id}')" title="Apply skill" style="${activeSkillId === skill.id ? 'background: rgba(0, 255, 136, 0.1); color: var(--success);' : ''}">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </button>
+                                    ${!skill.builtin ? `
+                                        <button class="action-btn" onclick="event.stopPropagation(); chatApp.skillsManager.editSkill('${skill.id}')" title="Edit">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        </button>
+                                        <button class="action-btn" onclick="event.stopPropagation(); chatApp.skillsManager.exportSkill('${skill.id}')" title="Export">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        </button>
+                                        <button class="action-btn" onclick="event.stopPropagation(); chatApp.skillsManager.deleteSkill('${skill.id}')" title="Delete" style="color: var(--error);">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            }
+
+            applySkill(skillId) {
+                const skill = this.getAllSkills().find(s => s.id === skillId);
+                if (!skill) { this.chatApp.showToast('Skill not found', 'error'); return; }
+
+                this.activeSkill = skill;
+                localStorage.setItem('sahyagpt_active_skill', JSON.stringify({ id: skillId, name: skill.name }));
+
+                const libraryModal = document.getElementById('skillsLibraryModal');
+                if (libraryModal) libraryModal.remove();
+
+                this.chatApp.showToast(`Skill "${skill.name}" activated`, 'success');
+                this.updateActiveSkillUI();
+            }
+
+            clearActiveSkill() {
+                this.activeSkill = null;
+                localStorage.removeItem('sahyagpt_active_skill');
+                this.updateActiveSkillUI();
+                this.chatApp.showToast('Skill deactivated', 'success');
+                this.updateSkillsLibraryUI();
+            }
+
+            updateActiveSkillUI() {
+                const existing = document.getElementById('activeSkillIndicator');
+                if (existing) existing.remove();
+
+                if (this.activeSkill) {
+                    const header = document.querySelector('.header-right');
+                    if (header) {
+                        const indicator = document.createElement('div');
+                        indicator.id = 'activeSkillIndicator';
+                        indicator.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: rgba(255, 79, 0, 0.1); border: 1px solid var(--accent); border-radius: 20px; font-size: 0.8rem; color: var(--accent); cursor: pointer; transition: all 0.2s;';
+                        indicator.innerHTML = `
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                            <span>${this.escapeHtml(this.activeSkill.name)}</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        `;
+                        indicator.onclick = () => this.clearActiveSkill();
+                        indicator.title = 'Click to deactivate skill';
+                        header.insertBefore(indicator, header.firstChild);
+                    }
+                }
+            }
+
+            editSkill(skillId) {
+                const skill = this.customSkills.find(s => s.id === skillId);
+                if (skill) this.openSkillEditor(skill);
+            }
+
+            deleteSkill(skillId) {
+                if (!confirm('Are you sure you want to delete this skill?')) return;
+                this.customSkills = this.customSkills.filter(s => s.id !== skillId);
+                this.saveCustomSkills();
+                if (this.activeSkill?.id === skillId) this.clearActiveSkill();
+                this.updateSkillsLibraryUI();
+                this.updateSkillsCount();
+                this.chatApp.showToast('Skill deleted', 'success');
+            }
+
+            exportSkill(skillId) {
+                const skill = this.getAllSkills().find(s => s.id === skillId);
+                if (!skill) return;
+
+                const content = `---
+name: "${skill.name}"
+description: "${skill.description}"
+version: "1.0.0"
+category: "${skill.category || 'General'}"
+---
+
+# ${skill.name}
+
+${skill.content}
+`;
+                this.downloadFile(content, `${skill.name.toLowerCase().replace(/\s+/g, '-')}-skill.md`, 'text/markdown');
+                this.chatApp.showToast('Skill exported', 'success');
+            }
+
+            async importSkillFromFile() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.md,.markdown,.txt';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    try {
+                        const text = await file.text();
+                        const skill = this.parseSkillMarkdown(text);
+                        
+                        if (!skill.name || !skill.content) {
+                            this.chatApp.showToast('Invalid skill file format', 'error');
+                            return;
+                        }
+
+                        this.customSkills.push({
+                            id: 'skill_' + Date.now(),
+                            name: skill.name,
+                            description: skill.description || skill.name,
+                            category: skill.category || 'General',
+                            content: skill.content,
+                            builtin: false,
+                            createdAt: new Date().toISOString()
+                        });
+                        this.saveCustomSkills();
+
+                        this.chatApp.showToast('Skill imported successfully', 'success');
+                        this.updateSkillsLibraryUI();
+                        this.updateSkillsCount();
+                    } catch (err) {
+                        console.error('Import error:', err);
+                        this.chatApp.showToast('Failed to import skill', 'error');
+                    }
+                };
+                input.click();
+            }
+
+            parseSkillMarkdown(markdown) {
+                const skill = { name: '', description: '', category: '', content: '' };
+                const frontmatterMatch = markdown.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+                if (frontmatterMatch) {
+                    const frontmatter = frontmatterMatch[1];
+                    skill.content = frontmatterMatch[2].trim();
+                    frontmatter.split('\n').forEach(line => {
+                        const match = line.match(/^([\w]+):\s*["']?(.*?)["']?$/);
+                        if (match) {
+                            const key = match[1];
+                            const value = match[2].replace(/^["']|["']$/g, '');
+                            if (key === 'name') skill.name = value;
+                            if (key === 'description') skill.description = value;
+                            if (key === 'category') skill.category = value;
+                        }
+                    });
+                } else {
+                    const h1Match = markdown.match(/^#\s+(.+)$/m);
+                    skill.name = h1Match ? h1Match[1] : 'Imported Skill';
+                    skill.content = markdown;
+                }
+                return skill;
+            }
+
+            updateSkillsLibraryUI() {
+                const libraryModal = document.getElementById('skillsLibraryModal');
+                if (libraryModal) {
+                    const skills = this.getAllSkills();
+                    const activeSkillId = this.activeSkill?.id;
+                    libraryModal.querySelector('#skillsListContainer').innerHTML = this.renderSkillsList(skills, activeSkillId);
+                    
+                    // Update Apply Skill button
+                    const selectorBtn = libraryModal.querySelector('#skillSelectorBtn');
+                    const dropdown = libraryModal.querySelector('#skillSelectorDropdown');
+                    if (selectorBtn) {
+                        if (this.activeSkill) {
+                            selectorBtn.style.cssText = 'background: rgba(0, 255, 136, 0.1); border-color: var(--success); color: var(--success);';
+                            selectorBtn.innerHTML = `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                ${this.escapeHtml(this.activeSkill.name)}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            `;
+                        } else {
+                            selectorBtn.style.cssText = '';
+                            selectorBtn.innerHTML = `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                Apply Skill
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            `;
+                        }
+                    }
+                    if (dropdown) {
+                        dropdown.innerHTML = this.renderSkillSelectorOptions();
+                    }
+                }
+            }
+
+            updateSkillsCount() {
+                const totalSkills = this.getAllSkills().length;
+                const viewBtn = document.querySelector('.view-skills-btn');
+                if (viewBtn) {
+                    viewBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        View Skills (${totalSkills})
+                    `;
+                }
+            }
+
+            getActiveSkillContent() {
+                return this.activeSkill ? this.activeSkill.content : null;
+            }
+
+            escapeHtml(text) {
+                if (!text) return '';
+                return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+        }
+
         // Close image preview on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {

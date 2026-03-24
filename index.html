@@ -2497,7 +2497,7 @@
                 this.init();
             }
 
-            init() {
+            async init() {
                 // Render sidebar immediately before other operations
                 this.renderSidebarStatic();
                 this.avatar = new AIAvatar('aiAvatar', 80);
@@ -2512,7 +2512,7 @@
                     this.skillsManager.updateSkillsCount();
                 }, 100);
                 this.fetchModels();
-                this.loadLanguage();
+                await this.loadLanguage();
                 marked.setOptions({
                     highlight: function(code, lang) {
                         if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
@@ -3078,26 +3078,30 @@ Using the search results above as your primary source of information, provide a 
                 trigger.classList.remove('active');
             }
 
-            selectLanguage(lang) {
+            selectLanguage(lang, save = true) {
                 this.currentLanguage = lang;
-                localStorage.setItem('sahyagpt_language', lang);
+                if (save) {
+                    localStorage.setItem('sahyagpt_language', lang);
+                }
                 
                 const flag = document.getElementById('languageFlag');
                 const text = document.getElementById('languageText');
                 const menu = document.getElementById('languageMenu');
                 
                 if (lang === 'en') {
-                    flag.textContent = '🇬🇧';
-                    text.textContent = 'English';
+                    if (flag) flag.textContent = '🇬🇧';
+                    if (text) text.textContent = 'English';
                 } else if (lang === 'ru') {
-                    flag.textContent = '🇷🇺';
-                    text.textContent = 'Русский';
+                    if (flag) flag.textContent = '🇷🇺';
+                    if (text) text.textContent = 'Русский';
                 }
                 
                 // Update selected state in dropdown
-                menu.querySelectorAll('.dropdown-item').forEach(item => {
-                    item.classList.toggle('selected', item.dataset.value === lang);
-                });
+                if (menu) {
+                    menu.querySelectorAll('.dropdown-item').forEach(item => {
+                        item.classList.toggle('selected', item.dataset.value === lang);
+                    });
+                }
                 
                 this.closeLanguageDropdown();
                 this.applyLanguage(lang);
@@ -3201,101 +3205,54 @@ Using the search results above as your primary source of information, provide a 
                 }
             }
 
-            translations = {
-                en: {
-                    welcomeTitle: 'How can I help you today?',
-                    welcomeSubtitle: 'Experience the next generation of AI conversation with SahyaGPT powered by Ollama. Select a model and start chatting.',
-                    messagePlaceholder: 'Message SahyaGPT...',
-                    footer: 'SahyaGPT can make mistakes. Consider checking important information.',
-                    navChat: 'Chat',
-                    navImagine: 'Imagine',
-                    chatHistory: 'Chat History',
-                    createSkills: 'Create Skills',
-                    skillsLibrary: 'Skills Library',
-                    newChat: 'New Chat',
-                    downloadTemplate: 'Download Template',
-                    createNewSkill: 'Create New Skill',
-                    viewSkills: 'View Skills',
-                    settings: 'Settings',
-                    loadingModels: 'Loading models...',
-                    connected: 'Connected',
-                    disconnected: 'Disconnected',
-                    suggestion1: 'Explain quantum computing',
-                    suggestion2: 'Write a Python function',
-                    suggestion3: 'Renewable energy benefits',
-                    suggestion4: 'Help debug code',
-                    noChats: 'No chats yet',
-                    settingsGeneral: 'General',
-                    settingsModel: 'Model',
-                    settingsAppearance: 'Appearance',
-                    settingsAdvanced: 'Advanced',
-                    systemPrompt: 'System Prompt',
-                    systemPromptDesc: 'Instructions for the AI',
-                    temperature: 'Temperature',
-                    temperatureDesc: 'Controls creativity',
-                    maxTokens: 'Max Tokens',
-                    maxTokensDesc: 'Maximum response length',
-                    topP: 'Top P',
-                    topPDesc: 'Nucleus sampling threshold',
-                    theme: 'Theme',
-                    fontSize: 'Font Size',
-                    autoSave: 'Auto-save chats',
-                    autoSaveDesc: 'Automatically save conversation history',
-                    enterToSend: 'Send with Enter',
-                    enterToSendDesc: 'Press Enter to send, Shift+Enter for new line',
-                    showTimestamps: 'Show timestamps',
-                    showTimestampsDesc: 'Display message timestamps in chat'
-                },
-                ru: {
-                    welcomeTitle: 'Чем могу помочь?',
-                    welcomeSubtitle: 'Испытайте новое поколение AI-разговоров с SahyaGPT на базе Ollama. Выберите модель и начните общение.',
-                    messagePlaceholder: 'Напишите сообщение SahyaGPT...',
-                    footer: 'SahyaGPT может ошибаться. Проверяйте важную информацию.',
-                    navChat: 'Чат',
-                    navImagine: 'Создание',
-                    chatHistory: 'История чатов',
-                    createSkills: 'Создать навыки',
-                    skillsLibrary: 'Библиотека навыков',
-                    newChat: 'Новый чат',
-                    downloadTemplate: 'Скачать шаблон',
-                    createNewSkill: 'Создать навык',
-                    viewSkills: 'Смотреть навыки',
-                    settings: 'Настройки',
-                    loadingModels: 'Загрузка моделей...',
-                    connected: 'Подключено',
-                    disconnected: 'Отключено',
-                    suggestion1: 'Объясни квантовые вычисления',
-                    suggestion2: 'Напиши функцию Python',
-                    suggestion3: 'Польза возобновляемой энергии',
-                    suggestion4: 'Помоги отладить код',
-                    noChats: 'Нет чатов',
-                    settingsGeneral: 'Общие',
-                    settingsModel: 'Модель',
-                    settingsAppearance: 'Внешний вид',
-                    settingsAdvanced: 'Дополнительно',
-                    systemPrompt: 'Системный промпт',
-                    systemPromptDesc: 'Инструкции для AI',
-                    temperature: 'Температура',
-                    temperatureDesc: 'Контролирует креативность',
-                    maxTokens: 'Макс. токенов',
-                    maxTokensDesc: 'Максимальная длина ответа',
-                    topP: 'Top P',
-                    topPDesc: 'Порог сэмплирования',
-                    theme: 'Тема',
-                    fontSize: 'Размер шрифта',
-                    autoSave: 'Автосохранение чатов',
-                    autoSaveDesc: 'Автоматически сохранять историю разговоров',
-                    enterToSend: 'Отправка по Enter',
-                    enterToSendDesc: 'Нажмите Enter для отправки, Shift+Enter для новой строки',
-                    showTimestamps: 'Показывать время',
-                    showTimestampsDesc: 'Отображать время сообщений в чате'
-                }
-            };
+            translations = {};
 
-            loadLanguage() {
+            async loadTranslations() {
+                try {
+                    const [en, ru] = await Promise.all([
+                        fetch('translations/en.json').then(r => r.json()).catch(() => ({})),
+                        fetch('translations/ru.json').then(r => r.json()).catch(() => ({}))
+                    ]);
+                    this.translations = { en, ru };
+                    // Apply loaded language
+                    if (this.currentLanguage) {
+                        this.applyLanguage(this.currentLanguage);
+                    }
+                } catch (e) {
+                    console.error('Failed to load translations:', e);
+                    // Fallback translations
+                    this.translations = {
+                        en: {
+                            welcomeTitle: 'How can I help you today?',
+                            welcomeSubtitle: 'Experience the next generation of AI conversation with SahyaGPT.',
+                            messagePlaceholder: 'Message SahyaGPT...',
+                            footer: 'SahyaGPT can make mistakes. Consider checking important information.',
+                            connected: 'Connected',
+                            disconnected: 'Disconnected'
+                        },
+                        ru: {
+                            welcomeTitle: 'Чем могу помочь?',
+                            welcomeSubtitle: 'Испытайте новое поколение AI-разговоров с SahyaGPT.',
+                            messagePlaceholder: 'Напишите сообщение SahyaGPT...',
+                            footer: 'SahyaGPT может ошибаться. Проверяйте важную информацию.',
+                            connected: 'Подключено',
+                            disconnected: 'Отключено'
+                        }
+                    };
+                }
+            }
+
+            async loadLanguage() {
+                await this.loadTranslations();
                 const saved = localStorage.getItem('sahyagpt_language');
-                if (saved) {
-                    this.selectLanguage(saved);
+                if (saved && saved !== 'en') {
+                    this.selectLanguage(saved, false);
+                } else {
+                    // Just set UI flag for English
+                    const flag = document.getElementById('languageFlag');
+                    const text = document.getElementById('languageText');
+                    if (flag) flag.textContent = '🇬🇧';
+                    if (text) text.textContent = 'English';
                 }
             }
 

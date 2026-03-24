@@ -867,6 +867,44 @@
             .api-key-btn { width: 100%; }
             .results-header { flex-direction: column; gap: 12px; align-items: flex-start; }
         }
+        
+        /* Custom Dropdown - Language Selector */
+        .custom-dropdown { position: relative; display: inline-block; }
+        .dropdown-trigger {
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+            background: rgba(23, 23, 23, 0.9); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--text-primary); font-size: 0.9rem; cursor: pointer;
+            transition: all 0.2s ease; min-width: 120px; user-select: none;
+        }
+        .dropdown-trigger:hover { border-color: var(--border); }
+        .dropdown-trigger.active { border-color: var(--border); }
+        .dropdown-trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dropdown-arrow { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); flex-shrink: 0; }
+        .dropdown-trigger.active .dropdown-arrow { transform: rotate(180deg); }
+        .dropdown-menu {
+            position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+            background: rgba(23, 23, 23, 0.9); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+            opacity: 0; visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transform-origin: top center;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            max-height: 300px; overflow-y: auto;
+        }
+        .dropdown-menu.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .dropdown-item {
+            padding: 12px 16px; color: var(--text-secondary); font-size: 0.9rem;
+            cursor: pointer; transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: flex; align-items: center;
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .dropdown-item.selected { background: var(--bg-selected); color: var(--text-primary); }
+        .language-dropdown .dropdown-trigger { min-width: 120px; }
     </style>
 </head>
 <body>
@@ -961,6 +999,22 @@
                 </div>
                 
                 <div class="header-right">
+                    <!-- Language Dropdown -->
+                    <div class="custom-dropdown language-dropdown" id="languageDropdown">
+                        <div class="dropdown-trigger" onclick="imagineApp.toggleLanguageDropdown()">
+                            <span id="languageFlag">🇺🇸</span>
+                            <span class="dropdown-trigger-text" id="languageText">English</span>
+                            <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                        <div class="dropdown-menu" id="languageMenu">
+                            <div class="dropdown-item selected" onclick="imagineApp.selectLanguage('en')" data-value="en">
+                                <span style="margin-right: 8px;">🇬🇧</span> English
+                            </div>
+                            <div class="dropdown-item" onclick="imagineApp.selectLanguage('ru')" data-value="ru">
+                                <span style="margin-right: 8px;">🇷🇺</span> Русский
+                            </div>
+                        </div>
+                    </div>
                     <div class="status-indicator">
                         <span class="status-dot" id="statusDot"></span>
                         <span id="statusText">Ready</span>
@@ -2009,6 +2063,46 @@
                 overlay.classList.remove('active');
             }
             
+            toggleLanguageDropdown() {
+                const dropdown = document.getElementById('languageDropdown');
+                const menu = document.getElementById('languageMenu');
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                
+                if (menu.classList.contains('open')) {
+                    menu.classList.remove('open');
+                    trigger.classList.remove('active');
+                } else {
+                    menu.classList.add('open');
+                    trigger.classList.add('active');
+                }
+            }
+            
+            selectLanguage(lang) {
+                const flag = document.getElementById('languageFlag');
+                const text = document.getElementById('languageText');
+                
+                if (lang === 'en') {
+                    flag.textContent = '🇺🇸';
+                    text.textContent = 'English';
+                } else if (lang === 'ru') {
+                    flag.textContent = '🇷🇺';
+                    text.textContent = 'Русский';
+                }
+                
+                localStorage.setItem('sahyagpt_language', lang);
+                
+                // Update selected state in dropdown
+                document.querySelectorAll('#languageMenu .dropdown-item').forEach(item => {
+                    item.classList.toggle('selected', item.dataset.value === lang);
+                });
+                
+                // Close dropdown
+                const menu = document.getElementById('languageMenu');
+                const trigger = document.querySelector('#languageDropdown .dropdown-trigger');
+                menu.classList.remove('open');
+                trigger.classList.remove('active');
+            }
+            
             loadSettings() {
                 const savedResults = localStorage.getItem('imagine_results');
                 if (savedResults) {
@@ -2112,9 +2206,27 @@
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 imagineApp = new ImagineApp();
+                initLanguageDropdown();
             });
         } else {
             imagineApp = new ImagineApp();
+            initLanguageDropdown();
+        }
+        
+        function initLanguageDropdown() {
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.custom-dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+                    document.querySelectorAll('.dropdown-trigger').forEach(t => t.classList.remove('active'));
+                }
+            });
+            
+            // Initialize language
+            const savedLang = localStorage.getItem('sahyagpt_language') || 'en';
+            if (imagineApp) {
+                imagineApp.selectLanguage(savedLang);
+            }
         }
         
         // Update mode slider on window resize

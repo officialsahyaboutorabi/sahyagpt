@@ -143,7 +143,8 @@
         .settings-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
         
         /* Main Content */
-        .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; }
+        .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .main-content.full-width { margin-left: 0; }
         
         /* Header - Matches index.html exactly */
         .header {
@@ -876,9 +877,17 @@ When this skill is active:
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
             const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('full-width');
+            }
         }
 
         // Starfield Animation

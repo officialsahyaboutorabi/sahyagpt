@@ -637,13 +637,16 @@
             
             const flag = document.getElementById('languageFlag');
             const text = document.getElementById('languageText');
+            const headerTitle = document.querySelector('.header-title');
             
             if (lang === 'en') {
                 flag.textContent = '🇺🇸';
                 text.textContent = 'English';
+                if (headerTitle) headerTitle.textContent = 'PromptHub';
             } else if (lang === 'ru') {
                 flag.textContent = '🇷🇺';
                 text.textContent = 'Русский';
+                if (headerTitle) headerTitle.textContent = 'Промпт Хаб';
             }
             
             // Update selected state in dropdown

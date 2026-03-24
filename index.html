@@ -2595,45 +2595,48 @@
                         // Phase 2 — results ready, ask LLM to answer
                         this._setTypingShimmer('Generating response\u2026');
 
-                        // Build result items for ChainOfThought display
-                        const resultItems = searchResult.rawResults.slice(0, 6).map(r => {
-                            const title   = r.title   ? `<strong>${this.escapeHtml(r.title)}</strong>` : '';
-                            const url     = r.url     ? `<div style="font-size:0.73rem;opacity:0.5;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(r.url)}</div>` : '';
-                            const snippet = r.snippet ? `<div style="margin-top:3px">${this.escapeHtml(r.snippet)}</div>` : '';
-                            return title + url + snippet;
+                        // Group results by source for better display
+                        const groupedResults = {};
+                        searchResult.rawResults.forEach(r => {
+                            const source = r.source || 'Web';
+                            if (!groupedResults[source]) groupedResults[source] = [];
+                            groupedResults[source].push(r);
                         });
 
-                        const llmPrompt = `The user asked: "${message}"\n\nHere are relevant web search results:\n\n${searchResult.text}\n\nUsing the search results above as your primary source of information, provide a thorough and accurate answer to the user's question. Cite relevant details from the results. Today's date is ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
+                        // Build result items for ChainOfThought display - group by source
+                        const resultItems = [];
+                        Object.entries(groupedResults).slice(0, 4).forEach(([source, results]) => {
+                            // Add source header
+                            resultItems.push(`<div style="font-weight:600;color:var(--accent);margin-top:8px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid var(--border);">${this.escapeHtml(source)} (${results.length})</div>`);
+                            
+                            // Add results from this source
+                            results.slice(0, 3).forEach(r => {
+                                const title   = r.title   ? `<strong>${this.escapeHtml(r.title)}</strong>` : '';
+                                const url     = r.url     ? `<div style="font-size:0.73rem;opacity:0.5;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(r.url)}</div>` : '';
+                                const snippet = r.snippet ? `<div style="margin-top:3px;font-size:0.85rem;">${this.escapeHtml(r.snippet)}</div>` : '';
+                                resultItems.push(`<div style="margin-bottom:8px;padding-left:8px;border-left:2px solid var(--border);">${title}${url}${snippet}</div>`);
+                            });
+                        });
+
+                        const llmPrompt = `The user asked: "${message}"
+
+Here are relevant web search results from ${searchResult.sourceCount} sources (${searchResult.totalResults} results total):
+
+${searchResult.text}
+
+Using the search results above as your primary source of information, provide a thorough and accurate answer to the user's question. Cite relevant details from the results, including the source name when referencing specific information. Today's date is ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
+                        
                         this.streamResponse(llmPrompt, {
                             chainOfThought: {
                                 steps: [{
                                     icon:        SEARCH_ICON,
-                                    label:       `Found ${resultItems.length} result${resultItems.length !== 1 ? 's' : ''} for "${this.escapeHtml(message)}"`,
+                                    label:       `Found ${searchResult.totalResults} results from ${searchResult.sourceCount} sources for "${this.escapeHtml(message)}"`,
                                     items:       resultItems,
                                     defaultOpen: false,
                                     streaming:   false,
                                 }]
                             }
                         });
-                    } else {
-                        this.showToast('Search returned no results — answering from model knowledge', 'error');
-                        this._setTypingShimmer('Generating response\u2026');
-                        this.streamResponse(message, {
-                            chainOfThought: {
-                                steps: [{
-                                    icon:        CHECK_ICON,
-                                    label:       `No web results found for "${this.escapeHtml(message)}"`,
-                                    items:       ['<span style="opacity:0.6">Falling back to model knowledge.</span>'],
-                                    defaultOpen: false,
-                                    streaming:   false,
-                                }]
-                            }
-                        });
-                    }
-                } else {
-                    this.streamResponse(message);
-                }
-            }
 
             updatePromptSubmitButton(isGenerating) {
                 if (!this.promptSubmit) return;
@@ -2695,57 +2698,171 @@
             async performWebSearch(query) {
                 const textParts = [];    // LLM-readable markdown lines
                 const rawResults = [];  // structured data for ToolCard display
+                const searchPromises = []; // Track all search promises
 
                 // --- Source 1: DuckDuckGo Instant Answer API ---
-                try {
-                    const ddgRes = await fetch(
-                        `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`,
-                        { signal: AbortSignal.timeout(9000) }
-                    );
-                    if (ddgRes.ok) {
-                        const d = await ddgRes.json();
-                        if (d.Answer) {
-                            textParts.push(`**Direct Answer:** ${d.Answer}`);
-                            rawResults.push({ title: 'Direct Answer', snippet: d.Answer });
+                searchPromises.push((async () => {
+                    try {
+                        const ddgRes = await fetch(
+                            `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`,
+                            { signal: AbortSignal.timeout(9000) }
+                        );
+                        if (ddgRes.ok) {
+                            const d = await ddgRes.json();
+                            if (d.Answer) {
+                                textParts.push(`**Direct Answer (DuckDuckGo):** ${d.Answer}`);
+                                rawResults.push({ title: 'Direct Answer', source: 'DuckDuckGo', url: d.AbstractURL || '', snippet: d.Answer });
+                            }
+                            if (d.AbstractText) {
+                                textParts.push(`**Summary (${d.AbstractSource || 'DuckDuckGo'}):** ${d.AbstractText}${d.AbstractURL ? '\nSource: ' + d.AbstractURL : ''}`);
+                                rawResults.push({ title: d.AbstractSource || 'DuckDuckGo', source: 'DuckDuckGo', url: d.AbstractURL || '', snippet: d.AbstractText });
+                            }
+                            if (d.Definition) {
+                                textParts.push(`**Definition (${d.DefinitionSource || ''}):** ${d.Definition}${d.DefinitionURL ? '\nSource: ' + d.DefinitionURL : ''}`);
+                                rawResults.push({ title: `Definition — ${d.DefinitionSource || 'DuckDuckGo'}`, source: 'DuckDuckGo', url: d.DefinitionURL || '', snippet: d.Definition });
+                            }
+                            (d.RelatedTopics || []).filter(t => t.Text && !t.Topics).slice(0, 4).forEach(t => {
+                                textParts.push(`- ${t.Text}${t.FirstURL ? ' (' + t.FirstURL + ')' : ''}`);
+                                rawResults.push({ title: t.Text.split(' - ')[0] || t.Text.slice(0, 60), source: 'DuckDuckGo', url: t.FirstURL || '', snippet: t.Text });
+                            });
+                            (d.Results || []).slice(0, 5).forEach(r => {
+                                textParts.push(`- ${r.Text}${r.FirstURL ? ' (' + r.FirstURL + ')' : ''}`);
+                                rawResults.push({ title: r.Text.slice(0, 60), source: 'DuckDuckGo', url: r.FirstURL || '', snippet: r.Text });
+                            });
                         }
-                        if (d.AbstractText) {
-                            textParts.push(`**Summary (${d.AbstractSource || 'DuckDuckGo'}):** ${d.AbstractText}${d.AbstractURL ? '\nSource: ' + d.AbstractURL : ''}`);
-                            rawResults.push({ title: d.AbstractSource || 'DuckDuckGo', url: d.AbstractURL || '', snippet: d.AbstractText });
-                        }
-                        if (d.Definition) {
-                            textParts.push(`**Definition (${d.DefinitionSource || ''}):** ${d.Definition}${d.DefinitionURL ? '\nSource: ' + d.DefinitionURL : ''}`);
-                            rawResults.push({ title: `Definition — ${d.DefinitionSource || 'DuckDuckGo'}`, url: d.DefinitionURL || '', snippet: d.Definition });
-                        }
-                        (d.RelatedTopics || []).filter(t => t.Text && !t.Topics).slice(0, 4).forEach(t => {
-                            textParts.push(`- ${t.Text}${t.FirstURL ? ' (' + t.FirstURL + ')' : ''}`);
-                            rawResults.push({ title: t.Text.split(' - ')[0] || t.Text.slice(0, 60), url: t.FirstURL || '', snippet: t.Text });
-                        });
-                        (d.Results || []).slice(0, 3).forEach(r => {
-                            textParts.push(`- ${r.Text}${r.FirstURL ? ' (' + r.FirstURL + ')' : ''}`);
-                            rawResults.push({ title: r.Text.slice(0, 60), url: r.FirstURL || '', snippet: r.Text });
-                        });
-                    }
-                } catch (e) { console.error('DuckDuckGo search error:', e); }
+                    } catch (e) { console.error('DuckDuckGo search error:', e); }
+                })());
 
                 // --- Source 2: Wikipedia Search API ---
-                try {
-                    const wikiRes = await fetch(
-                        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=4&format=json&origin=*`,
-                        { signal: AbortSignal.timeout(9000) }
-                    );
-                    if (wikiRes.ok) {
-                        const wikiData = await wikiRes.json();
-                        (wikiData.query?.search || []).slice(0, 4).forEach(r => {
-                            const snippet = r.snippet.replace(/<[^>]*>/g, '');
-                            const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(r.title.replace(/ /g, '_'))}`;
-                            textParts.push(`- **${r.title}**: ${snippet}\n  ${url}`);
-                            rawResults.push({ title: r.title, url, snippet });
-                        });
-                    }
-                } catch (e) { console.error('Wikipedia search error:', e); }
+                searchPromises.push((async () => {
+                    try {
+                        const wikiRes = await fetch(
+                            `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=5&format=json&origin=*`,
+                            { signal: AbortSignal.timeout(9000) }
+                        );
+                        if (wikiRes.ok) {
+                            const wikiData = await wikiRes.json();
+                            (wikiData.query?.search || []).slice(0, 5).forEach(r => {
+                                const snippet = r.snippet.replace(/<[^>]*>/g, '');
+                                const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(r.title.replace(/ /g, '_'))}`;
+                                textParts.push(`- **${r.title}** (Wikipedia): ${snippet}\n  ${url}`);
+                                rawResults.push({ title: r.title, source: 'Wikipedia', url, snippet });
+                            });
+                        }
+                    } catch (e) { console.error('Wikipedia search error:', e); }
+                })());
+
+                // --- Source 3: Reddit Search (CORS proxy via postgrest) ---
+                searchPromises.push((async () => {
+                    try {
+                        const redditRes = await fetch(
+                            `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`,
+                            { signal: AbortSignal.timeout(8000) }
+                        );
+                        if (redditRes.ok) {
+                            const redditData = await redditRes.json();
+                            const posts = redditData.data?.children || [];
+                            posts.slice(0, 5).forEach(post => {
+                                const p = post.data;
+                                const snippet = p.selftext ? p.selftext.slice(0, 200) : p.title;
+                                textParts.push(`- **${p.title}** (Reddit - r/${p.subreddit}): ${snippet}${snippet.length >= 200 ? '...' : ''}\n  https://reddit.com${p.permalink}`);
+                                rawResults.push({ title: p.title, source: `Reddit - r/${p.subreddit}`, url: `https://reddit.com${p.permalink}`, snippet: snippet.slice(0, 150) });
+                            });
+                        }
+                    } catch (e) { console.error('Reddit search error:', e); }
+                })());
+
+                // --- Source 4: HackerNews Algolia Search (Tech/Programming queries) ---
+                searchPromises.push((async () => {
+                    try {
+                        const hnRes = await fetch(
+                            `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&hitsPerPage=5`,
+                            { signal: AbortSignal.timeout(8000) }
+                        );
+                        if (hnRes.ok) {
+                            const hnData = await hnRes.json();
+                            (hnData.hits || []).slice(0, 5).forEach(hit => {
+                                const url = hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`;
+                                textParts.push(`- **${hit.title}** (Hacker News): ${hit.story_text ? hit.story_text.slice(0, 150) + '...' : ''}\n  ${url}`);
+                                rawResults.push({ title: hit.title, source: 'Hacker News', url, snippet: hit.story_text ? hit.story_text.slice(0, 150) : '' });
+                            });
+                        }
+                    } catch (e) { console.error('HackerNews search error:', e); }
+                })());
+
+                // --- Source 5: Stack Exchange Search (Q&A sites) ---
+                searchPromises.push((async () => {
+                    try {
+                        const seRes = await fetch(
+                            `https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=${encodeURIComponent(query)}&site=stackoverflow&pagesize=5`,
+                            { signal: AbortSignal.timeout(8000) }
+                        );
+                        if (seRes.ok) {
+                            const seData = await seRes.json();
+                            (seData.items || []).slice(0, 5).forEach(item => {
+                                const url = item.link;
+                                textParts.push(`- **${item.title}** (Stack Overflow${item.is_answered ? ' ✓ Answered' : ''})\n  ${url}`);
+                                rawResults.push({ title: item.title, source: 'Stack Overflow', url, snippet: `Score: ${item.score}, Answers: ${item.answer_count}${item.is_answered ? ' (Accepted answer)' : ''}` });
+                            });
+                        }
+                    } catch (e) { console.error('StackExchange search error:', e); }
+                })());
+
+                // --- Source 6: GitHub Search (Code/Projects) ---
+                searchPromises.push((async () => {
+                    try {
+                        const ghRes = await fetch(
+                            `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=5`,
+                            { signal: AbortSignal.timeout(8000) }
+                        );
+                        if (ghRes.ok) {
+                            const ghData = await ghRes.json();
+                            (ghData.items || []).slice(0, 5).forEach(repo => {
+                                textParts.push(`- **${repo.full_name}** (GitHub ⭐ ${repo.stargazers_count.toLocaleString()}): ${repo.description || 'No description'}\n  ${repo.html_url}`);
+                                rawResults.push({ title: repo.full_name, source: 'GitHub', url: repo.html_url, snippet: repo.description || `⭐ ${repo.stargazers_count.toLocaleString()} stars` });
+                            });
+                        }
+                    } catch (e) { console.error('GitHub search error:', e); }
+                })());
+
+                // --- Source 7: ArXiv (Research Papers) ---
+                searchPromises.push((async () => {
+                    try {
+                        const arxivRes = await fetch(
+                            `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=5`,
+                            { signal: AbortSignal.timeout(8000) }
+                        );
+                        if (arxivRes.ok) {
+                            const arxivText = await arxivRes.text();
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(arxivText, 'text/xml');
+                            const entries = xmlDoc.querySelectorAll('entry');
+                            entries.forEach(entry => {
+                                const title = entry.querySelector('title')?.textContent?.trim() || 'Untitled';
+                                const summary = entry.querySelector('summary')?.textContent?.trim().slice(0, 200) || '';
+                                const id = entry.querySelector('id')?.textContent || '';
+                                textParts.push(`- **${title}** (arXiv): ${summary}${summary.length >= 200 ? '...' : ''}\n  ${id}`);
+                                rawResults.push({ title: title, source: 'arXiv', url: id, snippet: summary.slice(0, 150) });
+                            });
+                        }
+                    } catch (e) { console.error('ArXiv search error:', e); }
+                })());
+
+                // Wait for all searches to complete
+                await Promise.all(searchPromises);
 
                 if (textParts.length === 0) return null;
-                return { text: textParts.join('\n\n'), rawResults };
+                
+                // Add summary header
+                const uniqueSources = [...new Set(rawResults.map(r => r.source))];
+                const summaryHeader = `**Web Search Summary:** Found results from ${uniqueSources.join(', ')}.\n\n`;
+                
+                return { 
+                    text: summaryHeader + textParts.join('\n\n'), 
+                    rawResults,
+                    sourceCount: uniqueSources.length,
+                    totalResults: rawResults.length
+                };
             }
 
             async fetchModels() {

@@ -1273,7 +1273,7 @@
                 <!-- New Chat Button -->
                 <button class="new-chat-btn" onclick="chatApp.newChat()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    New Chat
+                    <span id="newChatText">New Chat</span>
                 </button>
                 
                 <!-- Chat History Section -->
@@ -1281,7 +1281,7 @@
                     <div class="nav-title">
                         <div class="title-label">
                             <svg class="nav-icon" viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 81.066667c-233.301333 0-422.4 189.098667-422.4 422.4s189.098667 422.4 422.4 422.4 422.4-189.098667 422.4-422.4-189.098667-422.4-422.4-422.4z m-345.6 422.4a345.6 345.6 0 1 1 691.2 0 345.6 345.6 0 1 1-691.2 0z m379.733333-174.933334a38.4 38.4 0 0 0-76.8 0v187.733334a38.4 38.4 0 0 0 11.264 27.136l93.866667 93.866666a38.4 38.4 0 1 0 54.272-54.272L546.133333 500.352V328.533333z"/></svg>
-                            <span>Chat History</span>
+                            <span id="chatHistoryTitle">Chat History</span>
                         </div>
                     </div>
                     <div class="chat-history" id="chatHistory">
@@ -1289,7 +1289,7 @@
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.5;">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>
-                            <div>No chats yet</div>
+                            <div id="noChatsText">No chats yet</div>
                         </div>
                     </div>
                 </div>
@@ -1300,7 +1300,7 @@
                     <div class="nav-title">
                         <div class="title-label">
                             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                            <span>Create Skills</span>
+                            <span id="createSkillsTitle">Create Skills</span>
                         </div>
                     </div>
                     <div class="skills-list" id="createSkillsList">
@@ -1321,7 +1321,7 @@
                     <div class="nav-title">
                         <div class="title-label">
                             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                            <span>Skills Library</span>
+                            <span id="skillsLibraryTitle">Skills Library</span>
                         </div>
                     </div>
                     <div class="skills-list" id="skillsList">
@@ -1364,7 +1364,7 @@
                         </div>
                         <div class="dropdown-menu" id="languageMenu">
                             <div class="dropdown-item selected" onclick="chatApp.selectLanguage('en')" data-value="en">
-                                <span style="margin-right: 8px;">🇺🇸</span> English
+                                <span style="margin-right: 8px;">🇬🇧</span> English
                             </div>
                             <div class="dropdown-item" onclick="chatApp.selectLanguage('ru')" data-value="ru">
                                 <span style="margin-right: 8px;">🇷🇺</span> Русский
@@ -1388,10 +1388,10 @@
                     <h1 class="welcome-title">How can I help you today?</h1>
                     <p class="welcome-subtitle">Experience the next generation of AI conversation with SahyaGPT powered by Ollama. Select a model and start chatting.</p>
                     <div class="suggestion-chips">
-                        <div class="chip" onclick="chatApp.sendSuggestion('Explain quantum computing in simple terms')">Explain quantum computing</div>
-                        <div class="chip" onclick="chatApp.sendSuggestion('Write a Python function to calculate fibonacci numbers')">Write a Python function</div>
-                        <div class="chip" onclick="chatApp.sendSuggestion('What are the benefits of renewable energy?')">Renewable energy benefits</div>
-                        <div class="chip" onclick="chatApp.sendSuggestion('Help me debug this code...')">Help debug code</div>
+                        <div class="chip" id="chip1" onclick="chatApp.sendSuggestion('Explain quantum computing in simple terms')">Explain quantum computing</div>
+                        <div class="chip" id="chip2" onclick="chatApp.sendSuggestion('Write a Python function to calculate fibonacci numbers')">Write a Python function</div>
+                        <div class="chip" id="chip3" onclick="chatApp.sendSuggestion('What are the benefits of renewable energy?')">Renewable energy benefits</div>
+                        <div class="chip" id="chip4" onclick="chatApp.sendSuggestion('Help me debug this code...')">Help debug code</div>
                     </div>
                 </div>
                 <div class="messages-container" id="messagesContainer" style="display: none;"></div>
@@ -2482,6 +2482,8 @@
                 this.abortController = null;
                 this.lastUserMessage = '';
                 this.isGenerating = false;
+                this.isConnected = false;
+                this.currentLanguage = 'en';
                 this.promptTextarea = null;
                 this.promptSubmit = null;
                 this.attachBtn = null;
@@ -3085,7 +3087,7 @@ Using the search results above as your primary source of information, provide a 
                 const menu = document.getElementById('languageMenu');
                 
                 if (lang === 'en') {
-                    flag.textContent = '🇺🇸';
+                    flag.textContent = '🇬🇧';
                     text.textContent = 'English';
                 } else if (lang === 'ru') {
                     flag.textContent = '🇷🇺';
@@ -3102,29 +3104,193 @@ Using the search results above as your primary source of information, provide a 
             }
 
             applyLanguage(lang) {
-                // Update welcome screen text
+                const t = this.translations[lang] || this.translations.en;
+                
+                // Welcome Screen
                 const welcomeTitle = document.querySelector('.welcome-title');
                 const welcomeSubtitle = document.querySelector('.welcome-subtitle');
-                const promptTextarea = document.getElementById('promptTextarea');
-                const inputFooter = document.querySelector('.input-footer');
-                const statusText = document.getElementById('statusText');
+                if (welcomeTitle) welcomeTitle.textContent = t.welcomeTitle;
+                if (welcomeSubtitle) welcomeSubtitle.textContent = t.welcomeSubtitle;
                 
-                if (lang === 'ru') {
-                    if (welcomeTitle) welcomeTitle.textContent = 'Чем могу помочь?';
-                    if (welcomeSubtitle) welcomeSubtitle.textContent = 'Испытайте новое поколение AI-разговоров с SahyaGPT на базе Ollama. Выберите модель и начните общение.';
-                    if (promptTextarea) promptTextarea.placeholder = 'Напишите сообщение SahyaGPT...';
-                    if (inputFooter) inputFooter.textContent = 'SahyaGPT может ошибаться. Проверяйте важную информацию.';
-                    if (statusText && statusText.textContent === 'Connected') statusText.textContent = 'Подключено';
-                    if (statusText && statusText.textContent === 'Disconnected') statusText.textContent = 'Отключено';
-                } else {
-                    if (welcomeTitle) welcomeTitle.textContent = 'How can I help you today?';
-                    if (welcomeSubtitle) welcomeSubtitle.textContent = 'Experience the next generation of AI conversation with SahyaGPT powered by Ollama. Select a model and start chatting.';
-                    if (promptTextarea) promptTextarea.placeholder = 'Message SahyaGPT...';
-                    if (inputFooter) inputFooter.textContent = 'SahyaGPT can make mistakes. Consider checking important information.';
-                    if (statusText && statusText.textContent === 'Подключено') statusText.textContent = 'Connected';
-                    if (statusText && statusText.textContent === 'Отключено') statusText.textContent = 'Disconnected';
+                // Input placeholder
+                const promptTextarea = document.getElementById('promptTextarea');
+                if (promptTextarea) promptTextarea.placeholder = t.messagePlaceholder;
+                
+                // Footer
+                const inputFooter = document.querySelector('.input-footer');
+                if (inputFooter) inputFooter.textContent = t.footer;
+                
+                // Sidebar Navigation
+                const navChat = document.querySelector('.nav-item[href="index.html"]');
+                if (navChat) navChat.innerHTML = navChat.innerHTML.replace(/Chat|Чат/, t.navChat);
+                
+                const navImagine = document.querySelector('.nav-item[href="imagine.html"]');
+                if (navImagine) navImagine.innerHTML = navImagine.innerHTML.replace(/Imagine|Создание/, t.navImagine);
+                
+                // Sidebar Sections
+                const chatHistoryTitle = document.getElementById('chatHistoryTitle');
+                if (chatHistoryTitle) chatHistoryTitle.textContent = t.chatHistory;
+                
+                const createSkillsTitle = document.getElementById('createSkillsTitle');
+                if (createSkillsTitle) createSkillsTitle.textContent = t.createSkills;
+                
+                const skillsLibraryTitle = document.getElementById('skillsLibraryTitle');
+                if (skillsLibraryTitle) skillsLibraryTitle.textContent = t.skillsLibrary;
+                
+                // Buttons
+                const newChatText = document.getElementById('newChatText');
+                if (newChatText) newChatText.textContent = t.newChat;
+                
+                const downloadTemplateBtn = document.querySelector('.download-skills-template-btn');
+                if (downloadTemplateBtn) {
+                    const svg = downloadTemplateBtn.querySelector('svg').outerHTML;
+                    downloadTemplateBtn.innerHTML = svg + ' ' + t.downloadTemplate;
+                }
+                
+                const createSkillBtn = document.querySelector('.create-new-skills-btn');
+                if (createSkillBtn) {
+                    const svg = createSkillBtn.querySelector('svg').outerHTML;
+                    createSkillBtn.innerHTML = svg + ' ' + t.createNewSkill;
+                }
+                
+                const viewSkillsBtn = document.querySelector('.view-skills-btn');
+                if (viewSkillsBtn) {
+                    const svg = viewSkillsBtn.querySelector('svg').outerHTML;
+                    viewSkillsBtn.innerHTML = svg + ' ' + t.viewSkills;
+                }
+                
+                const settingsBtn = document.querySelector('.settings-btn');
+                if (settingsBtn) {
+                    const svg = settingsBtn.querySelector('svg').outerHTML;
+                    settingsBtn.innerHTML = svg + ' ' + t.settings;
+                }
+                
+                // Model dropdown
+                const dropdownText = document.getElementById('dropdownText');
+                if (dropdownText && dropdownText.textContent === 'Loading models...') {
+                    dropdownText.textContent = t.loadingModels;
+                }
+                
+                // Status
+                this.updateStatus(this.isConnected);
+                
+                // Suggestion chips
+                const chip1 = document.getElementById('chip1');
+                const chip2 = document.getElementById('chip2');
+                const chip3 = document.getElementById('chip3');
+                const chip4 = document.getElementById('chip4');
+                if (chip1) chip1.textContent = t.suggestion1;
+                if (chip2) chip2.textContent = t.suggestion2;
+                if (chip3) chip3.textContent = t.suggestion3;
+                if (chip4) chip4.textContent = t.suggestion4;
+                
+                // Empty state
+                const noChatsText = document.getElementById('noChatsText');
+                if (noChatsText) noChatsText.textContent = t.noChats;
+                
+                // Settings modal
+                const settingsTitle = document.querySelector('#settingsModal .modal-title');
+                if (settingsTitle) settingsTitle.textContent = t.settings;
+                
+                const settingsTabs = document.querySelectorAll('.modal-tab');
+                if (settingsTabs.length >= 4) {
+                    settingsTabs[0].textContent = t.settingsGeneral;
+                    settingsTabs[1].textContent = t.settingsModel;
+                    settingsTabs[2].textContent = t.settingsAppearance;
+                    settingsTabs[3].textContent = t.settingsAdvanced;
                 }
             }
+
+            translations = {
+                en: {
+                    welcomeTitle: 'How can I help you today?',
+                    welcomeSubtitle: 'Experience the next generation of AI conversation with SahyaGPT powered by Ollama. Select a model and start chatting.',
+                    messagePlaceholder: 'Message SahyaGPT...',
+                    footer: 'SahyaGPT can make mistakes. Consider checking important information.',
+                    navChat: 'Chat',
+                    navImagine: 'Imagine',
+                    chatHistory: 'Chat History',
+                    createSkills: 'Create Skills',
+                    skillsLibrary: 'Skills Library',
+                    newChat: 'New Chat',
+                    downloadTemplate: 'Download Template',
+                    createNewSkill: 'Create New Skill',
+                    viewSkills: 'View Skills',
+                    settings: 'Settings',
+                    loadingModels: 'Loading models...',
+                    connected: 'Connected',
+                    disconnected: 'Disconnected',
+                    suggestion1: 'Explain quantum computing',
+                    suggestion2: 'Write a Python function',
+                    suggestion3: 'Renewable energy benefits',
+                    suggestion4: 'Help debug code',
+                    noChats: 'No chats yet',
+                    settingsGeneral: 'General',
+                    settingsModel: 'Model',
+                    settingsAppearance: 'Appearance',
+                    settingsAdvanced: 'Advanced',
+                    systemPrompt: 'System Prompt',
+                    systemPromptDesc: 'Instructions for the AI',
+                    temperature: 'Temperature',
+                    temperatureDesc: 'Controls creativity',
+                    maxTokens: 'Max Tokens',
+                    maxTokensDesc: 'Maximum response length',
+                    topP: 'Top P',
+                    topPDesc: 'Nucleus sampling threshold',
+                    theme: 'Theme',
+                    fontSize: 'Font Size',
+                    autoSave: 'Auto-save chats',
+                    autoSaveDesc: 'Automatically save conversation history',
+                    enterToSend: 'Send with Enter',
+                    enterToSendDesc: 'Press Enter to send, Shift+Enter for new line',
+                    showTimestamps: 'Show timestamps',
+                    showTimestampsDesc: 'Display message timestamps in chat'
+                },
+                ru: {
+                    welcomeTitle: 'Чем могу помочь?',
+                    welcomeSubtitle: 'Испытайте новое поколение AI-разговоров с SahyaGPT на базе Ollama. Выберите модель и начните общение.',
+                    messagePlaceholder: 'Напишите сообщение SahyaGPT...',
+                    footer: 'SahyaGPT может ошибаться. Проверяйте важную информацию.',
+                    navChat: 'Чат',
+                    navImagine: 'Создание',
+                    chatHistory: 'История чатов',
+                    createSkills: 'Создать навыки',
+                    skillsLibrary: 'Библиотека навыков',
+                    newChat: 'Новый чат',
+                    downloadTemplate: 'Скачать шаблон',
+                    createNewSkill: 'Создать навык',
+                    viewSkills: 'Смотреть навыки',
+                    settings: 'Настройки',
+                    loadingModels: 'Загрузка моделей...',
+                    connected: 'Подключено',
+                    disconnected: 'Отключено',
+                    suggestion1: 'Объясни квантовые вычисления',
+                    suggestion2: 'Напиши функцию Python',
+                    suggestion3: 'Польза возобновляемой энергии',
+                    suggestion4: 'Помоги отладить код',
+                    noChats: 'Нет чатов',
+                    settingsGeneral: 'Общие',
+                    settingsModel: 'Модель',
+                    settingsAppearance: 'Внешний вид',
+                    settingsAdvanced: 'Дополнительно',
+                    systemPrompt: 'Системный промпт',
+                    systemPromptDesc: 'Инструкции для AI',
+                    temperature: 'Температура',
+                    temperatureDesc: 'Контролирует креативность',
+                    maxTokens: 'Макс. токенов',
+                    maxTokensDesc: 'Максимальная длина ответа',
+                    topP: 'Top P',
+                    topPDesc: 'Порог сэмплирования',
+                    theme: 'Тема',
+                    fontSize: 'Размер шрифта',
+                    autoSave: 'Автосохранение чатов',
+                    autoSaveDesc: 'Автоматически сохранять историю разговоров',
+                    enterToSend: 'Отправка по Enter',
+                    enterToSendDesc: 'Нажмите Enter для отправки, Shift+Enter для новой строки',
+                    showTimestamps: 'Показывать время',
+                    showTimestampsDesc: 'Отображать время сообщений в чате'
+                }
+            };
 
             loadLanguage() {
                 const saved = localStorage.getItem('sahyagpt_language');
@@ -3144,16 +3310,17 @@ Using the search results above as your primary source of information, provide a 
             }
 
             updateStatus(connected) {
+                this.isConnected = connected;
                 const dot = document.getElementById('statusDot');
                 const text = document.getElementById('statusText');
-                const isRussian = this.currentLanguage === 'ru';
+                const t = this.translations[this.currentLanguage] || this.translations.en;
                 if (connected) { 
                     dot.classList.remove('offline'); 
-                    text.textContent = isRussian ? 'Подключено' : 'Connected'; 
+                    text.textContent = t.connected; 
                 }
                 else { 
                     dot.classList.add('offline'); 
-                    text.textContent = isRussian ? 'Отключено' : 'Disconnected'; 
+                    text.textContent = t.disconnected; 
                 }
             }
 

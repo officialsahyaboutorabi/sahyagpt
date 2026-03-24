@@ -1100,22 +1100,50 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">HuggingFace API Key</label>
-                    <input type="password" class="form-input" id="apiKeyInput" placeholder="hf_...">
-                    <div class="form-hint">Only required for video generation. Images use free Grok API. Your key is stored locally.</div>
+                    <label class="form-label">Image Provider</label>
+                    <select class="form-input" id="imageProviderSelect" onchange="imagineApp.onProviderChange()">
+                        <option value="grok">Grok (Free, Basic Quality)</option>
+                        <option value="openrouter">OpenRouter (High Quality, API Key Required)</option>
+                    </select>
+                    <div class="form-hint">Select your preferred image generation provider.</div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Image Model</label>
-                    <select class="form-input" id="imageModelSelect">
-                        <option value="stabilityai/stable-diffusion-3.5-large">Stable Diffusion 3.5 Large</option>
-                        <option value="stabilityai/stable-diffusion-3.5-large-turbo">Stable Diffusion 3.5 Large Turbo</option>
-                        <option value="black-forest-labs/FLUX.1-dev">FLUX.1 Dev</option>
-                        <option value="black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</option>
-                        <option value="runwayml/stable-diffusion-v1-5">Stable Diffusion v1.5</option>
+                <div class="form-group" id="openrouterKeyGroup" style="display: none;">
+                    <label class="form-label">OpenRouter API Key</label>
+                    <input type="password" class="form-input" id="openrouterKeyInput" placeholder="sk-or-...">
+                    <div class="form-hint">Required for OpenRouter. Get your key at <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--accent);">openrouter.ai/keys</a></div>
+                </div>
+                <div class="form-group" id="openrouterImageModelGroup" style="display: none;">
+                    <label class="form-label">Image Model (OpenRouter)</label>
+                    <select class="form-input" id="openrouterImageModelSelect">
+                        <option value="openai/dall-e-3">DALL-E 3 (Best Quality)</option>
+                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                        <option value="stabilityai/stable-diffusion-xl-base-1.0">Stable Diffusion XL</option>
+                        <option value="black-forest-labs/flux-1.1-pro">FLUX 1.1 Pro</option>
+                        <option value="recraft-ai/recraft-v3">Recraft V3</option>
+                        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Free)</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Video Model</label>
+                <div class="form-group" id="videoProviderGroup">
+                    <label class="form-label">Video Provider</label>
+                    <select class="form-input" id="videoProviderSelect">
+                        <option value="huggingface">HuggingFace (Free, API Key Required)</option>
+                        <option value="openrouter">OpenRouter - Sora 2 Pro (API Key Required)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="openrouterVideoModelGroup" style="display: none;">
+                    <label class="form-label">Video Model (OpenRouter)</label>
+                    <select class="form-input" id="openrouterVideoModelSelect">
+                        <option value="openai/sora-2-pro">Sora 2 Pro (Best Quality)</option>
+                        <option value="openai/sora">Sora (Standard)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="hfKeyGroup">
+                    <label class="form-label">HuggingFace API Key</label>
+                    <input type="password" class="form-input" id="apiKeyInput" placeholder="hf_...">
+                    <div class="form-hint">Required for HuggingFace video generation. Your key is stored locally.</div>
+                </div>
+                <div class="form-group" id="hfVideoModelGroup">
+                    <label class="form-label">Video Model (HuggingFace)</label>
                     <select class="form-input" id="videoModelSelect">
                         <option value="stabilityai/stable-video-diffusion">Stable Video Diffusion</option>
                         <option value="cerspense/zeroscope_v2_576w">Zeroscope v2</option>
@@ -1238,9 +1266,17 @@
                 this.uploadedImages = [];
                 this.generatedResults = [];
                 this.isGenerating = false;
+                
+                // Image settings
+                this.imageProvider = localStorage.getItem('image_provider') || 'grok';
+                this.openrouterKey = localStorage.getItem('openrouter_api_key') || '';
+                this.openrouterImageModel = localStorage.getItem('openrouter_image_model') || 'openai/dall-e-3';
+                
+                // Video settings
+                this.videoProvider = localStorage.getItem('video_provider') || 'huggingface';
                 this.apiKey = localStorage.getItem('huggingface_api_key') || '';
-                this.imageModel = localStorage.getItem('huggingface_image_model') || 'stabilityai/stable-diffusion-3.5-large';
                 this.videoModel = localStorage.getItem('huggingface_video_model') || 'stabilityai/stable-video-diffusion';
+                this.openrouterVideoModel = localStorage.getItem('openrouter_video_model') || 'openai/sora-2-pro';
                 
                 this.init();
             }
@@ -1419,17 +1455,28 @@
                     return;
                 }
                 
-                // Only require API key for video generation (still uses HuggingFace)
-                // Image generation uses free Grok API via Puter
-                if (this.currentMode === 'video' && !this.apiKey) {
-                    this.showToast('Please set your HuggingFace API key for video generation', 'warning');
-                    this.openApiKeyModal();
-                    return;
-                }
-                
-                if (this.currentMode === 'video' && this.uploadedImages.length < 2) {
-                    this.showToast('Please upload at least 2 images for video generation', 'error');
-                    return;
+                // Check API keys based on provider selection
+                if (this.currentMode === 'image') {
+                    if (this.imageProvider === 'openrouter' && !this.openrouterKey) {
+                        this.showToast('Please set your OpenRouter API key', 'warning');
+                        this.openApiKeyModal();
+                        return;
+                    }
+                } else if (this.currentMode === 'video') {
+                    if (this.videoProvider === 'openrouter' && !this.openrouterKey) {
+                        this.showToast('Please set your OpenRouter API key for Sora video generation', 'warning');
+                        this.openApiKeyModal();
+                        return;
+                    }
+                    if (this.videoProvider === 'huggingface' && !this.apiKey) {
+                        this.showToast('Please set your HuggingFace API key for video generation', 'warning');
+                        this.openApiKeyModal();
+                        return;
+                    }
+                    if (this.uploadedImages.length < 2) {
+                        this.showToast('Please upload at least 2 images for video generation', 'error');
+                        return;
+                    }
                 }
                 
                 this.isGenerating = true;
@@ -1454,16 +1501,103 @@
             }
             
             async generateImage(prompt) {
-                // Map aspect ratio to Grok dimensions
-                const dimensions = this.getAspectRatioDimensions(this.currentAspectRatio);
-                
+                if (this.imageProvider === 'openrouter') {
+                    await this.generateImageWithOpenRouter(prompt);
+                } else {
+                    await this.generateImageWithGrok(prompt);
+                }
+            }
+            
+            async generateImageWithOpenRouter(prompt) {
                 try {
-                    // Use Puter's Grok API for free image generation
-                    // Docs: https://developer.puter.com/tutorials/free-unlimited-grok-api/
+                    // OpenRouter API for high-quality image generation
+                    // Docs: https://openrouter.ai/docs
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.openrouterKey}`,
+                            'Content-Type': 'application/json',
+                            'HTTP-Referer': window.location.href,
+                            'X-Title': 'SahyaGPT Imagine'
+                        },
+                        body: JSON.stringify({
+                            model: this.openrouterImageModel,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: [
+                                        { type: 'text', text: prompt }
+                                    ]
+                                }
+                            ]
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error?.message || `API error: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Extract image URL from response
+                    let imageUrl = null;
+                    
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        const message = data.choices[0].message;
+                        
+                        // Check for image_url in content
+                        if (message.content) {
+                            // Try markdown format
+                            const markdownMatch = message.content.match(/!\[.*?\]\((.*?)\)/);
+                            if (markdownMatch) {
+                                imageUrl = markdownMatch[1];
+                            } else {
+                                // Try direct URL
+                                const urlMatch = message.content.match(/https?:\/\/[^\s<>"{}|\\^`[\]]+\.(?:png|jpg|jpeg|gif|webp)/i);
+                                if (urlMatch) {
+                                    imageUrl = urlMatch[0];
+                                }
+                            }
+                        }
+                        
+                        // Check for image_url field
+                        if (!imageUrl && message.image_url) {
+                            imageUrl = message.image_url;
+                        }
+                    }
+                    
+                    if (!imageUrl) {
+                        throw new Error('No image URL found in response');
+                    }
+                    
+                    this.removeGeneratingPlaceholder();
+                    this.addResult({
+                        type: 'image',
+                        url: imageUrl,
+                        prompt: prompt,
+                        aspectRatio: this.currentAspectRatio,
+                        timestamp: Date.now(),
+                        model: this.openrouterImageModel
+                    });
+                    
+                    this.showToast('Image generated successfully with OpenRouter!', 'success');
+                    
+                } catch (error) {
+                    console.error('OpenRouter image generation failed:', error);
+                    this.showToast(`OpenRouter failed: ${error.message}. Falling back to Grok...`, 'warning');
+                    await this.generateImageWithGrok(prompt);
+                }
+            }
+            
+            async generateImageWithGrok(prompt) {
+                try {
+                    // Use x.ai Grok API for image generation
+                    // Docs: https://docs.x.ai/developers/model-capabilities/images/generation
                     const response = await puter.ai.chat(
-                        `Generate an image: ${prompt}`,
+                        prompt,
                         {
-                            model: 'grok-2-image',
+                            model: 'grok-imagine-image',
                             stream: false
                         }
                     );
@@ -1505,7 +1639,7 @@
                         prompt: prompt,
                         aspectRatio: this.currentAspectRatio,
                         timestamp: Date.now(),
-                        model: 'grok-2-image'
+                        model: 'grok-imagine-image'
                     });
                     
                     this.showToast('Image generated successfully!', 'success');
@@ -1700,32 +1834,63 @@
                 }
             }
             
+            onProviderChange() {
+                const imageProvider = document.getElementById('imageProviderSelect').value;
+                const videoProvider = document.getElementById('videoProviderSelect').value;
+                
+                // Toggle Image provider fields
+                document.getElementById('openrouterKeyGroup').style.display = imageProvider === 'openrouter' ? 'block' : 'none';
+                document.getElementById('openrouterImageModelGroup').style.display = imageProvider === 'openrouter' ? 'block' : 'none';
+                
+                // Toggle Video provider fields
+                document.getElementById('openrouterVideoModelGroup').style.display = videoProvider === 'openrouter' ? 'block' : 'none';
+                document.getElementById('hfKeyGroup').style.display = videoProvider === 'huggingface' ? 'block' : 'none';
+                document.getElementById('hfVideoModelGroup').style.display = videoProvider === 'huggingface' ? 'block' : 'none';
+            }
+            
+            saveApiKey() {
+                // Image settings
+                this.imageProvider = document.getElementById('imageProviderSelect').value;
+                this.openrouterKey = document.getElementById('openrouterKeyInput').value.trim();
+                this.openrouterImageModel = document.getElementById('openrouterImageModelSelect').value;
+                
+                // Video settings
+                this.videoProvider = document.getElementById('videoProviderSelect').value;
+                this.apiKey = document.getElementById('apiKeyInput').value.trim();
+                this.videoModel = document.getElementById('videoModelSelect').value;
+                this.openrouterVideoModel = document.getElementById('openrouterVideoModelSelect').value;
+                
+                // Save to localStorage
+                localStorage.setItem('image_provider', this.imageProvider);
+                localStorage.setItem('openrouter_api_key', this.openrouterKey);
+                localStorage.setItem('openrouter_image_model', this.openrouterImageModel);
+                localStorage.setItem('video_provider', this.videoProvider);
+                localStorage.setItem('huggingface_api_key', this.apiKey);
+                localStorage.setItem('huggingface_video_model', this.videoModel);
+                localStorage.setItem('openrouter_video_model', this.openrouterVideoModel);
+                
+                this.closeApiKeyModal();
+                this.showToast('Settings saved successfully!', 'success');
+            }
+            
             openApiKeyModal() {
-                document.getElementById('apiKeyInput').value = this.apiKey;
-                document.getElementById('imageModelSelect').value = this.imageModel;
-                document.getElementById('videoModelSelect').value = this.videoModel;
                 document.getElementById('apiKeyModal').classList.add('active');
+                
+                // Set current values
+                document.getElementById('imageProviderSelect').value = this.imageProvider;
+                document.getElementById('openrouterKeyInput').value = this.openrouterKey;
+                document.getElementById('openrouterImageModelSelect').value = this.openrouterImageModel;
+                document.getElementById('videoProviderSelect').value = this.videoProvider;
+                document.getElementById('apiKeyInput').value = this.apiKey;
+                document.getElementById('videoModelSelect').value = this.videoModel;
+                document.getElementById('openrouterVideoModelSelect').value = this.openrouterVideoModel;
+                
+                // Show/hide appropriate fields
+                this.onProviderChange();
             }
             
             closeApiKeyModal() {
                 document.getElementById('apiKeyModal').classList.remove('active');
-            }
-            
-            saveApiKey() {
-                const apiKey = document.getElementById('apiKeyInput').value.trim();
-                const imageModel = document.getElementById('imageModelSelect').value;
-                const videoModel = document.getElementById('videoModelSelect').value;
-                
-                this.apiKey = apiKey;
-                this.imageModel = imageModel;
-                this.videoModel = videoModel;
-                
-                localStorage.setItem('huggingface_api_key', apiKey);
-                localStorage.setItem('huggingface_image_model', imageModel);
-                localStorage.setItem('huggingface_video_model', videoModel);
-                
-                this.closeApiKeyModal();
-                this.showToast('Settings saved successfully!', 'success');
             }
             
             openImagePreview(url) {

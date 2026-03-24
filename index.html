@@ -283,6 +283,8 @@
         .dropdown-item.selected { background: var(--bg-selected); color: var(--text-primary); }
         .dropdown-menu::-webkit-scrollbar { width: 0px; display: none; }
         .header-right { display: flex; align-items: center; gap: 12px; }
+        .language-dropdown .dropdown-trigger { min-width: 120px; }
+        .language-dropdown .dropdown-item { display: flex; align-items: center; }
         .status-indicator {
             display: flex; align-items: center; gap: 8px; padding: 6px 12px;
             background: rgba(23, 23, 23, 0.9); backdrop-filter: blur(10px);
@@ -1354,6 +1356,21 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <div class="custom-dropdown language-dropdown" id="languageDropdown">
+                        <div class="dropdown-trigger" onclick="chatApp.toggleLanguageDropdown()">
+                            <span id="languageFlag">🇺🇸</span>
+                            <span class="dropdown-trigger-text" id="languageText">English</span>
+                            <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                        <div class="dropdown-menu" id="languageMenu">
+                            <div class="dropdown-item selected" onclick="chatApp.selectLanguage('en')" data-value="en">
+                                <span style="margin-right: 8px;">🇺🇸</span> English
+                            </div>
+                            <div class="dropdown-item" onclick="chatApp.selectLanguage('ru')" data-value="ru">
+                                <span style="margin-right: 8px;">🇷🇺</span> Русский
+                            </div>
+                        </div>
+                    </div>
                     <div class="status-indicator">
                         <span class="status-dot" id="statusDot"></span>
                         <span id="statusText">Connecting...</span>
@@ -2493,6 +2510,7 @@
                     this.skillsManager.updateSkillsCount();
                 }, 100);
                 this.fetchModels();
+                this.loadLanguage();
                 marked.setOptions({
                     highlight: function(code, lang) {
                         if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
@@ -3036,6 +3054,85 @@ Using the search results above as your primary source of information, provide a 
                 trigger.classList.remove('active');
             }
 
+            toggleLanguageDropdown() {
+                const dropdown = document.getElementById('languageDropdown');
+                const menu = document.getElementById('languageMenu');
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                const isOpen = menu.classList.contains('open');
+                if (isOpen) {
+                    menu.classList.remove('open');
+                    trigger.classList.remove('active');
+                } else {
+                    menu.classList.add('open');
+                    trigger.classList.add('active');
+                }
+            }
+
+            closeLanguageDropdown() {
+                const dropdown = document.getElementById('languageDropdown');
+                const menu = document.getElementById('languageMenu');
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                menu.classList.remove('open');
+                trigger.classList.remove('active');
+            }
+
+            selectLanguage(lang) {
+                this.currentLanguage = lang;
+                localStorage.setItem('sahyagpt_language', lang);
+                
+                const flag = document.getElementById('languageFlag');
+                const text = document.getElementById('languageText');
+                const menu = document.getElementById('languageMenu');
+                
+                if (lang === 'en') {
+                    flag.textContent = '🇺🇸';
+                    text.textContent = 'English';
+                } else if (lang === 'ru') {
+                    flag.textContent = '🇷🇺';
+                    text.textContent = 'Русский';
+                }
+                
+                // Update selected state in dropdown
+                menu.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.toggle('selected', item.dataset.value === lang);
+                });
+                
+                this.closeLanguageDropdown();
+                this.applyLanguage(lang);
+            }
+
+            applyLanguage(lang) {
+                // Update welcome screen text
+                const welcomeTitle = document.querySelector('.welcome-title');
+                const welcomeSubtitle = document.querySelector('.welcome-subtitle');
+                const promptTextarea = document.getElementById('promptTextarea');
+                const inputFooter = document.querySelector('.input-footer');
+                const statusText = document.getElementById('statusText');
+                
+                if (lang === 'ru') {
+                    if (welcomeTitle) welcomeTitle.textContent = 'Чем могу помочь?';
+                    if (welcomeSubtitle) welcomeSubtitle.textContent = 'Испытайте новое поколение AI-разговоров с SahyaGPT на базе Ollama. Выберите модель и начните общение.';
+                    if (promptTextarea) promptTextarea.placeholder = 'Напишите сообщение SahyaGPT...';
+                    if (inputFooter) inputFooter.textContent = 'SahyaGPT может ошибаться. Проверяйте важную информацию.';
+                    if (statusText && statusText.textContent === 'Connected') statusText.textContent = 'Подключено';
+                    if (statusText && statusText.textContent === 'Disconnected') statusText.textContent = 'Отключено';
+                } else {
+                    if (welcomeTitle) welcomeTitle.textContent = 'How can I help you today?';
+                    if (welcomeSubtitle) welcomeSubtitle.textContent = 'Experience the next generation of AI conversation with SahyaGPT powered by Ollama. Select a model and start chatting.';
+                    if (promptTextarea) promptTextarea.placeholder = 'Message SahyaGPT...';
+                    if (inputFooter) inputFooter.textContent = 'SahyaGPT can make mistakes. Consider checking important information.';
+                    if (statusText && statusText.textContent === 'Подключено') statusText.textContent = 'Connected';
+                    if (statusText && statusText.textContent === 'Отключено') statusText.textContent = 'Disconnected';
+                }
+            }
+
+            loadLanguage() {
+                const saved = localStorage.getItem('sahyagpt_language');
+                if (saved) {
+                    this.selectLanguage(saved);
+                }
+            }
+
             selectModel(model) {
                 this.currentModel = model;
                 document.getElementById('dropdownText').textContent = model.name;
@@ -3049,8 +3146,15 @@ Using the search results above as your primary source of information, provide a 
             updateStatus(connected) {
                 const dot = document.getElementById('statusDot');
                 const text = document.getElementById('statusText');
-                if (connected) { dot.classList.remove('offline'); text.textContent = 'Connected'; }
-                else { dot.classList.add('offline'); text.textContent = 'Disconnected'; }
+                const isRussian = this.currentLanguage === 'ru';
+                if (connected) { 
+                    dot.classList.remove('offline'); 
+                    text.textContent = isRussian ? 'Подключено' : 'Connected'; 
+                }
+                else { 
+                    dot.classList.add('offline'); 
+                    text.textContent = isRussian ? 'Отключено' : 'Disconnected'; 
+                }
             }
 
             toggleSidebar() {
@@ -4894,6 +4998,7 @@ When the user requests this skill:
             if (e.target === settingsModal && chatApp) chatApp.closeSettings();
         });
         document.addEventListener('click', (e) => { const dropdown = document.getElementById('modelDropdown'); if (dropdown && !dropdown.contains(e.target)) chatApp.closeDropdown(); });
+        document.addEventListener('click', (e) => { const dropdown = document.getElementById('languageDropdown'); if (dropdown && !dropdown.contains(e.target)) chatApp.closeLanguageDropdown(); });
         window.addEventListener('resize', () => {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');

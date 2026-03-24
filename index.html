@@ -1210,16 +1210,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
             opacity: 0;
-            transform: translateY(20px) scale(0.9);
+            visibility: hidden;
+            transform: translateY(10px);
             pointer-events: none;
             z-index: 50;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
         .scroll-to-bottom-btn.visible {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            visibility: visible;
+            transform: translateY(0);
             pointer-events: auto;
         }
         .scroll-to-bottom-btn:hover {
@@ -3829,7 +3831,14 @@
 
             handleScroll() {
                 const container = document.getElementById('chatContainer');
-                if (!container) return;
+                const messagesContainer = document.getElementById('messagesContainer');
+                if (!container || !messagesContainer) return;
+                
+                // Only show button if messages are visible (not on welcome screen)
+                if (messagesContainer.style.display === 'none') {
+                    this.hideScrollToBottomButton();
+                    return;
+                }
                 
                 const scrollTop = container.scrollTop;
                 const scrollHeight = container.scrollHeight;

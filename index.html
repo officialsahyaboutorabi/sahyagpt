@@ -1269,8 +1269,8 @@
                         Imagine
                     </a>
                     <a href="prompthub.html" class="nav-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 29 31" style="min-width: 18px; min-height: 18px;">
+                            <path fill="currentColor" d="M13.734 17.524a11 11 0 0 0 1.398-.685l.177-.104q.621-.373 1.137-.781l7.158 12.132-2.699 1.592zm-3.85.032a2 2 0 0 0 .257.157c.777.4 1.8.386 2.927.045l-1.98 7.678-3.034-.783zm15.531-3.147-.782 3.035-7.635-1.969c.836-.796 1.344-1.661 1.386-2.522a2 2 0 0 0-.014-.36zm-2.543-9.45 1.592 2.7-6.506 3.838c-.487-.78-1.362-1.52-2.475-2.178zM8.445 13.473c.023 1.3.24 2.43.694 3.229l-6.532 3.854-1.592-2.7zm.391-3.338c-.254.804-.373 1.786-.391 2.871q-.002.134-.002.264L.059 11.108.84 8.073zM17.424.862l-2.15 8.336-.118-.067c-1-.555-1.954-.955-2.81-1.123L14.39.079zM11.71 7.925c-.577-.032-1.096.065-1.539.32-.488.282-.855.74-1.124 1.335l-3.83-6.492 2.699-1.592z"></path>
                         </svg>
                         PromptHub
                     </a>
@@ -2879,10 +2879,14 @@ Using the search results above as your primary source of information, provide a 
                 })());
 
                 // --- Source 7: ArXiv (Research Papers) ---
+                // Note: ArXiv API requires CORS proxy in browser environment
                 searchPromises.push((async () => {
                     try {
+                        // Use CORS proxy for ArXiv API
+                        const corsProxy = 'https://api.allorigins.win/raw?url=';
+                        const arxivUrl = encodeURIComponent(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=5`);
                         const arxivRes = await fetch(
-                            `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=5`,
+                            `${corsProxy}${arxivUrl}`,
                             { signal: AbortSignal.timeout(8000) }
                         );
                         if (arxivRes.ok) {
@@ -2898,7 +2902,10 @@ Using the search results above as your primary source of information, provide a 
                                 rawResults.push({ title: title, source: 'arXiv', url: id, snippet: summary.slice(0, 150) });
                             });
                         }
-                    } catch (e) { console.error('ArXiv search error:', e); }
+                    } catch (e) { 
+                        // Silently ignore ArXiv errors - CORS issues are expected in browser
+                        console.log('ArXiv search skipped (CORS)'); 
+                    }
                 })());
 
                 // Wait for all searches to complete

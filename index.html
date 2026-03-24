@@ -1458,114 +1458,114 @@
     <div class="modal-overlay" id="settingsModal">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">Settings</h2>
+                <h2 class="modal-title" id="settingsTitle">Settings</h2>
                 <button class="modal-close" onclick="chatApp.closeSettings()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
             <div class="modal-tabs">
-                <button class="modal-tab active" onclick="chatApp.switchSettingsTab('general')">General</button>
-                <button class="modal-tab" onclick="chatApp.switchSettingsTab('model')">Model</button>
-                <button class="modal-tab" onclick="chatApp.switchSettingsTab('appearance')">Appearance</button>
-                <button class="modal-tab" onclick="chatApp.switchSettingsTab('advanced')">Advanced</button>
+                <button class="modal-tab active" id="tabGeneral" onclick="chatApp.switchSettingsTab('general')">General</button>
+                <button class="modal-tab" id="tabModel" onclick="chatApp.switchSettingsTab('model')">Model</button>
+                <button class="modal-tab" id="tabAppearance" onclick="chatApp.switchSettingsTab('appearance')">Appearance</button>
+                <button class="modal-tab" id="tabAdvanced" onclick="chatApp.switchSettingsTab('advanced')">Advanced</button>
             </div>
             <div class="modal-body">
                 <div class="settings-section active" id="tab-general">
                     <div class="settings-group">
-                        <div class="settings-group-title">Ollama Endpoints</div>
+                        <div class="settings-group-title" id="ollamaEndpointsTitle">Ollama Endpoints</div>
                         <div class="form-group">
-                            <label class="form-label">API Endpoints <span>Add multiple Ollama servers</span></label>
+                            <label class="form-label"><span id="apiEndpointsLabel">API Endpoints</span> <span id="apiEndpointsDesc">Add multiple Ollama servers</span></label>
                             <div class="endpoints-list" id="endpointsList">
                                 <!-- Endpoints will be rendered here -->
                             </div>
                             <button class="endpoint-add-btn" onclick="chatApp.addEndpoint()">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                Add Endpoint
+                                <span id="addEndpointBtn">Add Endpoint</span>
                             </button>
                         </div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-group-title">Preferences</div>
+                        <div class="settings-group-title" id="preferencesTitle">Preferences</div>
                         <div class="toggle-wrapper">
-                            <div class="toggle-info"><div class="toggle-label">Auto-save chats</div><div class="toggle-description">Automatically save conversation history</div></div>
+                            <div class="toggle-info"><div class="toggle-label" id="autoSaveLabel">Auto-save chats</div><div class="toggle-description" id="autoSaveDesc">Automatically save conversation history</div></div>
                             <div class="toggle-switch active" id="autoSaveToggle" onclick="chatApp.toggleSetting('autoSave')"></div>
                         </div>
                         <div class="toggle-wrapper">
-                            <div class="toggle-info"><div class="toggle-label">Send with Enter</div><div class="toggle-description">Press Enter to send, Shift+Enter for new line</div></div>
+                            <div class="toggle-info"><div class="toggle-label" id="enterToSendLabel">Send with Enter</div><div class="toggle-description" id="enterToSendDesc">Press Enter to send, Shift+Enter for new line</div></div>
                             <div class="toggle-switch active" id="enterToSendToggle" onclick="chatApp.toggleSetting('enterToSend')"></div>
                         </div>
                         <div class="toggle-wrapper">
-                            <div class="toggle-info"><div class="toggle-label">Show timestamps</div><div class="toggle-description">Display message timestamps in chat</div></div>
+                            <div class="toggle-info"><div class="toggle-label" id="showTimestampsLabel">Show timestamps</div><div class="toggle-description" id="showTimestampsDesc">Display message timestamps in chat</div></div>
                             <div class="toggle-switch active" id="showTimestampsToggle" onclick="chatApp.toggleSetting('showTimestamps')"></div>
                         </div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-group-title">LiteLLM Integration</div>
+                        <div class="settings-group-title" id="litellmTitle">LiteLLM Integration</div>
                         <div class="toggle-wrapper">
-                            <div class="toggle-info"><div class="toggle-label">Enable LiteLLM</div><div class="toggle-description">Add LiteLLM models to the model selector</div></div>
+                            <div class="toggle-info"><div class="toggle-label" id="enableLitellmLabel">Enable LiteLLM</div><div class="toggle-description" id="enableLitellmDesc">Add LiteLLM models to the model selector</div></div>
                             <div class="toggle-switch" id="litellmEnabledToggle" onclick="chatApp.toggleSetting('litellmEnabled')"></div>
                         </div>
                         <div class="form-group" style="margin-top: 8px;">
-                            <label class="form-label">API Key <span>Your LiteLLM API key</span></label>
+                            <label class="form-label" id="litellmApiKeyLabel">API Key <span id="litellmApiKeyDesc">Your LiteLLM API key</span></label>
                             <input type="password" class="form-input" id="litellmApiKey" placeholder="sk-…" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Endpoint URL <span>LiteLLM server URL</span></label>
+                            <label class="form-label" id="litellmEndpointLabel">Endpoint URL <span id="litellmEndpointDesc">LiteLLM server URL</span></label>
                             <input type="text" class="form-input" id="litellmEndpoint" placeholder="https://llm.nexiant.ai" autocomplete="off">
                         </div>
                     </div>
                     <div class="settings-group" style="margin-top: 24px;">
-                        <div class="settings-group-title">YandexGPT (Alice AI)</div>
+                        <div class="settings-group-title" id="yandexgptTitle">YandexGPT (Alice AI)</div>
                         <div class="setting-item">
-                            <div class="toggle-info"><div class="toggle-label">Enable YandexGPT</div><div class="toggle-description">Add YandexGPT Pro and Lite models</div></div>
+                            <div class="toggle-info"><div class="toggle-label" id="enableYandexgptLabel">Enable YandexGPT</div><div class="toggle-description" id="enableYandexgptDesc">Add YandexGPT Pro and Lite models</div></div>
                             <div class="toggle-switch" id="yandexgptEnabledToggle" onclick="chatApp.toggleSetting('yandexgptEnabled')"></div>
                         </div>
                         <div class="form-group" style="margin-top: 8px;">
-                            <label class="form-label">API Key <span>Your Yandex Cloud API key</span></label>
+                            <label class="form-label" id="yandexgptApiKeyLabel">API Key <span id="yandexgptApiKeyDesc">Your Yandex Cloud API key</span></label>
                             <input type="password" class="form-input" id="yandexgptApiKey" placeholder="AQVN…" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Folder ID <span>Yandex Cloud folder/catalog ID</span></label>
+                            <label class="form-label" id="yandexgptFolderIdLabel">Folder ID <span id="yandexgptFolderIdDesc">Yandex Cloud folder/catalog ID</span></label>
                             <input type="text" class="form-input" id="yandexgptFolderId" placeholder="b1g…" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Proxy URL <span>(optional, uses default if empty)</span></label>
+                            <label class="form-label" id="yandexgptProxyUrlLabel">Proxy URL <span id="yandexgptProxyUrlDesc">(optional, uses default if empty)</span></label>
                             <input type="text" class="form-input" id="yandexgptProxyUrl" placeholder="https://yandexgpt-proxy.sahyagpt.workers.dev" autocomplete="off">
                         </div>
-                        <div class="form-group" style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(255, 79, 0, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--accent);">
-                            <p><strong>ℹ️ About YandexGPT Proxy</strong></p>
-                            <p style="margin-top: 4px;">Yandex Cloud API blocks browser requests. A proxy is required.</p>
-                            <p style="margin-top: 8px;">✅ <strong>Default proxy available</strong> - leave empty to use shared proxy</p>
-                            <p>🔒 <strong>For privacy:</strong> <a href="YANDEXGPT_PROXY.md" target="_blank" style="color: var(--accent);">Deploy your own proxy</a></p>
+                        <div class="form-group" id="yandexgptInfo" style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(255, 79, 0, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--accent);">
+                            <p id="yandexgptInfoTitle"><strong>ℹ️ About YandexGPT Proxy</strong></p>
+                            <p id="yandexgptInfoText1" style="margin-top: 4px;">Yandex Cloud API blocks browser requests. A proxy is required.</p>
+                            <p id="yandexgptInfoText2" style="margin-top: 8px;">✅ <strong>Default proxy available</strong> - leave empty to use shared proxy</p>
+                            <p id="yandexgptInfoText3">🔒 <strong>For privacy:</strong> <a href="YANDEXGPT_PROXY.md" target="_blank" style="color: var(--accent);">Deploy your own proxy</a></p>
                         </div>
                     </div>
                 </div>
                 <div class="settings-section" id="tab-model">
                     <div class="settings-group">
-                        <div class="settings-group-title">System Prompt</div>
+                        <div class="settings-group-title" id="systemPromptTitle">System Prompt</div>
                         <div class="form-group">
-                            <label class="form-label">Instructions for the AI <span>Defines how the AI behaves</span></label>
+                            <label class="form-label"><span id="systemPromptLabel">Instructions for the AI</span> <span id="systemPromptDesc">Defines how the AI behaves</span></label>
                             <textarea class="form-textarea" id="systemPrompt" placeholder="Enter a system prompt to customize AI behavior...">You are a helpful AI assistant.</textarea>
                         </div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-group-title">Parameters</div>
+                        <div class="settings-group-title" id="parametersTitle">Parameters</div>
                         <div class="form-group">
-                            <label class="form-label">Temperature <span>Controls creativity (0 = focused, 2 = creative)</span></label>
+                            <label class="form-label"><span id="temperatureLabel">Temperature</span> <span id="temperatureDesc">Controls creativity (0 = focused, 2 = creative)</span></label>
                             <div class="slider-wrapper">
                                 <input type="range" class="slider" id="temperature" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('tempValue').textContent = this.value">
                                 <span class="slider-value" id="tempValue">0.7</span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Max Tokens <span>Maximum response length</span></label>
+                            <label class="form-label"><span id="maxTokensLabel">Max Tokens</span> <span id="maxTokensDesc">Maximum response length</span></label>
                             <div class="slider-wrapper">
                                 <input type="range" class="slider" id="maxTokens" min="256" max="8192" step="256" value="2048" oninput="document.getElementById('maxTokensValue').textContent = this.value">
                                 <span class="slider-value" id="maxTokensValue">2048</span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Top P <span>Nucleus sampling threshold</span></label>
+                            <label class="form-label"><span id="topPLabel">Top P</span> <span id="topPDesc">Nucleus sampling threshold</span></label>
                             <div class="slider-wrapper">
                                 <input type="range" class="slider" id="topP" min="0" max="1" step="0.05" value="0.9" oninput="document.getElementById('topPValue').textContent = this.value">
                                 <span class="slider-value" id="topPValue">0.9</span>
@@ -1575,51 +1575,51 @@
                 </div>
                 <div class="settings-section" id="tab-appearance">
                     <div class="settings-group">
-                        <div class="settings-group-title">Theme</div>
+                        <div class="settings-group-title" id="themeTitle">Theme</div>
                         <div class="form-group">
-                            <label class="form-label">Color Theme</label>
-                            <select class="form-select" id="themeSelect"><option value="dark">Dark (Default)</option><option value="light">Light</option><option value="system">System</option></select>
+                            <label class="form-label" id="colorThemeLabel">Color Theme</label>
+                            <select class="form-select" id="themeSelect"><option value="dark" id="themeDark">Dark (Default)</option><option value="light" id="themeLight">Light</option><option value="system" id="themeSystem">System</option></select>
                         </div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-group-title">Chat Display</div>
+                        <div class="settings-group-title" id="chatDisplayTitle">Chat Display</div>
                         <div class="form-group">
-                            <label class="form-label">Font Size</label>
-                            <select class="form-select" id="fontSizeSelect"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select>
+                            <label class="form-label" id="fontSizeLabel">Font Size</label>
+                            <select class="form-select" id="fontSizeSelect"><option value="small" id="fontSizeSmall">Small</option><option value="medium" id="fontSizeMedium" selected>Medium</option><option value="large" id="fontSizeLarge">Large</option></select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Code Block Theme</label>
+                            <label class="form-label" id="codeBlockThemeLabel">Code Block Theme</label>
                             <select class="form-select" id="codeThemeSelect"><option value="atom-one-dark">Atom One Dark</option><option value="github-dark">GitHub Dark</option><option value="monokai">Monokai</option><option value="dracula">Dracula</option></select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Thinking Display <span>How &lt;think&gt; blocks are shown</span></label>
+                            <label class="form-label"><span id="thinkingDisplayLabel">Thinking Display</span> <span id="thinkingDisplayDesc">How &lt;think&gt; blocks are shown</span></label>
                             <select class="form-select" id="thinkingStyleSelect">
-                                <option value="cot">Chain of Thought</option>
-                                <option value="classic">Classic</option>
+                                <option value="cot" id="thinkingCot">Chain of Thought</option>
+                                <option value="classic" id="thinkingClassic">Classic</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="settings-section" id="tab-advanced">
                     <div class="settings-group">
-                        <div class="settings-group-title">Data Management</div>
+                        <div class="settings-group-title" id="dataManagementTitle">Data Management</div>
                         <div class="toggle-wrapper">
-                            <div class="toggle-info"><div class="toggle-label">Stream responses</div><div class="toggle-description">Show AI response as it's being generated</div></div>
+                            <div class="toggle-info"><div class="toggle-label" id="streamResponsesLabel">Stream responses</div><div class="toggle-description" id="streamResponsesDesc">Show AI response as it's being generated</div></div>
                             <div class="toggle-switch active" id="streamToggle" onclick="chatApp.toggleSetting('stream')"></div>
                         </div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-group-title">Danger Zone</div>
-                        <button class="reset-btn" onclick="chatApp.clearAllData()" style="width: 100%; color: var(--error); border-color: var(--error);">
+                        <div class="settings-group-title" id="dangerZoneTitle">Danger Zone</div>
+                        <button class="reset-btn" id="clearAllDataBtn" onclick="chatApp.clearAllData()" style="width: 100%; color: var(--error); border-color: var(--error);">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 8px; vertical-align: middle;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            Clear All Data
+                            <span id="clearAllDataText">Clear All Data</span>
                         </button>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="reset-btn" onclick="chatApp.resetSettings()">Reset to Default</button>
-                <button class="save-btn" onclick="chatApp.saveSettings()">Save Changes</button>
+                <button class="reset-btn" id="resetDefaultBtn" onclick="chatApp.resetSettings()">Reset to Default</button>
+                <button class="save-btn" id="saveChangesBtn" onclick="chatApp.saveSettings()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -3192,17 +3192,180 @@ Using the search results above as your primary source of information, provide a 
                 const noChatsText = document.getElementById('noChatsText');
                 if (noChatsText) noChatsText.textContent = t.noChats;
                 
-                // Settings modal
-                const settingsTitle = document.querySelector('#settingsModal .modal-title');
+                // Settings Modal Header
+                const settingsTitle = document.getElementById('settingsTitle');
                 if (settingsTitle) settingsTitle.textContent = t.settings;
                 
-                const settingsTabs = document.querySelectorAll('.modal-tab');
-                if (settingsTabs.length >= 4) {
-                    settingsTabs[0].textContent = t.settingsGeneral;
-                    settingsTabs[1].textContent = t.settingsModel;
-                    settingsTabs[2].textContent = t.settingsAppearance;
-                    settingsTabs[3].textContent = t.settingsAdvanced;
-                }
+                // Settings Tabs
+                const tabGeneral = document.getElementById('tabGeneral');
+                const tabModel = document.getElementById('tabModel');
+                const tabAppearance = document.getElementById('tabAppearance');
+                const tabAdvanced = document.getElementById('tabAdvanced');
+                if (tabGeneral) tabGeneral.textContent = t.settingsGeneral;
+                if (tabModel) tabModel.textContent = t.settingsModel;
+                if (tabAppearance) tabAppearance.textContent = t.settingsAppearance;
+                if (tabAdvanced) tabAdvanced.textContent = t.settingsAdvanced;
+                
+                // General Tab
+                const ollamaEndpointsTitle = document.getElementById('ollamaEndpointsTitle');
+                if (ollamaEndpointsTitle) ollamaEndpointsTitle.textContent = t.ollamaEndpoints;
+                
+                const apiEndpointsLabel = document.getElementById('apiEndpointsLabel');
+                const apiEndpointsDesc = document.getElementById('apiEndpointsDesc');
+                if (apiEndpointsLabel) apiEndpointsLabel.textContent = t.endpoints;
+                if (apiEndpointsDesc) apiEndpointsDesc.textContent = t.endpointsDesc;
+                
+                const addEndpointBtn = document.getElementById('addEndpointBtn');
+                if (addEndpointBtn) addEndpointBtn.textContent = t.addEndpoint;
+                
+                const preferencesTitle = document.getElementById('preferencesTitle');
+                if (preferencesTitle) preferencesTitle.textContent = t.preferences;
+                
+                const autoSaveLabel = document.getElementById('autoSaveLabel');
+                const autoSaveDesc = document.getElementById('autoSaveDesc');
+                if (autoSaveLabel) autoSaveLabel.textContent = t.autoSave;
+                if (autoSaveDesc) autoSaveDesc.textContent = t.autoSaveDesc;
+                
+                const enterToSendLabel = document.getElementById('enterToSendLabel');
+                const enterToSendDesc = document.getElementById('enterToSendDesc');
+                if (enterToSendLabel) enterToSendLabel.textContent = t.enterToSend;
+                if (enterToSendDesc) enterToSendDesc.textContent = t.enterToSendDesc;
+                
+                const showTimestampsLabel = document.getElementById('showTimestampsLabel');
+                const showTimestampsDesc = document.getElementById('showTimestampsDesc');
+                if (showTimestampsLabel) showTimestampsLabel.textContent = t.showTimestamps;
+                if (showTimestampsDesc) showTimestampsDesc.textContent = t.showTimestampsDesc;
+                
+                // LiteLLM
+                const litellmTitle = document.getElementById('litellmTitle');
+                if (litellmTitle) litellmTitle.textContent = t.litellmIntegration;
+                
+                const enableLitellmLabel = document.getElementById('enableLitellmLabel');
+                const enableLitellmDesc = document.getElementById('enableLitellmDesc');
+                if (enableLitellmLabel) enableLitellmLabel.textContent = t.enableLitellm;
+                if (enableLitellmDesc) enableLitellmDesc.textContent = t.enableLitellmDesc;
+                
+                const litellmApiKeyLabel = document.getElementById('litellmApiKeyLabel');
+                if (litellmApiKeyLabel) litellmApiKeyLabel.innerHTML = t.apiKey + ' <span id="litellmApiKeyDesc">' + t.litellmApiKeyDesc + '</span>';
+                
+                const litellmEndpointLabel = document.getElementById('litellmEndpointLabel');
+                if (litellmEndpointLabel) litellmEndpointLabel.innerHTML = t.endpointUrl + ' <span id="litellmEndpointDesc">' + t.litellmEndpointDesc + '</span>';
+                
+                // YandexGPT
+                const yandexgptTitle = document.getElementById('yandexgptTitle');
+                if (yandexgptTitle) yandexgptTitle.textContent = t.yandexgptIntegration;
+                
+                const enableYandexgptLabel = document.getElementById('enableYandexgptLabel');
+                const enableYandexgptDesc = document.getElementById('enableYandexgptDesc');
+                if (enableYandexgptLabel) enableYandexgptLabel.textContent = t.enableYandexgpt;
+                if (enableYandexgptDesc) enableYandexgptDesc.textContent = t.enableYandexgptDesc;
+                
+                const yandexgptApiKeyLabel = document.getElementById('yandexgptApiKeyLabel');
+                if (yandexgptApiKeyLabel) yandexgptApiKeyLabel.innerHTML = t.apiKey + ' <span id="yandexgptApiKeyDesc">' + t.yandexgptApiKeyDesc + '</span>';
+                
+                const yandexgptFolderIdLabel = document.getElementById('yandexgptFolderIdLabel');
+                if (yandexgptFolderIdLabel) yandexgptFolderIdLabel.innerHTML = t.folderId + ' <span id="yandexgptFolderIdDesc">' + t.yandexgptFolderIdDesc + '</span>';
+                
+                const yandexgptProxyUrlLabel = document.getElementById('yandexgptProxyUrlLabel');
+                if (yandexgptProxyUrlLabel) yandexgptProxyUrlLabel.innerHTML = t.proxyUrl + ' <span id="yandexgptProxyUrlDesc">' + t.yandexgptProxyUrlDesc + '</span>';
+                
+                const yandexgptInfoTitle = document.getElementById('yandexgptInfoTitle');
+                const yandexgptInfoText1 = document.getElementById('yandexgptInfoText1');
+                const yandexgptInfoText2 = document.getElementById('yandexgptInfoText2');
+                const yandexgptInfoText3 = document.getElementById('yandexgptInfoText3');
+                if (yandexgptInfoTitle) yandexgptInfoTitle.innerHTML = '<strong>' + t.yandexgptInfoTitle + '</strong>';
+                if (yandexgptInfoText1) yandexgptInfoText1.textContent = t.yandexgptInfoText1;
+                if (yandexgptInfoText2) yandexgptInfoText2.innerHTML = t.yandexgptInfoText2.replace('Default proxy available', '<strong>Default proxy available</strong>').replace('leave empty', 'leave empty');
+                if (yandexgptInfoText3) yandexgptInfoText3.innerHTML = t.yandexgptInfoText3.replace('For privacy:', '<strong>For privacy:</strong>');
+                
+                // Model Tab
+                const systemPromptTitle = document.getElementById('systemPromptTitle');
+                if (systemPromptTitle) systemPromptTitle.textContent = t.systemPrompt;
+                
+                const systemPromptLabel = document.getElementById('systemPromptLabel');
+                const systemPromptDesc = document.getElementById('systemPromptDesc');
+                if (systemPromptLabel) systemPromptLabel.textContent = t.systemPromptLabel;
+                if (systemPromptDesc) systemPromptDesc.textContent = t.systemPromptLabelDesc;
+                
+                const parametersTitle = document.getElementById('parametersTitle');
+                if (parametersTitle) parametersTitle.textContent = t.parameters;
+                
+                const temperatureLabel = document.getElementById('temperatureLabel');
+                const temperatureDesc = document.getElementById('temperatureDesc');
+                if (temperatureLabel) temperatureLabel.textContent = t.temperature;
+                if (temperatureDesc) temperatureDesc.textContent = t.temperatureLabelDesc;
+                
+                const maxTokensLabel = document.getElementById('maxTokensLabel');
+                const maxTokensDesc = document.getElementById('maxTokensDesc');
+                if (maxTokensLabel) maxTokensLabel.textContent = t.maxTokens;
+                if (maxTokensDesc) maxTokensDesc.textContent = t.maxTokensDesc;
+                
+                const topPLabel = document.getElementById('topPLabel');
+                const topPDesc = document.getElementById('topPDesc');
+                if (topPLabel) topPLabel.textContent = t.topP;
+                if (topPDesc) topPDesc.textContent = t.topPDesc;
+                
+                // Appearance Tab
+                const themeTitle = document.getElementById('themeTitle');
+                if (themeTitle) themeTitle.textContent = t.theme;
+                
+                const colorThemeLabel = document.getElementById('colorThemeLabel');
+                if (colorThemeLabel) colorThemeLabel.textContent = t.colorTheme;
+                
+                const themeDark = document.getElementById('themeDark');
+                const themeLight = document.getElementById('themeLight');
+                const themeSystem = document.getElementById('themeSystem');
+                if (themeDark) themeDark.textContent = t.themeDark;
+                if (themeLight) themeLight.textContent = t.themeLight;
+                if (themeSystem) themeSystem.textContent = t.themeSystem;
+                
+                const chatDisplayTitle = document.getElementById('chatDisplayTitle');
+                if (chatDisplayTitle) chatDisplayTitle.textContent = t.chatDisplay;
+                
+                const fontSizeLabel = document.getElementById('fontSizeLabel');
+                if (fontSizeLabel) fontSizeLabel.textContent = t.fontSize;
+                
+                const fontSizeSmall = document.getElementById('fontSizeSmall');
+                const fontSizeMedium = document.getElementById('fontSizeMedium');
+                const fontSizeLarge = document.getElementById('fontSizeLarge');
+                if (fontSizeSmall) fontSizeSmall.textContent = t.fontSizeSmall;
+                if (fontSizeMedium) fontSizeMedium.textContent = t.fontSizeMedium;
+                if (fontSizeLarge) fontSizeLarge.textContent = t.fontSizeLarge;
+                
+                const codeBlockThemeLabel = document.getElementById('codeBlockThemeLabel');
+                if (codeBlockThemeLabel) codeBlockThemeLabel.textContent = t.codeBlockTheme;
+                
+                const thinkingDisplayLabel = document.getElementById('thinkingDisplayLabel');
+                const thinkingDisplayDesc = document.getElementById('thinkingDisplayDesc');
+                if (thinkingDisplayLabel) thinkingDisplayLabel.textContent = t.thinkingDisplay;
+                if (thinkingDisplayDesc) thinkingDisplayDesc.textContent = t.thinkingDisplayDesc;
+                
+                const thinkingCot = document.getElementById('thinkingCot');
+                const thinkingClassic = document.getElementById('thinkingClassic');
+                if (thinkingCot) thinkingCot.textContent = t.thinkingCot;
+                if (thinkingClassic) thinkingClassic.textContent = t.thinkingClassic;
+                
+                // Advanced Tab
+                const dataManagementTitle = document.getElementById('dataManagementTitle');
+                if (dataManagementTitle) dataManagementTitle.textContent = t.dataManagement;
+                
+                const streamResponsesLabel = document.getElementById('streamResponsesLabel');
+                const streamResponsesDesc = document.getElementById('streamResponsesDesc');
+                if (streamResponsesLabel) streamResponsesLabel.textContent = t.streamResponses;
+                if (streamResponsesDesc) streamResponsesDesc.textContent = t.streamResponsesDesc;
+                
+                const dangerZoneTitle = document.getElementById('dangerZoneTitle');
+                if (dangerZoneTitle) dangerZoneTitle.textContent = t.dangerZone;
+                
+                const clearAllDataText = document.getElementById('clearAllDataText');
+                if (clearAllDataText) clearAllDataText.textContent = t.clearAllData;
+                
+                // Settings Footer
+                const resetDefaultBtn = document.getElementById('resetDefaultBtn');
+                if (resetDefaultBtn) resetDefaultBtn.textContent = t.resetDefault;
+                
+                const saveChangesBtn = document.getElementById('saveChangesBtn');
+                if (saveChangesBtn) saveChangesBtn.textContent = t.saveChanges;
             }
 
             translations = {};

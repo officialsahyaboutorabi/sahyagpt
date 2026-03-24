@@ -180,6 +180,16 @@
             transform: translateY(-50%); color: var(--text-secondary);
         }
         .header-right { display: flex; align-items: center; gap: 12px; }
+        .header-btn {
+            padding: 10px 20px; background: var(--accent);
+            border: none; border-radius: 10px; color: white;
+            font-family: inherit; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s ease; text-decoration: none;
+        }
+        .header-btn:hover { background: #ff6b2c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 79, 0, 0.3); }
+        .header-btn:active { transform: translateY(0); }
+        .header-btn svg { flex-shrink: 0; }
         
         /* Custom Dropdown - Matches index.html */
         .custom-dropdown { position: relative; display: inline-block; }

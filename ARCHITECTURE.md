@@ -372,7 +372,36 @@ imagine.html (SPA)
 - **Streaming**: Updates existing message bubble in real-time
 - **Providers**: Works with Ollama, LiteLLM, and YandexGPT
 
-### 11. YandexGPT Integration
+### 11. Scroll to Bottom Button
+
+**File**: `index.html`
+
+A floating button that appears when the user scrolls up in the chat, allowing quick navigation to the latest messages.
+
+**Features**:
+- **Smart visibility** - Shows when scrolled >100px from bottom
+- **Performance optimized** - Throttled scroll handler using requestAnimationFrame
+- **Smooth animations** - CSS transitions for show/hide and hover effects
+- **Glassmorphism design** - Backdrop blur with border accent
+
+**Implementation**:
+```javascript
+// Scroll detection with throttling
+handleScroll() {
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    if (distanceFromBottom > 100) showButton();
+    else hideButton();
+}
+```
+
+**CSS Classes**:
+- `.scroll-to-bottom-btn` - Main button styling
+- `.scroll-to-bottom-btn.visible` - Visible state
+- `@keyframes bounce-down` - Hover animation
+
+---
+
+### 12. YandexGPT Integration
 
 **File**: `index.html` (settings and streaming logic)
 
@@ -433,9 +462,13 @@ ChatApp (Main Controller)
 │   └── pendingImageFiles[]
 ├── UI Components
 │   ├── initPromptInput()
+│   ├── initScrollButton()
 │   ├── renderMessages()
 │   ├── renderFileAttachments()
-│   └── createMessageElement()
+│   ├── createMessageElement()
+│   ├── scrollToBottom()
+│   ├── showScrollToBottomButton()
+│   └── hideScrollToBottomButton()
 ├── Provider Integration
 │   ├── fetchModels()
 │   └── streamResponse()
@@ -749,5 +782,5 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.3*
-*Last Updated: March 16, 2026*
+*Architecture Documentation v1.4*
+*Last Updated: March 24, 2026*

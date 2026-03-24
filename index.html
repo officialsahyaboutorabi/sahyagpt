@@ -1191,6 +1191,62 @@
             text-align: center; color: var(--text-secondary);
             margin-top: 12px; font-size: 0.9rem;
         }
+
+        /* ============================================
+           SCROLL TO BOTTOM BUTTON
+           ============================================ */
+        .scroll-to-bottom-btn {
+            position: absolute;
+            right: 24px;
+            bottom: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(23, 23, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            pointer-events: none;
+            z-index: 50;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .scroll-to-bottom-btn.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .scroll-to-bottom-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 4px 24px rgba(255, 79, 0, 0.2);
+        }
+        .scroll-to-bottom-btn:active {
+            transform: scale(0.95);
+        }
+        .scroll-to-bottom-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+        .scroll-to-bottom-btn:hover svg {
+            animation: bounce-down 0.6s ease infinite;
+        }
+        @keyframes bounce-down {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(3px); }
+        }
+        /* Position relative needed for absolute positioning of button */
+        .chat-container {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -1318,6 +1374,11 @@
                 </div>
             </header>
             <div class="chat-container" id="chatContainer">
+                <button class="scroll-to-bottom-btn" id="scrollToBottomBtn" onclick="chatApp.scrollToBottom()" title="Scroll to bottom">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12l7 7 7-7"/>
+                    </svg>
+                </button>
                 <div class="welcome-screen" id="welcomeScreen">
                     <div class="welcome-avatar">
                         <div class="avatar large" data-v-0e70e152="">
@@ -2432,6 +2493,7 @@
                 this.renderSidebarStatic();
                 this.avatar = new AIAvatar('aiAvatar', 80);
                 this.initPromptInput();
+                this.initScrollButton();
                 this.loadSettings();
                 this.loadChats();
                 this.fetchModels();
@@ -3741,7 +3803,56 @@
                 }
             }
 
-            scrollToBottom() { const container = document.getElementById('chatContainer'); container.scrollTop = container.scrollHeight; }
+            scrollToBottom() { 
+                const container = document.getElementById('chatContainer'); 
+                container.scrollTop = container.scrollHeight;
+                this.hideScrollToBottomButton();
+            }
+
+            initScrollButton() {
+                const container = document.getElementById('chatContainer');
+                const scrollBtn = document.getElementById('scrollToBottomBtn');
+                if (!container || !scrollBtn) return;
+                
+                // Use a throttled scroll handler for performance
+                let ticking = false;
+                container.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            this.handleScroll();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                });
+            }
+
+            handleScroll() {
+                const container = document.getElementById('chatContainer');
+                if (!container) return;
+                
+                const scrollTop = container.scrollTop;
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                
+                // Show button if scrolled up more than 100px from bottom
+                const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+                if (distanceFromBottom > 100) {
+                    this.showScrollToBottomButton();
+                } else {
+                    this.hideScrollToBottomButton();
+                }
+            }
+
+            showScrollToBottomButton() {
+                const btn = document.getElementById('scrollToBottomBtn');
+                if (btn) btn.classList.add('visible');
+            }
+
+            hideScrollToBottomButton() {
+                const btn = document.getElementById('scrollToBottomBtn');
+                if (btn) btn.classList.remove('visible');
+            }
 
             triggerFileUpload() { document.getElementById('fileInput').click(); }
 

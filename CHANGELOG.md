@@ -2,6 +2,27 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.4.0] - 2026-03-24
+
+### Added
+
+#### Scroll to Bottom Button
+- **Floating scroll button** - Appears when user scrolls up in chat
+  - Smooth CSS transitions for show/hide animations
+  - Bounce animation on hover for visual feedback
+  - Backdrop blur and glassmorphism styling
+  - Positioned bottom-right of chat container
+- **Smart visibility detection** - Shows when scrolled >100px from bottom
+  - Uses throttled scroll handler for performance (requestAnimationFrame)
+  - Auto-hides when user scrolls to bottom
+  - Auto-hides when new messages arrive (scrollToBottom called)
+- **CSS animations** - Smooth transitions and hover effects
+  - Scale and translate animations
+  - Color transition to accent color on hover
+  - Box shadow glow effect on hover
+
+---
+
 ## [1.3.0] - 2026-03-16
 
 ### Added

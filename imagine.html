@@ -1115,13 +1115,11 @@
                 <div class="form-group" id="openrouterImageModelGroup" style="display: none;">
                     <label class="form-label">Image Model (OpenRouter)</label>
                     <select class="form-input" id="openrouterImageModelSelect">
-                        <option value="openai/dall-e-3">DALL-E 3 (Best Quality)</option>
-                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
-                        <option value="stabilityai/stable-diffusion-xl-base-1.0">Stable Diffusion XL</option>
-                        <option value="black-forest-labs/flux-1.1-pro">FLUX 1.1 Pro</option>
-                        <option value="recraft-ai/recraft-v3">Recraft V3</option>
                         <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Free)</option>
+                        <option value="google/gemini-2.0-flash-thinking-exp:free">Gemini 2.0 Flash Thinking (Free)</option>
+                        <option value="meta-llama/llama-3.2-11b-vision-instruct:free">Llama 3.2 11B Vision (Free)</option>
                     </select>
+                    <div class="form-hint" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Note: These models return image URLs in their responses. For DALL-E 3 quality, use HuggingFace FLUX models.</div>
                 </div>
                 <div class="form-group" id="videoProviderGroup">
                     <label class="form-label">Video Provider</label>
@@ -1270,7 +1268,7 @@
                 // Image settings
                 this.imageProvider = localStorage.getItem('image_provider') || 'grok';
                 this.openrouterKey = localStorage.getItem('openrouter_api_key') || '';
-                this.openrouterImageModel = localStorage.getItem('openrouter_image_model') || 'openai/dall-e-3';
+                this.openrouterImageModel = localStorage.getItem('openrouter_image_model') || 'google/gemini-2.0-flash-exp:free';
                 
                 // Video settings
                 this.videoProvider = localStorage.getItem('video_provider') || 'huggingface';
@@ -1592,8 +1590,10 @@
             
             async generateImageWithGrok(prompt) {
                 try {
-                    // Use x.ai Grok API for image generation
+                    // Use x.ai Grok API for image generation via Puter
                     // Docs: https://docs.x.ai/developers/model-capabilities/images/generation
+                    console.log('Generating image with Grok, prompt:', prompt);
+                    
                     const response = await puter.ai.chat(
                         prompt,
                         {
@@ -1602,24 +1602,42 @@
                         }
                     );
                     
-                    // Handle different response formats from Puter
+                    console.log('Grok response:', response);
+                    
+                    // Handle different response formats from Puter/x.ai
                     let imageUrl = null;
                     
-                    if (response && response.message) {
+                    // The response might be a direct string URL
+                    if (typeof response === 'string') {
+                        // Check if it's a URL
+                        if (response.startsWith('http')) {
+                            imageUrl = response;
+                        }
+                    }
+                    // Standard Puter response format
+                    else if (response && response.message) {
+                        const message = response.message;
+                        
+                        // If message is a direct URL
+                        if (typeof message === 'string' && message.startsWith('http')) {
+                            imageUrl = message;
+                        }
                         // Extract image URL from markdown ![alt](url) format
-                        const markdownMatch = response.message.match(/!\[.*?\]\((.*?)\)/);
-                        if (markdownMatch) {
-                            imageUrl = markdownMatch[1];
-                        } else {
-                            // Try to find any URL that looks like an image
-                            const urlMatch = response.message.match(/https?:\/\/[^\s<>"{}|\\^`[\]]+\.(?:png|jpg|jpeg|gif|webp)/i);
-                            if (urlMatch) {
-                                imageUrl = urlMatch[0];
+                        else if (typeof message === 'string') {
+                            const markdownMatch = message.match(/!\[.*?\]\((.*?)\)/);
+                            if (markdownMatch) {
+                                imageUrl = markdownMatch[1];
+                            } else {
+                                // Try to find any URL that looks like an image
+                                const urlMatch = message.match(/https?:\/\/[^\s<>"{}|\\^`[\]]+\.(?:png|jpg|jpeg|gif|webp)/i);
+                                if (urlMatch) {
+                                    imageUrl = urlMatch[0];
+                                }
                             }
                         }
                     }
                     
-                    // Alternative: check if response has image data directly
+                    // Check for direct URL fields
                     if (!imageUrl && response && response.url) {
                         imageUrl = response.url;
                     }
@@ -1628,9 +1646,25 @@
                         imageUrl = response.image_url;
                     }
                     
+                    // Check if response itself is the URL
+                    if (!imageUrl && response && typeof response === 'object') {
+                        // Try to find any property that looks like a URL
+                        for (const key in response) {
+                            const value = response[key];
+                            if (typeof value === 'string' && value.startsWith('http') && 
+                                (value.includes('.png') || value.includes('.jpg') || value.includes('.jpeg') || value.includes('.webp'))) {
+                                imageUrl = value;
+                                break;
+                            }
+                        }
+                    }
+                    
                     if (!imageUrl) {
+                        console.error('Could not extract image URL from response:', response);
                         throw new Error('No image URL found in response');
                     }
+                    
+                    console.log('Extracted image URL:', imageUrl);
                     
                     this.removeGeneratingPlaceholder();
                     this.addResult({
@@ -1645,7 +1679,8 @@
                     this.showToast('Image generated successfully!', 'success');
                     
                 } catch (error) {
-                    console.warn('Using fallback generation:', error);
+                    console.error('Grok image generation failed:', error);
+                    this.showToast(`Grok generation failed: ${error.message}. Using demo mode.`, 'error');
                     await this.simulateGeneration('image', prompt);
                 }
             }

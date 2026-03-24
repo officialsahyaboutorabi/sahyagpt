@@ -3366,6 +3366,28 @@ Using the search results above as your primary source of information, provide a 
                 
                 const saveChangesBtn = document.getElementById('saveChangesBtn');
                 if (saveChangesBtn) saveChangesBtn.textContent = t.saveChanges;
+                
+                // Skills Library Modal
+                const skillsLibraryModalTitle = document.getElementById('skillsLibraryModalTitle');
+                if (skillsLibraryModalTitle) {
+                    const skills = this.skillsManager ? this.skillsManager.getAllSkills() : [];
+                    skillsLibraryModalTitle.textContent = (t.skillsLibTitle || 'Skills Library') + ` (${skills.length})`;
+                }
+                
+                const skillsLibCreateNew = document.getElementById('skillsLibCreateNew');
+                if (skillsLibCreateNew) skillsLibCreateNew.textContent = t.skillsLibCreateNew || 'Create New';
+                
+                const skillsLibImport = document.getElementById('skillsLibImport');
+                if (skillsLibImport) skillsLibImport.textContent = t.skillsLibImport || 'Import';
+                
+                const skillsLibApplySkill = document.getElementById('skillsLibApplySkill');
+                if (skillsLibApplySkill) skillsLibApplySkill.textContent = t.skillsLibApplySkill || 'Apply Skill';
+                
+                const skillsLibClear = document.getElementById('skillsLibClear');
+                if (skillsLibClear) skillsLibClear.textContent = t.skillsLibClear || 'Clear';
+                
+                const skillSearchInput = document.getElementById('skillSearchInput');
+                if (skillSearchInput) skillSearchInput.placeholder = t.skillsLibSearch || 'Search skills...';
             }
 
             translations = {};
@@ -3475,7 +3497,15 @@ Using the search results above as your primary source of information, provide a 
                             thinkingDisplay: 'Thinking Display',
                             thinkingDisplayDesc: 'How <think> blocks are shown',
                             thinkingCot: 'Chain of Thought',
-                            thinkingClassic: 'Classic'
+                            thinkingClassic: 'Classic',
+                            skillsLibTitle: 'Skills Library',
+                            skillsLibCreateNew: 'Create New',
+                            skillsLibImport: 'Import',
+                            skillsLibApplySkill: 'Apply Skill',
+                            skillsLibClear: 'Clear',
+                            skillsLibSearch: 'Search skills...',
+                            noSkillsFound: 'No skills found',
+                            createOrImportSkill: 'Create a new skill or import from file'
                         },
                         ru: {
                             welcomeTitle: 'Чем могу помочь?',
@@ -3567,7 +3597,15 @@ Using the search results above as your primary source of information, provide a 
                             thinkingDisplay: 'Отображение мышления',
                             thinkingDisplayDesc: 'Как показывать блоки <think>',
                             thinkingCot: 'Цепочка мыслей',
-                            thinkingClassic: 'Классический'
+                            thinkingClassic: 'Классический',
+                            skillsLibTitle: 'Библиотека навыков',
+                            skillsLibCreateNew: 'Создать',
+                            skillsLibImport: 'Импорт',
+                            skillsLibApplySkill: 'Применить навык',
+                            skillsLibClear: 'Очистить',
+                            skillsLibSearch: 'Поиск навыков...',
+                            noSkillsFound: 'Навыки не найдены',
+                            createOrImportSkill: 'Создайте новый навык или импортируйте из файла'
                         }
                     };
                 }
@@ -5751,7 +5789,7 @@ When this skill is active:
                 modal.innerHTML = `
                     <div class="modal" style="max-width: 850px; height: clamp(500px, 90vh, 850px);">
                         <div class="modal-header">
-                            <h2 class="modal-title">Skills Library (${skills.length})</h2>
+                            <h2 class="modal-title" id="skillsLibraryModalTitle">Skills Library (${skills.length})</h2>
                             <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
@@ -5760,30 +5798,30 @@ When this skill is active:
                             <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
                                 <button class="prompt-action-btn" onclick="chatApp.skillsManager.openSkillEditor()" style="background: rgba(255, 79, 0, 0.1); border-color: var(--accent); color: var(--accent);">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Create New
+                                    <span id="skillsLibCreateNew">Create New</span>
                                 </button>
                                 <button class="prompt-action-btn" onclick="chatApp.skillsManager.importSkillFromFile()">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                                    Import
+                                    <span id="skillsLibImport">Import</span>
                                 </button>
                                 <div style="position: relative;">
                                     <button class="prompt-action-btn" id="skillSelectorBtn" onclick="chatApp.skillsManager.toggleSkillSelector()" style="${this.activeSkill ? 'background: rgba(0, 255, 136, 0.1); border-color: var(--success); color: var(--success);' : ''}">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                                        ${this.activeSkill ? this.escapeHtml(this.activeSkill.name) : 'Apply Skill'}
+                                        ${this.activeSkill ? this.escapeHtml(this.activeSkill.name) : '<span id="skillsLibApplySkill">Apply Skill</span>'}
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                     </button>
-                                    <div id="skillSelectorDropdown" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 280px; max-width: 360px; max-height: 400px; overflow-y: auto; background: rgba(23, 23, 23, 0.98); border: 1px solid var(--border); border-radius: 12px; padding: 8px; z-index: 1000; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);">
+                                    <div id="skillSelectorDropdown" class="skill-selector-dropdown" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 280px; max-width: 360px; max-height: 400px; overflow-y: auto; background: rgba(23, 23, 23, 0.98); border: 1px solid var(--border); border-radius: 12px; padding: 8px; z-index: 1000; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); opacity: 0; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease;">
                                         ${this.renderSkillSelectorOptions()}
                                     </div>
                                 </div>
                                 ${this.activeSkill ? `
                                     <button class="prompt-action-btn" onclick="chatApp.skillsManager.clearActiveSkill()" style="color: var(--error);">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                        Clear
+                                        <span id="skillsLibClear">Clear</span>
                                     </button>
                                 ` : ''}
                                 <div style="flex: 1; min-width: 150px;"></div>
-                                <input type="text" class="form-input" id="skillSearchInput" placeholder="Search skills..." style="max-width: 220px;">
+                                <input type="text" class="form-input" id="skillSearchInput" placeholder="Search skills..." data-placeholder-ru="Поиск навыков..." style="max-width: 220px;">
                             </div>
                             <div id="skillsListContainer">
                                 ${this.renderSkillsList(skills, activeSkillId)}
@@ -5792,6 +5830,11 @@ When this skill is active:
                     </div>
                 `;
                 document.body.appendChild(modal);
+                
+                // Apply translations to the modal
+                if (window.chatApp && window.chatApp.currentLanguage) {
+                    window.chatApp.applyLanguage(window.chatApp.currentLanguage);
+                }
 
                 const searchInput = modal.querySelector('#skillSearchInput');
                 searchInput.addEventListener('input', (e) => {
@@ -5838,16 +5881,23 @@ When this skill is active:
                 const dropdown = document.getElementById('skillSelectorDropdown');
                 const btn = document.getElementById('skillSelectorBtn');
                 if (dropdown && btn) {
-                    const isOpen = dropdown.style.display === 'block';
-                    dropdown.style.display = isOpen ? 'none' : 'block';
-                    btn.querySelector('svg:last-child').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                    const isOpen = dropdown.classList.contains('open');
                     
-                    // Close dropdown when clicking outside
-                    if (!isOpen) {
+                    if (isOpen) {
+                        this.closeSkillSelector();
+                    } else {
+                        dropdown.style.display = 'block';
+                        // Trigger reflow for animation
+                        dropdown.offsetHeight;
+                        dropdown.classList.add('open');
+                        dropdown.style.opacity = '1';
+                        dropdown.style.transform = 'translateY(0) scale(1)';
+                        btn.querySelector('svg:last-child').style.transform = 'rotate(180deg)';
+                        
+                        // Close dropdown when clicking outside
                         const closeOnClickOutside = (e) => {
                             if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
-                                dropdown.style.display = 'none';
-                                btn.querySelector('svg:last-child').style.transform = 'rotate(0deg)';
+                                this.closeSkillSelector();
                                 document.removeEventListener('click', closeOnClickOutside);
                             }
                         };
@@ -5859,18 +5909,28 @@ When this skill is active:
             closeSkillSelector() {
                 const dropdown = document.getElementById('skillSelectorDropdown');
                 const btn = document.getElementById('skillSelectorBtn');
-                if (dropdown) dropdown.style.display = 'none';
+                if (dropdown) {
+                    dropdown.classList.remove('open');
+                    dropdown.style.opacity = '0';
+                    dropdown.style.transform = 'translateY(-10px) scale(0.95)';
+                    setTimeout(() => {
+                        if (!dropdown.classList.contains('open')) {
+                            dropdown.style.display = 'none';
+                        }
+                    }, 200);
+                }
                 if (btn) btn.querySelector('svg:last-child').style.transform = 'rotate(0deg)';
             }
 
             renderSkillsList(skills, activeSkillId) {
+                const t = window.chatApp?.translations[window.chatApp?.currentLanguage] || {};
                 if (skills.length === 0) {
                     return `<div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 20px; opacity: 0.3;">
                             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                         </svg>
-                        <div style="font-size: 1.1rem; margin-bottom: 8px;">No skills found</div>
-                        <div style="font-size: 0.9rem; opacity: 0.7;">Create a new skill or import from file</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 8px;">${t.noSkillsFound || 'No skills found'}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">${t.createOrImportSkill || 'Create a new skill or import from file'}</div>
                     </div>`;
                 }
 

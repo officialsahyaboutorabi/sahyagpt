@@ -2637,6 +2637,25 @@ Using the search results above as your primary source of information, provide a 
                                 }]
                             }
                         });
+                    } else {
+                        this.showToast('Search returned no results — answering from model knowledge', 'error');
+                        this._setTypingShimmer('Generating response\u2026');
+                        this.streamResponse(message, {
+                            chainOfThought: {
+                                steps: [{
+                                    icon:        CHECK_ICON,
+                                    label:       `No web results found for "${this.escapeHtml(message)}"`,
+                                    items:       ['<span style="opacity:0.6">Falling back to model knowledge.</span>'],
+                                    defaultOpen: false,
+                                    streaming:   false,
+                                }]
+                            }
+                        });
+                    }
+                } else {
+                    this.streamResponse(message);
+                }
+            }
 
             updatePromptSubmitButton(isGenerating) {
                 if (!this.promptSubmit) return;

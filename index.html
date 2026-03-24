@@ -3273,10 +3273,10 @@ Using the search results above as your primary source of information, provide a 
                 const yandexgptInfoText1 = document.getElementById('yandexgptInfoText1');
                 const yandexgptInfoText2 = document.getElementById('yandexgptInfoText2');
                 const yandexgptInfoText3 = document.getElementById('yandexgptInfoText3');
-                if (yandexgptInfoTitle) yandexgptInfoTitle.innerHTML = '<strong>' + t.yandexgptInfoTitle + '</strong>';
-                if (yandexgptInfoText1) yandexgptInfoText1.textContent = t.yandexgptInfoText1;
-                if (yandexgptInfoText2) yandexgptInfoText2.innerHTML = t.yandexgptInfoText2.replace('Default proxy available', '<strong>Default proxy available</strong>').replace('leave empty', 'leave empty');
-                if (yandexgptInfoText3) yandexgptInfoText3.innerHTML = t.yandexgptInfoText3.replace('For privacy:', '<strong>For privacy:</strong>');
+                if (yandexgptInfoTitle && t.yandexgptInfoTitle) yandexgptInfoTitle.innerHTML = '<strong>' + t.yandexgptInfoTitle + '</strong>';
+                if (yandexgptInfoText1 && t.yandexgptInfoText1) yandexgptInfoText1.textContent = t.yandexgptInfoText1;
+                if (yandexgptInfoText2 && t.yandexgptInfoText2) yandexgptInfoText2.innerHTML = t.yandexgptInfoText2.replace('Default proxy available', '<strong>Default proxy available</strong>');
+                if (yandexgptInfoText3 && t.yandexgptInfoText3) yandexgptInfoText3.innerHTML = t.yandexgptInfoText3.replace('For privacy:', '<strong>For privacy:</strong>');
                 
                 // Model Tab
                 const systemPromptTitle = document.getElementById('systemPromptTitle');
@@ -3383,23 +3383,191 @@ Using the search results above as your primary source of information, provide a 
                     }
                 } catch (e) {
                     console.error('Failed to load translations:', e);
-                    // Fallback translations
+                    // Fallback translations - include all keys to prevent errors
                     this.translations = {
                         en: {
                             welcomeTitle: 'How can I help you today?',
                             welcomeSubtitle: 'Experience the next generation of AI conversation with SahyaGPT.',
                             messagePlaceholder: 'Message SahyaGPT...',
                             footer: 'SahyaGPT can make mistakes. Consider checking important information.',
+                            navChat: 'Chat',
+                            navImagine: 'Imagine',
+                            chatHistory: 'Chat History',
+                            createSkills: 'Create Skills',
+                            skillsLibrary: 'Skills Library',
+                            newChat: 'New Chat',
+                            downloadTemplate: 'Download Template',
+                            createNewSkill: 'Create New Skill',
+                            viewSkills: 'View Skills',
+                            settings: 'Settings',
+                            loadingModels: 'Loading models...',
                             connected: 'Connected',
-                            disconnected: 'Disconnected'
+                            disconnected: 'Disconnected',
+                            suggestion1: 'Explain quantum computing',
+                            suggestion2: 'Write a Python function',
+                            suggestion3: 'Renewable energy benefits',
+                            suggestion4: 'Help debug code',
+                            noChats: 'No chats yet',
+                            settingsGeneral: 'General',
+                            settingsModel: 'Model',
+                            settingsAppearance: 'Appearance',
+                            settingsAdvanced: 'Advanced',
+                            systemPrompt: 'System Prompt',
+                            systemPromptDesc: 'Instructions for the AI',
+                            temperature: 'Temperature',
+                            temperatureDesc: 'Controls creativity',
+                            maxTokens: 'Max Tokens',
+                            maxTokensDesc: 'Maximum response length',
+                            topP: 'Top P',
+                            topPDesc: 'Nucleus sampling threshold',
+                            theme: 'Theme',
+                            fontSize: 'Font Size',
+                            autoSave: 'Auto-save chats',
+                            autoSaveDesc: 'Automatically save conversation history',
+                            enterToSend: 'Send with Enter',
+                            enterToSendDesc: 'Press Enter to send, Shift+Enter for new line',
+                            showTimestamps: 'Show timestamps',
+                            showTimestampsDesc: 'Display message timestamps in chat',
+                            endpoints: 'API Endpoints',
+                            endpointsDesc: 'Add multiple Ollama servers',
+                            addEndpoint: 'Add Endpoint',
+                            preferences: 'Preferences',
+                            ollamaEndpoints: 'Ollama Endpoints',
+                            litellmIntegration: 'LiteLLM Integration',
+                            enableLitellm: 'Enable LiteLLM',
+                            enableLitellmDesc: 'Add LiteLLM models to the model selector',
+                            yandexgptIntegration: 'YandexGPT Integration',
+                            enableYandexgpt: 'Enable YandexGPT',
+                            enableYandexgptDesc: 'Add YandexGPT Pro and Lite models',
+                            saveChanges: 'Save Changes',
+                            resetDefault: 'Reset to Default',
+                            clearAllData: 'Clear All Data',
+                            dangerZone: 'Danger Zone',
+                            streamResponses: 'Stream responses',
+                            streamResponsesDesc: "Show AI response as it's being generated",
+                            dataManagement: 'Data Management',
+                            apiKey: 'API Key',
+                            litellmApiKeyDesc: 'Your LiteLLM API key',
+                            endpointUrl: 'Endpoint URL',
+                            litellmEndpointDesc: 'LiteLLM server URL',
+                            yandexgptApiKeyDesc: 'Your Yandex Cloud API key',
+                            folderId: 'Folder ID',
+                            yandexgptFolderIdDesc: 'Yandex Cloud folder/catalog ID',
+                            proxyUrl: 'Proxy URL',
+                            yandexgptProxyUrlDesc: '(optional, uses default if empty)',
+                            yandexgptInfoTitle: 'ℹ️ About YandexGPT Proxy',
+                            yandexgptInfoText1: 'Yandex Cloud API blocks browser requests. A proxy is required.',
+                            yandexgptInfoText2: '✅ Default proxy available - leave empty to use shared proxy',
+                            yandexgptInfoText3: '🔒 For privacy: Deploy your own proxy',
+                            systemPromptLabel: 'Instructions for the AI',
+                            systemPromptLabelDesc: 'Defines how the AI behaves',
+                            parameters: 'Parameters',
+                            temperatureLabelDesc: 'Controls creativity (0 = focused, 2 = creative)',
+                            colorTheme: 'Color Theme',
+                            themeDark: 'Dark (Default)',
+                            themeLight: 'Light',
+                            themeSystem: 'System',
+                            chatDisplay: 'Chat Display',
+                            fontSizeSmall: 'Small',
+                            fontSizeMedium: 'Medium',
+                            fontSizeLarge: 'Large',
+                            codeBlockTheme: 'Code Block Theme',
+                            thinkingDisplay: 'Thinking Display',
+                            thinkingDisplayDesc: 'How <think> blocks are shown',
+                            thinkingCot: 'Chain of Thought',
+                            thinkingClassic: 'Classic'
                         },
                         ru: {
                             welcomeTitle: 'Чем могу помочь?',
                             welcomeSubtitle: 'Испытайте новое поколение AI-разговоров с SahyaGPT.',
                             messagePlaceholder: 'Напишите сообщение SahyaGPT...',
                             footer: 'SahyaGPT может ошибаться. Проверяйте важную информацию.',
+                            navChat: 'Чат',
+                            navImagine: 'Создание',
+                            chatHistory: 'История чатов',
+                            createSkills: 'Создать навыки',
+                            skillsLibrary: 'Библиотека навыков',
+                            newChat: 'Новый чат',
+                            downloadTemplate: 'Скачать шаблон',
+                            createNewSkill: 'Создать навык',
+                            viewSkills: 'Смотреть навыки',
+                            settings: 'Настройки',
+                            loadingModels: 'Загрузка моделей...',
                             connected: 'Подключено',
-                            disconnected: 'Отключено'
+                            disconnected: 'Отключено',
+                            suggestion1: 'Объясни квантовые вычисления',
+                            suggestion2: 'Напиши функцию Python',
+                            suggestion3: 'Польза возобновляемой энергии',
+                            suggestion4: 'Помоги отладить код',
+                            noChats: 'Нет чатов',
+                            settingsGeneral: 'Общие',
+                            settingsModel: 'Модель',
+                            settingsAppearance: 'Внешний вид',
+                            settingsAdvanced: 'Дополнительно',
+                            systemPrompt: 'Системный промпт',
+                            systemPromptDesc: 'Инструкции для AI',
+                            temperature: 'Температура',
+                            temperatureDesc: 'Контролирует креативность',
+                            maxTokens: 'Макс. токенов',
+                            maxTokensDesc: 'Максимальная длина ответа',
+                            topP: 'Top P',
+                            topPDesc: 'Порог сэмплирования',
+                            theme: 'Тема',
+                            fontSize: 'Размер шрифта',
+                            autoSave: 'Автосохранение чатов',
+                            autoSaveDesc: 'Автоматически сохранять историю разговоров',
+                            enterToSend: 'Отправка по Enter',
+                            enterToSendDesc: 'Нажмите Enter для отправки, Shift+Enter для новой строки',
+                            showTimestamps: 'Показывать время',
+                            showTimestampsDesc: 'Отображать время сообщений в чате',
+                            endpoints: 'API Эндпоинты',
+                            endpointsDesc: 'Добавьте несколько серверов Ollama',
+                            addEndpoint: 'Добавить эндпоинт',
+                            preferences: 'Настройки',
+                            ollamaEndpoints: 'Эндпоинты Ollama',
+                            litellmIntegration: 'Интеграция LiteLLM',
+                            enableLitellm: 'Включить LiteLLM',
+                            enableLitellmDesc: 'Добавить модели LiteLLM в селектор',
+                            yandexgptIntegration: 'Интеграция YandexGPT',
+                            enableYandexgpt: 'Включить YandexGPT',
+                            enableYandexgptDesc: 'Добавить модели YandexGPT Pro и Lite',
+                            saveChanges: 'Сохранить изменения',
+                            resetDefault: 'Сбросить по умолчанию',
+                            clearAllData: 'Очистить все данные',
+                            dangerZone: 'Опасная зона',
+                            streamResponses: 'Потоковые ответы',
+                            streamResponsesDesc: 'Показывать ответ AI по мере генерации',
+                            dataManagement: 'Управление данными',
+                            apiKey: 'API Ключ',
+                            litellmApiKeyDesc: 'Ваш LiteLLM API ключ',
+                            endpointUrl: 'URL Эндпоинта',
+                            litellmEndpointDesc: 'URL сервера LiteLLM',
+                            yandexgptApiKeyDesc: 'Ваш Yandex Cloud API ключ',
+                            folderId: 'ID Папки',
+                            yandexgptFolderIdDesc: 'ID папки/каталога Yandex Cloud',
+                            proxyUrl: 'URL Прокси',
+                            yandexgptProxyUrlDesc: '(опционально, используется по умолчанию если пусто)',
+                            yandexgptInfoTitle: 'ℹ️ О прокси YandexGPT',
+                            yandexgptInfoText1: 'API Yandex Cloud блокирует запросы из браузера. Требуется прокси.',
+                            yandexgptInfoText2: '✅ Доступен прокси по умолчанию - оставьте пустым для общего прокси',
+                            yandexgptInfoText3: '🔒 Для приватности: Разверните свой прокси',
+                            systemPromptLabel: 'Инструкции для AI',
+                            systemPromptLabelDesc: 'Определяет поведение AI',
+                            parameters: 'Параметры',
+                            temperatureLabelDesc: 'Контролирует креативность (0 = сфокусировано, 2 = креативно)',
+                            colorTheme: 'Цветовая тема',
+                            themeDark: 'Тёмная (По умолчанию)',
+                            themeLight: 'Светлая',
+                            themeSystem: 'Системная',
+                            chatDisplay: 'Отображение чата',
+                            fontSizeSmall: 'Маленький',
+                            fontSizeMedium: 'Средний',
+                            fontSizeLarge: 'Большой',
+                            codeBlockTheme: 'Тема блоков кода',
+                            thinkingDisplay: 'Отображение мышления',
+                            thinkingDisplayDesc: 'Как показывать блоки <think>',
+                            thinkingCot: 'Цепочка мыслей',
+                            thinkingClassic: 'Классический'
                         }
                     };
                 }
@@ -5604,7 +5772,7 @@ When this skill is active:
                                         ${this.activeSkill ? this.escapeHtml(this.activeSkill.name) : 'Apply Skill'}
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                     </button>
-                                    <div id="skillSelectorDropdown" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 280px; max-height: 400px; overflow-y: auto; background: rgba(23, 23, 23, 0.98); border: 1px solid var(--border); border-radius: 12px; padding: 8px; z-index: 1000; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);">
+                                    <div id="skillSelectorDropdown" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 280px; max-width: 360px; max-height: 400px; overflow-y: auto; background: rgba(23, 23, 23, 0.98); border: 1px solid var(--border); border-radius: 12px; padding: 8px; z-index: 1000; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);">
                                         ${this.renderSkillSelectorOptions()}
                                     </div>
                                 </div>
@@ -5656,7 +5824,7 @@ When this skill is active:
                                  onmouseout="this.style.background='${this.activeSkill?.id === skill.id ? 'rgba(0, 255, 136, 0.1)' : 'transparent'}'">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; ${this.activeSkill?.id === skill.id ? 'color: var(--success);' : 'color: var(--text-secondary);'}"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                                 <div style="flex: 1; min-width: 0;">
-                                    <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">${this.escapeHtml(skill.name)}</div>
+                                    <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(skill.name)}</div>
                                     <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(skill.description)}</div>
                                 </div>
                                 ${this.activeSkill?.id === skill.id ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}

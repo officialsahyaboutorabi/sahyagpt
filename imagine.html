@@ -1080,7 +1080,7 @@
                         <polyline points="21 15 16 10 5 21"/>
                     </svg>
                     <div class="empty-title">Start Creating</div>
-                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images or videos using HuggingFace models.</div>
+                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images using Grok (free, no API key needed) or videos using HuggingFace models.</div>
                 </div>
             </div>
         </main>
@@ -1102,7 +1102,7 @@
                 <div class="form-group">
                     <label class="form-label">HuggingFace API Key</label>
                     <input type="password" class="form-input" id="apiKeyInput" placeholder="hf_...">
-                    <div class="form-hint">Your API key is stored locally in your browser.</div>
+                    <div class="form-hint">Only required for video generation. Images use free Grok API. Your key is stored locally.</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Image Model</label>
@@ -1148,6 +1148,9 @@
     
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Puter.js for Grok API access -->
+    <script src="https://js.puter.com/v2/"></script>
     
     <script>
         // ============================================
@@ -1416,8 +1419,10 @@
                     return;
                 }
                 
-                if (!this.apiKey) {
-                    this.showToast('Please set your HuggingFace API key first', 'warning');
+                // Only require API key for video generation (still uses HuggingFace)
+                // Image generation uses free Grok API via Puter
+                if (this.currentMode === 'video' && !this.apiKey) {
+                    this.showToast('Please set your HuggingFace API key for video generation', 'warning');
                     this.openApiKeyModal();
                     return;
                 }
@@ -1449,40 +1454,49 @@
             }
             
             async generateImage(prompt) {
+                // Map aspect ratio to Grok dimensions
                 const dimensions = this.getAspectRatioDimensions(this.currentAspectRatio);
-                const modelId = this.imageModel;
-                const apiUrl = `https://api-inference.huggingface.co/models/${modelId}`;
                 
                 try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${this.apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            inputs: prompt,
-                            parameters: {
-                                width: dimensions.width,
-                                height: dimensions.height,
-                                num_inference_steps: 50,
-                                guidance_scale: 7.5
-                            }
-                        })
-                    });
+                    // Use Puter's Grok API for free image generation
+                    // Docs: https://developer.puter.com/tutorials/free-unlimited-grok-api/
+                    const response = await puter.ai.chat(
+                        `Generate an image: ${prompt}`,
+                        {
+                            model: 'grok-2-image',
+                            stream: false
+                        }
+                    );
                     
-                    if (!response.ok) {
-                        if (response.status === 401) {
-                            throw new Error('Invalid API key');
-                        } else if (response.status === 503) {
-                            throw new Error('Model is currently loading. Please try again in a moment.');
+                    // Handle different response formats from Puter
+                    let imageUrl = null;
+                    
+                    if (response && response.message) {
+                        // Extract image URL from markdown ![alt](url) format
+                        const markdownMatch = response.message.match(/!\[.*?\]\((.*?)\)/);
+                        if (markdownMatch) {
+                            imageUrl = markdownMatch[1];
                         } else {
-                            throw new Error(`API error: ${response.status}`);
+                            // Try to find any URL that looks like an image
+                            const urlMatch = response.message.match(/https?:\/\/[^\s<>"{}|\\^`[\]]+\.(?:png|jpg|jpeg|gif|webp)/i);
+                            if (urlMatch) {
+                                imageUrl = urlMatch[0];
+                            }
                         }
                     }
                     
-                    const blob = await response.blob();
-                    const imageUrl = URL.createObjectURL(blob);
+                    // Alternative: check if response has image data directly
+                    if (!imageUrl && response && response.url) {
+                        imageUrl = response.url;
+                    }
+                    
+                    if (!imageUrl && response && response.image_url) {
+                        imageUrl = response.image_url;
+                    }
+                    
+                    if (!imageUrl) {
+                        throw new Error('No image URL found in response');
+                    }
                     
                     this.removeGeneratingPlaceholder();
                     this.addResult({
@@ -1491,7 +1505,7 @@
                         prompt: prompt,
                         aspectRatio: this.currentAspectRatio,
                         timestamp: Date.now(),
-                        model: modelId
+                        model: 'grok-2-image'
                     });
                     
                     this.showToast('Image generated successfully!', 'success');

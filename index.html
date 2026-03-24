@@ -1268,6 +1268,12 @@
                         </svg>
                         Imagine
                     </a>
+                    <a href="prompthub.html" class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        PromptHub
+                    </a>
                 </div>
                 
                 <!-- New Chat Button -->
@@ -2521,6 +2527,19 @@
                 });
                 if (this.promptTextarea) this.promptTextarea.focus();
                 this.updateEditButton();
+                
+                // Check for pending prompt from PromptHub
+                const pendingPrompt = sessionStorage.getItem('pendingPrompt');
+                if (pendingPrompt) {
+                    this.promptTextarea.value = pendingPrompt;
+                    this.autoResizePromptInput();
+                    sessionStorage.removeItem('pendingPrompt');
+                    // Scroll to bottom to show input
+                    setTimeout(() => {
+                        const chatContainer = document.getElementById('chatContainer');
+                        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }, 100);
+                }
             }
 
             initPromptInput() {

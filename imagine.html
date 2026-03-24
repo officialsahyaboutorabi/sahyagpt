@@ -1080,7 +1080,7 @@
                         <polyline points="21 15 16 10 5 21"/>
                     </svg>
                     <div class="empty-title">Start Creating</div>
-                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images using Grok (free, no API key needed) or videos using HuggingFace models.</div>
+                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images using Puter AI (free, no API key needed), or use HuggingFace Endpoint/OpenRouter for higher quality.</div>
                 </div>
             </div>
         </main>
@@ -1102,10 +1102,16 @@
                 <div class="form-group">
                     <label class="form-label">Image Provider</label>
                     <select class="form-input" id="imageProviderSelect" onchange="imagineApp.onProviderChange()">
-                        <option value="grok">Grok (Free, Basic Quality)</option>
-                        <option value="openrouter">OpenRouter (High Quality, API Key Required)</option>
+                        <option value="puter">Puter AI (Free, No API Key)</option>
+                        <option value="hf_endpoint">HuggingFace Endpoint (Best Quality - Self Hosted)</option>
+                        <option value="openrouter">OpenRouter (Free Models Available)</option>
                     </select>
                     <div class="form-hint">Select your preferred image generation provider.</div>
+                </div>
+                <div class="form-group" id="hfEndpointGroup">
+                    <label class="form-label">HuggingFace Endpoint URL</label>
+                    <input type="text" class="form-input" id="hfEndpointUrl" placeholder="https://your-endpoint-xxxx.region.aws.endpoints.huggingface.cloud">
+                    <div class="form-hint">Your deployed HuggingFace Inference Endpoint URL. <a href="HF_INFERENCE_ENDPOINTS.md" target="_blank" style="color: var(--accent);">Setup Guide</a></div>
                 </div>
                 <div class="form-group" id="openrouterKeyGroup" style="display: none;">
                     <label class="form-label">OpenRouter API Key</label>
@@ -1266,7 +1272,8 @@
                 this.isGenerating = false;
                 
                 // Image settings
-                this.imageProvider = localStorage.getItem('image_provider') || 'grok';
+                this.imageProvider = localStorage.getItem('image_provider') || 'puter';
+                this.hfEndpointUrl = localStorage.getItem('hf_endpoint_url') || '';
                 this.openrouterKey = localStorage.getItem('openrouter_api_key') || '';
                 this.openrouterImageModel = localStorage.getItem('openrouter_image_model') || 'google/gemini-2.0-flash-exp:free';
                 
@@ -1460,6 +1467,11 @@
                         this.openApiKeyModal();
                         return;
                     }
+                    if (this.imageProvider === 'hf_endpoint' && !this.hfEndpointUrl) {
+                        this.showToast('Please set your HuggingFace Endpoint URL', 'warning');
+                        this.openApiKeyModal();
+                        return;
+                    }
                 } else if (this.currentMode === 'video') {
                     if (this.videoProvider === 'openrouter' && !this.openrouterKey) {
                         this.showToast('Please set your OpenRouter API key for Sora video generation', 'warning');
@@ -1501,8 +1513,11 @@
             async generateImage(prompt) {
                 if (this.imageProvider === 'openrouter') {
                     await this.generateImageWithOpenRouter(prompt);
+                } else if (this.imageProvider === 'hf_endpoint') {
+                    await this.generateImageWithHFEndpoint(prompt);
                 } else {
-                    await this.generateImageWithGrok(prompt);
+                    // Default: Puter (free)
+                    await this.generateImageWithPuter(prompt);
                 }
             }
             
@@ -1583,84 +1598,110 @@
                     
                 } catch (error) {
                     console.error('OpenRouter image generation failed:', error);
-                    this.showToast(`OpenRouter failed: ${error.message}. Falling back to Grok...`, 'warning');
-                    await this.generateImageWithGrok(prompt);
+                    this.showToast(`OpenRouter failed: ${error.message}. Falling back to Puter...`, 'warning');
+                    await this.generateImageWithPuter(prompt);
                 }
             }
             
-            async generateImageWithGrok(prompt) {
+            async generateImageWithHFEndpoint(prompt) {
                 try {
-                    // Use x.ai Grok API for image generation via Puter
-                    // Docs: https://docs.x.ai/developers/model-capabilities/images/generation
-                    console.log('Generating image with Grok, prompt:', prompt);
+                    if (!this.hfEndpointUrl) {
+                        throw new Error('HuggingFace Endpoint URL not configured');
+                    }
                     
-                    const response = await puter.ai.chat(
-                        prompt,
-                        {
-                            model: 'grok-imagine-image',
-                            stream: false
-                        }
-                    );
+                    const dimensions = this.getAspectRatioDimensions(this.currentAspectRatio);
                     
-                    console.log('Grok response:', response);
+                    const response = await fetch(this.hfEndpointUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            inputs: prompt,
+                            parameters: {
+                                width: dimensions.width,
+                                height: dimensions.height,
+                                num_inference_steps: 50,
+                                guidance_scale: 7.5
+                            }
+                        })
+                    });
                     
-                    // Handle different response formats from Puter/x.ai
+                    if (!response.ok) {
+                        throw new Error(`Endpoint error: ${response.status}`);
+                    }
+                    
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    
+                    this.removeGeneratingPlaceholder();
+                    this.addResult({
+                        type: 'image',
+                        url: imageUrl,
+                        prompt: prompt,
+                        aspectRatio: this.currentAspectRatio,
+                        timestamp: Date.now(),
+                        model: 'HF Endpoint'
+                    });
+                    
+                    this.showToast('Image generated!', 'success');
+                    
+                } catch (error) {
+                    console.error('HF Endpoint error:', error);
+                    this.showToast(`Endpoint failed: ${error.message}. Falling back to Puter...`, 'error');
+                    await this.generateImageWithPuter(prompt);
+                }
+            }
+            
+            async generateImageWithPuter(prompt) {
+                try {
+                    // Use Puter's native txt2img API for free image generation
+                    // Docs: https://docs.puter.com/playground/ai-txt2img-options/
+                    console.log('Generating image with Puter txt2img, prompt:', prompt);
+                    
+                    const dimensions = this.getAspectRatioDimensions(this.currentAspectRatio);
+                    
+                    // Use puter.ai.txt2img() for dedicated image generation
+                    // This returns a direct image URL or object
+                    const result = await puter.ai.txt2img(prompt, {
+                        width: dimensions.width,
+                        height: dimensions.height,
+                        // Optional parameters for better quality
+                        num_inference_steps: 50,
+                        guidance_scale: 7.5,
+                    });
+                    
+                    console.log('Puter txt2img result:', result);
+                    
                     let imageUrl = null;
                     
-                    // The response might be a direct string URL
-                    if (typeof response === 'string') {
-                        // Check if it's a URL
-                        if (response.startsWith('http')) {
-                            imageUrl = response;
-                        }
-                    }
-                    // Standard Puter response format
-                    else if (response && response.message) {
-                        const message = response.message;
-                        
-                        // If message is a direct URL
-                        if (typeof message === 'string' && message.startsWith('http')) {
-                            imageUrl = message;
-                        }
-                        // Extract image URL from markdown ![alt](url) format
-                        else if (typeof message === 'string') {
-                            const markdownMatch = message.match(/!\[.*?\]\((.*?)\)/);
-                            if (markdownMatch) {
-                                imageUrl = markdownMatch[1];
-                            } else {
-                                // Try to find any URL that looks like an image
-                                const urlMatch = message.match(/https?:\/\/[^\s<>"{}|\\^`[\]]+\.(?:png|jpg|jpeg|gif|webp)/i);
-                                if (urlMatch) {
-                                    imageUrl = urlMatch[0];
+                    // Handle different response formats
+                    if (typeof result === 'string') {
+                        // Direct URL string
+                        imageUrl = result;
+                    } else if (result && typeof result === 'object') {
+                        // Could be { url: '...' } or { image: '...' } or direct blob
+                        if (result.url) {
+                            imageUrl = result.url;
+                        } else if (result.image) {
+                            imageUrl = result.image;
+                        } else if (result.src) {
+                            imageUrl = result.src;
+                        } else {
+                            // Try to find any URL property
+                            for (const key in result) {
+                                const value = result[key];
+                                if (typeof value === 'string' && 
+                                    (value.startsWith('http') || value.startsWith('data:image'))) {
+                                    imageUrl = value;
+                                    break;
                                 }
                             }
                         }
                     }
                     
-                    // Check for direct URL fields
-                    if (!imageUrl && response && response.url) {
-                        imageUrl = response.url;
-                    }
-                    
-                    if (!imageUrl && response && response.image_url) {
-                        imageUrl = response.image_url;
-                    }
-                    
-                    // Check if response itself is the URL
-                    if (!imageUrl && response && typeof response === 'object') {
-                        // Try to find any property that looks like a URL
-                        for (const key in response) {
-                            const value = response[key];
-                            if (typeof value === 'string' && value.startsWith('http') && 
-                                (value.includes('.png') || value.includes('.jpg') || value.includes('.jpeg') || value.includes('.webp'))) {
-                                imageUrl = value;
-                                break;
-                            }
-                        }
-                    }
-                    
                     if (!imageUrl) {
-                        console.error('Could not extract image URL from response:', response);
+                        console.error('Could not extract image URL from result:', result);
                         throw new Error('No image URL found in response');
                     }
                     
@@ -1673,14 +1714,14 @@
                         prompt: prompt,
                         aspectRatio: this.currentAspectRatio,
                         timestamp: Date.now(),
-                        model: 'grok-imagine-image'
+                        model: 'puter-txt2img'
                     });
                     
                     this.showToast('Image generated successfully!', 'success');
                     
                 } catch (error) {
-                    console.error('Grok image generation failed:', error);
-                    this.showToast(`Grok generation failed: ${error.message}. Using demo mode.`, 'error');
+                    console.error('Puter image generation failed:', error);
+                    this.showToast(`Generation failed: ${error.message}. Using demo mode.`, 'error');
                     await this.simulateGeneration('image', prompt);
                 }
             }
@@ -1874,6 +1915,7 @@
                 const videoProvider = document.getElementById('videoProviderSelect').value;
                 
                 // Toggle Image provider fields
+                document.getElementById('hfEndpointGroup').style.display = imageProvider === 'hf_endpoint' ? 'block' : 'none';
                 document.getElementById('openrouterKeyGroup').style.display = imageProvider === 'openrouter' ? 'block' : 'none';
                 document.getElementById('openrouterImageModelGroup').style.display = imageProvider === 'openrouter' ? 'block' : 'none';
                 
@@ -1886,6 +1928,7 @@
             saveApiKey() {
                 // Image settings
                 this.imageProvider = document.getElementById('imageProviderSelect').value;
+                this.hfEndpointUrl = document.getElementById('hfEndpointUrl').value.trim();
                 this.openrouterKey = document.getElementById('openrouterKeyInput').value.trim();
                 this.openrouterImageModel = document.getElementById('openrouterImageModelSelect').value;
                 
@@ -1897,6 +1940,7 @@
                 
                 // Save to localStorage
                 localStorage.setItem('image_provider', this.imageProvider);
+                localStorage.setItem('hf_endpoint_url', this.hfEndpointUrl);
                 localStorage.setItem('openrouter_api_key', this.openrouterKey);
                 localStorage.setItem('openrouter_image_model', this.openrouterImageModel);
                 localStorage.setItem('video_provider', this.videoProvider);
@@ -1913,6 +1957,7 @@
                 
                 // Set current values
                 document.getElementById('imageProviderSelect').value = this.imageProvider;
+                document.getElementById('hfEndpointUrl').value = this.hfEndpointUrl;
                 document.getElementById('openrouterKeyInput').value = this.openrouterKey;
                 document.getElementById('openrouterImageModelSelect').value = this.openrouterImageModel;
                 document.getElementById('videoProviderSelect').value = this.videoProvider;

@@ -46,18 +46,32 @@
             font-family: 'SB Sans Text', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary); color: var(--text-primary);
             min-height: 100vh; overflow-x: hidden; line-height: 1.6;
+            position: relative;
         }
+        
+        /* Background utilities */
+        .pointer-events-none { pointer-events: none; }
+        .absolute { position: absolute; }
+        .inset-0 { inset: 0; }
+        .inset-x-0 { left: 0; right: 0; }
+        .top-0 { top: 0; }
+        .z-0 { z-index: 0; }
+        .z-\[1\] { z-index: 1; }
+        .h-screen { height: 100vh; }
+        .h-full { height: 100%; }
+        .w-full { width: 100%; }
+        .object-cover { object-fit: cover; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
         
-        /* Starfield Background */
-        #starfield-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -2; pointer-events: none; background: var(--bg-primary);
+        /* Background Canvas */
+        #bgCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
-        #starfield-canvas { display: block; width: 100%; height: 100%; }
         .noise-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9999; opacity: 0.03;
@@ -443,7 +457,16 @@
     </style>
 </head>
 <body>
-    <div id="starfield-container"><canvas id="starfield-canvas"></canvas></div>
+    <!-- Video Background -->
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-0">
+        <video aria-label="" width="1920" height="1080" autoplay="" loop="" playsinline="" class="h-full w-full object-cover">
+            <source src="https://storage.googleapis.com/gweb-gemini-cdn/gemini/uploads/89e9004d716a7803fc7c9aab18c985af783f5a36.mp4" type="video/mp4">
+        </video>
+    </div>
+    <!-- Canvas Background Effect -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 z-[1] h-screen" style="opacity: 1; transition: opacity 1.2s ease-in;">
+        <canvas id="bgCanvas" aria-hidden="true" style="position: absolute; inset: 0px; width: 100%; height: 100%;"></canvas>
+    </div>
     <div class="noise-overlay"></div>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     
@@ -893,56 +916,54 @@ When this skill is active:
             }
         }
 
-        // Starfield Animation
-        class Starfield {
+        // Background Gradient Animation
+        class GradientBackground {
             constructor() {
-                this.canvas = document.getElementById('starfield-canvas');
+                this.canvas = document.getElementById('bgCanvas');
+                if (!this.canvas) return;
                 this.ctx = this.canvas.getContext('2d');
-                this.stars = [];
+                this.time = 0;
                 this.resize();
-                this.initStars();
                 this.animate();
                 window.addEventListener('resize', () => this.resize());
             }
 
             resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
-
-            initStars() {
-                const count = Math.floor((this.canvas.width * this.canvas.height) / 3000);
-                for (let i = 0; i < count; i++) {
-                    this.stars.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        size: Math.random() * 1.5 + 0.5,
-                        speed: Math.random() * 0.5 + 0.1,
-                        brightness: Math.random()
-                    });
-                }
+                this.canvas.width = window.innerWidth * 2;
+                this.canvas.height = window.innerHeight * 2;
+                this.canvas.style.width = window.innerWidth + 'px';
+                this.canvas.style.height = window.innerHeight + 'px';
             }
 
             animate() {
-                this.ctx.fillStyle = '#0d0d0d';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                this.stars.forEach(star => {
-                    star.brightness += (Math.random() - 0.5) * 0.05;
-                    star.brightness = Math.max(0.3, Math.min(1, star.brightness));
-                    
-                    this.ctx.beginPath();
-                    this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                    this.ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness * 0.5})`;
-                    this.ctx.fill();
-                });
-
+                this.time += 0.005;
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                
+                // Create flowing gradient
+                const gradient = this.ctx.createRadialGradient(
+                    w * (0.5 + Math.sin(this.time) * 0.3),
+                    h * (0.3 + Math.cos(this.time * 0.7) * 0.2),
+                    0,
+                    w * 0.5,
+                    h * 0.5,
+                    w * 0.8
+                );
+                
+                gradient.addColorStop(0, 'rgba(255, 79, 0, 0.15)');
+                gradient.addColorStop(0.5, 'rgba(255, 107, 44, 0.05)');
+                gradient.addColorStop(1, 'rgba(13, 13, 13, 0)');
+                
+                this.ctx.clearRect(0, 0, w, h);
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, w, h);
+                
                 requestAnimationFrame(() => this.animate());
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            new Starfield();
+            new GradientBackground();
             renderPrompts();
         });
     </script>

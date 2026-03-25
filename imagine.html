@@ -906,12 +906,11 @@
         .dropdown-item.selected { background: var(--bg-selected); color: var(--text-primary); }
         .language-dropdown .dropdown-trigger { min-width: 120px; }
         
-        /* New Chat Input Component */
+        /* Chat Input Container */
         .chat-input-section {
             width: 100%;
             max-width: 896px;
             padding: 0 24px;
-            margin: 0 auto;
         }
         
         .chat-input-wrapper {
@@ -962,8 +961,13 @@
             scrollbar-width: none;
         }
         
-        .upload-preview::-webkit-scrollbar { display: none; }
-        .upload-preview.visible { display: flex; }
+        .upload-preview::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .upload-preview.visible {
+            display: flex;
+        }
         
         .preview-item {
             position: relative;
@@ -999,7 +1003,9 @@
             padding: 0;
         }
         
-        .preview-remove:hover { background: rgba(255, 79, 0, 0.9); }
+        .preview-remove:hover {
+            background: rgba(255, 87, 23, 0.9);
+        }
         
         /* Input Area */
         .input-area {
@@ -1018,7 +1024,9 @@
             z-index: 10;
         }
         
-        .file-input { display: none; }
+        .file-input {
+            display: none;
+        }
         
         .attach-button {
             display: inline-flex;
@@ -1046,10 +1054,17 @@
             background: #353534;
         }
         
-        .attach-button:active { background: #3a3939; }
+        .attach-button:active {
+            background: #3a3939;
+        }
+        
         .attach-button:focus-visible {
             outline: none;
             box-shadow: 0 0 0 1px #ff4f00;
+        }
+        
+        .attach-button svg {
+            stroke-width: 2;
         }
         
         /* Text Input */
@@ -1065,28 +1080,35 @@
         
         .text-input {
             width: 100%;
-            padding: 14px 56px 14px 8px;
+            padding: 0 8px;
             background: transparent;
             color: white;
+            text-align: bottom;
             overflow-y: auto;
             max-height: 160px;
+            padding-top: 14px;
+            padding-bottom: 14px;
             outline: none;
             font-family: inherit;
             font-size: 14px;
             line-height: 1.5;
-            border: none;
-            resize: none;
         }
         
-        .text-input::placeholder {
+        .text-input p.is-editor-empty:first-child::before {
+            content: attr(data-placeholder);
+            float: left;
             color: rgba(229, 226, 225, 0.4);
+            pointer-events: none;
+            height: 0;
         }
         
         /* Submit Button */
         .submit-button-wrapper {
             position: absolute;
             right: 8px;
-            bottom: 8px;
+            bottom: 0;
+            padding-top: 8px;
+            padding-bottom: 8px;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -1136,13 +1158,17 @@
             transition: clip-path 100ms ease, background-color 100ms ease;
         }
         
-        .submit-button:hover .submit-button-inner { transform: scale(1.05); }
-        .submit-button:active .submit-button-inner { transform: scale(0.95); }
+        .submit-button:hover .submit-button-inner {
+            transform: scale(1.05);
+        }
+        
+        .submit-button:active .submit-button-inner {
+            transform: scale(0.95);
+        }
         
         .submit-button svg {
             stroke-width: 2.5;
             position: relative;
-            z-index: 1;
         }
         
         /* Bottom Controls */
@@ -1154,8 +1180,85 @@
             padding: 8px;
         }
         
+        /* Toggle Group */
+        .toggle-group {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background: #3a3939;
+            gap: 2px;
+            height: 32px;
+            border-radius: 16px;
+            padding: 2px;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            background-color: #2a2a2a;
+            border-radius: 14px;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle-btn {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 14px;
+            transition: color 250ms ease;
+            cursor: pointer;
+            height: 28px;
+            white-space: nowrap;
+            background: transparent;
+            border: none;
+            color: rgba(229, 226, 225, 0.6);
+            font-family: inherit;
+        }
+        
+        .toggle-btn.active {
+            color: #ffb59e;
+            font-weight: 600;
+        }
+        
+        .toggle-btn:not(.active):hover {
+            color: rgba(229, 226, 225, 0.9);
+        }
+        
+        .toggle-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px #ff4f00;
+        }
+        
+        .toggle-btn svg {
+            stroke-width: 2;
+        }
+        
+        /* Video options container */
+        .video-options {
+            display: inline-flex;
+            gap: 6px;
+            overflow: hidden;
+            max-width: 0;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .video-options.visible {
+            max-width: 300px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
         /* Dropdown menu */
-        #aspectDropdown {
+        .dropdown-menu {
             position: fixed;
             background: #2a2a2a;
             border: 1px solid rgba(255, 79, 0, 0.2);
@@ -1171,13 +1274,57 @@
             z-index: 1000;
         }
         
-        #aspectDropdown.open {
+        .dropdown-menu.open {
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
         }
         
-        .dropdown-container { position: relative; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 150ms ease;
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-family: inherit;
+            font-size: 14px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .dropdown-item.selected {
+            font-weight: 600;
+        }
+        
+        .aspect-preview {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .aspect-box {
+            border-radius: 2px;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .aspect-box.selected {
+            background-color: #ffb59e;
+        }
+        
+        .dropdown-container {
+            position: relative;
+        }
         
         /* Aspect Ratio Button */
         .aspect-ratio-button {
@@ -1197,7 +1344,10 @@
             font-family: inherit;
         }
         
-        .aspect-ratio-button:hover { color: #ffb59e; }
+        .aspect-ratio-button:hover {
+            color: #ffb59e;
+        }
+        
         .aspect-ratio-button:focus-visible {
             outline: none;
             box-shadow: 0 0 0 2px #ff4f00;
@@ -1219,21 +1369,6 @@
         .aspect-preview-inner {
             border-radius: 2px;
             background: currentColor;
-        }
-        
-        .aspect-box {
-            border-radius: 2px;
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-        
-        .aspect-box.selected { background-color: #ffb59e; }
-        
-        .aspect-preview {
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
         /* Tips */
@@ -1375,13 +1510,16 @@
             
             <!-- Content Area -->
             <div class="content-area">
-                <!-- New Chat Input Component -->
+                <!-- Chat Input Component -->
                 <section class="chat-input-section">
                     <div class="chat-input-wrapper">
+                        
                         <!-- Chat Input with Shimmer Border -->
                         <div class="shimmer-border">
+                            
                             <!-- Inner Content -->
                             <div class="input-content">
+                                
                                 <!-- Image Upload Preview Area -->
                                 <div id="uploadPreview" class="upload-preview"></div>
                                 
@@ -1402,14 +1540,16 @@
                                     <!-- Text Input -->
                                     <div class="text-input-wrapper">
                                         <div class="text-input-container">
-                                            <textarea id="imagineTextInput" class="text-input" placeholder="Type to imagine..."></textarea>
+                                            <div id="textInput" class="text-input" contenteditable="true" tabindex="0" translate="no">
+                                                <p class="is-editor-empty" data-placeholder="Type to imagine"><br></p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Submit Button (Right) -->
                                 <div class="submit-button-wrapper">
-                                    <button id="submitBtn" aria-label="Submit" class="submit-button" type="submit" onclick="imagineApp.generate()">
+                                    <button id="submitBtn" aria-label="Submit" class="submit-button" type="submit">
                                         <div class="submit-button-inner">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M6 11L12 5M12 5L18 11M12 5V19" stroke="currentColor" stroke-linecap="square"/>
@@ -1420,6 +1560,53 @@
                                 
                                 <!-- Bottom Controls -->
                                 <div class="bottom-controls">
+                                    <!-- Mode Toggle (Image/Video) -->
+                                    <div class="toggle-group" id="modeToggle">
+                                        <div class="toggle-slider" id="modeSlider" style="left: 2px; width: calc(50% - 2px);"></div>
+                                        <button class="toggle-btn active" data-mode="image" type="button">
+                                            <div style="display: flex; align-items: center; gap: 4px;">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path clip-rule="evenodd" d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z" fill="currentColor" fill-rule="evenodd"/>
+                                                </svg>
+                                                <span>Image</span>
+                                            </div>
+                                        </button>
+                                        <button class="toggle-btn" data-mode="video" type="button">
+                                            <div style="display: flex; align-items: center; gap: 4px;">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path clip-rule="evenodd" d="M12 4C14.4853 4 16.5 6.01472 16.5 8.5V15.5C16.5 17.9853 14.4853 20 12 20H6C3.51472 20 1.5 17.9853 1.5 15.5V8.5C1.5 6.01472 3.51472 4 6 4H12Z" fill="currentColor" fill-rule="evenodd"/>
+                                                    <path d="M22.5 19.0811L18.375 15.7812L18 15.4805V8.51953L18.375 8.21875L22.5 4.91895V19.0811Z" fill="currentColor"/>
+                                                </svg>
+                                                <span>Video</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Video Options (Resolution & Duration) -->
+                                    <div class="video-options" id="videoOptions">
+                                        <!-- Resolution Toggle -->
+                                        <div class="toggle-group" id="resolutionToggle">
+                                            <div class="toggle-slider" id="resolutionSlider" style="left: 2px; width: calc(50% - 2px);"></div>
+                                            <button class="toggle-btn active" data-res="480p" type="button">
+                                                <span>480p</span>
+                                            </button>
+                                            <button class="toggle-btn" data-res="720p" type="button">
+                                                <span>720p</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Duration Toggle -->
+                                        <div class="toggle-group" id="durationToggle">
+                                            <div class="toggle-slider" id="durationSlider" style="left: 2px; width: calc(50% - 2px);"></div>
+                                            <button class="toggle-btn active" data-dur="6s" type="button">
+                                                <span>6s</span>
+                                            </button>
+                                            <button class="toggle-btn" data-dur="10s" type="button">
+                                                <span>10s</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- Aspect Ratio Dropdown Container -->
                                     <div class="dropdown-container">
                                         <button id="aspectRatioBtn" aria-label="Aspect Ratio" class="aspect-ratio-button" type="button">
@@ -1432,15 +1619,6 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    
-                                    <!-- API Key Button -->
-                                    <button class="aspect-ratio-button" onclick="imagineApp.openApiKeyModal()" title="API Settings">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="12" r="3"/>
-                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                                        </svg>
-                                        <span>API</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2585,143 +2763,174 @@
             initLanguageDropdown();
         }
         
-        // New Chat Input Component JavaScript
-        document.addEventListener('DOMContentLoaded', () => {
-            // Aspect Ratio Dropdown
-            const aspectRatioBtn = document.getElementById('aspectRatioBtn');
-            const aspectDropdown = document.getElementById('aspectDropdown');
-            const aspectChevron = document.getElementById('aspectChevron');
-            const currentAspectLabel = document.getElementById('currentAspectLabel');
-            const currentAspectPreview = document.getElementById('currentAspectPreview');
-            const dropdownItems = aspectDropdown.querySelectorAll('.dropdown-item');
-            
-            function closeDropdown() {
-                aspectDropdown.classList.remove('open');
-                aspectChevron.style.transform = 'rotate(0deg)';
-            }
-            
-            aspectRatioBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isOpen = aspectDropdown.classList.contains('open');
+        // Mode toggle (Image/Video)
+        const modeToggle = document.getElementById('modeToggle');
+        const modeSlider = document.getElementById('modeSlider');
+        const modeBtns = modeToggle.querySelectorAll('.toggle-btn');
+        const videoOptions = document.getElementById('videoOptions');
+        
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.dataset.mode;
+                const isImage = mode === 'image';
                 
-                if (isOpen) {
-                    closeDropdown();
+                if (isImage) {
+                    modeSlider.style.left = '2px';
                 } else {
-                    const rect = aspectRatioBtn.getBoundingClientRect();
-                    const dropdownHeight = aspectDropdown.offsetHeight || 220;
-                    aspectDropdown.style.left = rect.left + 'px';
-                    aspectDropdown.style.top = (rect.top - dropdownHeight - 8) + 'px';
-                    aspectDropdown.classList.add('open');
-                    aspectChevron.style.transform = 'rotate(180deg)';
+                    modeSlider.style.left = 'calc(50%)';
                 }
-            });
-            
-            document.addEventListener('click', closeDropdown);
-            
-            dropdownItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const ratio = item.dataset.ratio;
-                    const width = item.dataset.width;
-                    const height = item.dataset.height;
-                    
-                    dropdownItems.forEach(i => {
-                        i.classList.remove('selected');
-                        i.querySelector('.aspect-box').classList.remove('selected');
-                    });
-                    item.classList.add('selected');
-                    item.querySelector('.aspect-box').classList.add('selected');
-                    
-                    currentAspectLabel.textContent = ratio;
-                    currentAspectPreview.style.width = width + 'px';
-                    currentAspectPreview.style.height = height + 'px';
-                    
-                    // Update imagineApp aspect ratio
-                    if (imagineApp) {
-                        imagineApp.aspectRatio = ratio;
-                    }
-                    
-                    closeDropdown();
-                });
-            });
-            
-            window.addEventListener('resize', () => {
-                if (aspectDropdown.classList.contains('open')) {
-                    const rect = aspectRatioBtn.getBoundingClientRect();
-                    const dropdownHeight = aspectDropdown.offsetHeight;
-                    aspectDropdown.style.left = rect.left + 'px';
-                    aspectDropdown.style.top = (rect.top - dropdownHeight - 8) + 'px';
-                }
-            });
-            
-            // Image Upload Functionality
-            const attachBtn = document.getElementById('attachBtn');
-            const imageInput = document.getElementById('imageInput');
-            const uploadPreview = document.getElementById('uploadPreview');
-            let uploadedImages = [];
-            
-            attachBtn.addEventListener('click', () => {
-                imageInput.click();
-            });
-            
-            imageInput.addEventListener('change', (e) => {
-                const files = Array.from(e.target.files);
                 
-                files.forEach(file => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            uploadedImages.push({
-                                id: Date.now() + Math.random(),
-                                src: event.target.result,
-                                name: file.name
-                            });
-                            renderPreviews();
-                        };
-                        reader.readAsDataURL(file);
-                    }
+                modeBtns.forEach(b => {
+                    b.classList.toggle('active', b.dataset.mode === mode);
                 });
                 
-                imageInput.value = '';
+                if (isImage) {
+                    videoOptions.classList.remove('visible');
+                } else {
+                    videoOptions.classList.add('visible');
+                }
+            });
+        });
+        
+        // Resolution toggle
+        const resolutionToggle = document.getElementById('resolutionToggle');
+        const resolutionSlider = document.getElementById('resolutionSlider');
+        const resolutionBtns = resolutionToggle.querySelectorAll('.toggle-btn');
+        
+        resolutionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const res = btn.dataset.res;
+                resolutionSlider.style.left = res === '480p' ? '2px' : 'calc(50%)';
+                resolutionBtns.forEach(b => b.classList.toggle('active', b.dataset.res === res));
+            });
+        });
+        
+        // Duration toggle
+        const durationToggle = document.getElementById('durationToggle');
+        const durationSlider = document.getElementById('durationSlider');
+        const durationBtns = durationToggle.querySelectorAll('.toggle-btn');
+        
+        durationBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dur = btn.dataset.dur;
+                durationSlider.style.left = dur === '6s' ? '2px' : 'calc(50%)';
+                durationBtns.forEach(b => b.classList.toggle('active', b.dataset.dur === dur));
+            });
+        });
+        
+        // Aspect Ratio Dropdown
+        const aspectRatioBtn = document.getElementById('aspectRatioBtn');
+        const aspectDropdown = document.getElementById('aspectDropdown');
+        const aspectChevron = document.getElementById('aspectChevron');
+        const currentAspectLabel = document.getElementById('currentAspectLabel');
+        const currentAspectPreview = document.getElementById('currentAspectPreview');
+        const dropdownItems = aspectDropdown.querySelectorAll('.dropdown-item');
+        
+        function closeDropdown() {
+            aspectDropdown.classList.remove('open');
+            aspectChevron.style.transform = 'rotate(0deg)';
+        }
+        
+        aspectRatioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = aspectDropdown.classList.contains('open');
+            
+            if (isOpen) {
+                closeDropdown();
+            } else {
+                const rect = aspectRatioBtn.getBoundingClientRect();
+                const dropdownHeight = aspectDropdown.offsetHeight || 220;
+                
+                aspectDropdown.style.left = rect.left + 'px';
+                aspectDropdown.style.top = (rect.top - dropdownHeight - 8) + 'px';
+                aspectDropdown.classList.add('open');
+                aspectChevron.style.transform = 'rotate(180deg)';
+            }
+        });
+        
+        document.addEventListener('click', closeDropdown);
+        
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const ratio = item.dataset.ratio;
+                const width = item.dataset.width;
+                const height = item.dataset.height;
+                
+                dropdownItems.forEach(i => {
+                    i.classList.remove('selected');
+                    i.querySelector('.aspect-box').classList.remove('selected');
+                });
+                item.classList.add('selected');
+                item.querySelector('.aspect-box').classList.add('selected');
+                
+                currentAspectLabel.textContent = ratio;
+                currentAspectPreview.style.width = width + 'px';
+                currentAspectPreview.style.height = height + 'px';
+                
+                closeDropdown();
+            });
+        });
+        
+        window.addEventListener('resize', () => {
+            if (aspectDropdown.classList.contains('open')) {
+                const rect = aspectRatioBtn.getBoundingClientRect();
+                const dropdownHeight = aspectDropdown.offsetHeight;
+                aspectDropdown.style.left = rect.left + 'px';
+                aspectDropdown.style.top = (rect.top - dropdownHeight - 8) + 'px';
+            }
+        });
+        
+        // Image Upload Functionality
+        const attachBtn = document.getElementById('attachBtn');
+        const imageInput = document.getElementById('imageInput');
+        const uploadPreview = document.getElementById('uploadPreview');
+        let uploadedImages = [];
+        
+        attachBtn.addEventListener('click', () => {
+            imageInput.click();
+        });
+        
+        imageInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        uploadedImages.push({
+                            id: Date.now() + Math.random(),
+                            src: event.target.result,
+                            name: file.name
+                        });
+                        renderPreviews();
+                    };
+                    reader.readAsDataURL(file);
+                }
             });
             
-            function renderPreviews() {
-                if (uploadedImages.length === 0) {
-                    uploadPreview.classList.remove('visible');
-                    return;
-                }
-                
-                uploadPreview.classList.add('visible');
-                uploadPreview.innerHTML = uploadedImages.map(img => `
-                    <div class="preview-item" data-id="${img.id}">
-                        <img src="${img.src}" alt="${img.name}">
-                        <button class="preview-remove" onclick="removeImage(${img.id})">×</button>
-                    </div>
-                `).join('');
-                
-                // Update imagineApp uploaded images
-                if (imagineApp) {
-                    imagineApp.uploadedImages = uploadedImages;
-                }
+            imageInput.value = '';
+        });
+        
+        function renderPreviews() {
+            if (uploadedImages.length === 0) {
+                uploadPreview.classList.remove('visible');
+                return;
             }
             
-            window.removeImage = (id) => {
-                uploadedImages = uploadedImages.filter(img => img.id !== id);
-                renderPreviews();
-            };
-            
-            // Enter key to generate
-            const textInput = document.getElementById('imagineTextInput');
-            textInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (imagineApp) {
-                        imagineApp.generate();
-                    }
-                }
-            });
-            
-        });
+            uploadPreview.classList.add('visible');
+            uploadPreview.innerHTML = uploadedImages.map(img => `
+                <div class="preview-item" data-id="${img.id}">
+                    <img src="${img.src}" alt="${img.name}">
+                    <button class="preview-remove" onclick="removeImage(${img.id})">×</button>
+                </div>
+            `).join('');
+        }
+        
+        window.removeImage = (id) => {
+            uploadedImages = uploadedImages.filter(img => img.id !== id);
+            renderPreviews();
+        };
         
         function initLanguageDropdown() {
             // Close dropdowns when clicking outside

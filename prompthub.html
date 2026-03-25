@@ -481,12 +481,12 @@
             <div class="sidebar-content">
                 <!-- Navigation Section -->
                 <div class="nav-section">
-                    <div class="nav-title">Navigation</div>
+                    <div class="nav-title" data-i18n="navNavigation">Navigation</div>
                     <a href="index.html" class="nav-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
                         </svg>
-                        Chat
+                        <span data-i18n="navChat">Chat</span>
                     </a>
                     <a href="imagine.html" class="nav-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -494,13 +494,13 @@
                             <circle cx="8.5" cy="8.5" r="1.5"/>
                             <polyline points="21 15 16 10 5 21"/>
                         </svg>
-                        Imagine
+                        <span data-i18n="navImagine">Imagine</span>
                     </a>
                     <a href="prompthub.html" class="nav-item active">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 29 31" style="min-width: 18px; min-height: 18px;">
                             <path fill="currentColor" d="M13.734 17.524a11 11 0 0 0 1.398-.685l.177-.104q.621-.373 1.137-.781l7.158 12.132-2.699 1.592zm-3.85.032a2 2 0 0 0 .257.157c.777.4 1.8.386 2.927.045l-1.98 7.678-3.034-.783zm15.531-3.147-.782 3.035-7.635-1.969c.836-.796 1.344-1.661 1.386-2.522a2 2 0 0 0-.014-.36zm-2.543-9.45 1.592 2.7-6.506 3.838c-.487-.78-1.362-1.52-2.475-2.178zM8.445 13.473c.023 1.3.24 2.43.694 3.229l-6.532 3.854-1.592-2.7zm.391-3.338c-.254.804-.373 1.786-.391 2.871q-.002.134-.002.264L.059 11.108.84 8.073zM17.424.862l-2.15 8.336-.118-.067c-1-.555-1.954-.955-2.81-1.123L14.39.079zM11.71 7.925c-.577-.032-1.096.065-1.539.32-.488.282-.855.74-1.124 1.335l-3.83-6.492 2.699-1.592z"></path>
                         </svg>
-                        PromptHub
+                        <span data-i18n="navPromptHub">PromptHub</span>
                     </a>
                 </div>
             </div>
@@ -521,7 +521,7 @@
                         <circle cx="11" cy="11" r="8"></circle>
                         <path d="m21 21-4.35-4.35"></path>
                     </svg>
-                    <input type="text" placeholder="Search prompts..." id="headerSearch" oninput="filterPrompts(this.value)">
+                    <input type="text" placeholder="Search prompts..." data-i18n-placeholder="searchPrompts" id="headerSearch" oninput="filterPrompts(this.value)">
                 </div>
                 <div class="header-right">
                     <!-- Language Dropdown -->
@@ -544,7 +544,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
-                        Open Chat
+                        <span data-i18n="openChat">Open Chat</span>
                     </a>
                 </div>
             </header>
@@ -553,11 +553,11 @@
                 <div class="hero-background"></div>
                 <div class="hero-content">
                     <h1 class="hero-title">
-                        <span class="word1">Let's do</span>
-                        <span class="word2">everything</span>
-                        <span class="word3">with AI</span>
+                        <span class="word1" data-i18n="heroWord1">Let's do</span>
+                        <span class="word2" data-i18n="heroWord2">everything</span>
+                        <span class="word3" data-i18n="heroWord3">with AI</span>
                     </h1>
-                    <p class="hero-subtitle">
+                    <p class="hero-subtitle" data-i18n="heroSubtitle">
                         A place to share and discover prompts for SahyaGPT and other AI models. 
                         Learn from expert examples and apply them instantly.
                     </p>
@@ -566,37 +566,37 @@
             
             <section class="categories-section">
                 <div class="categories-container" id="categoriesContainer">
-                    <div class="category-card active" data-category="all" onclick="selectCategory('all')">
+                    <div class="category-card active" data-category="all" data-i18n="catAll" onclick="selectCategory('all')">
                         <div class="category-icon">🌟</div>
-                        <span class="category-name">All</span>
+                        <span class="category-name" data-i18n="catAll">All</span>
                     </div>
-                    <div class="category-card" data-category="writing" onclick="selectCategory('writing')">
+                    <div class="category-card" data-category="writing" data-i18n="catWriting" onclick="selectCategory('writing')">
                         <div class="category-icon">✍️</div>
-                        <span class="category-name">Writing</span>
+                        <span class="category-name" data-i18n="catWriting">Writing</span>
                     </div>
-                    <div class="category-card" data-category="coding" onclick="selectCategory('coding')">
+                    <div class="category-card" data-category="coding" data-i18n="catCoding" onclick="selectCategory('coding')">
                         <div class="category-icon">💻</div>
-                        <span class="category-name">Coding</span>
+                        <span class="category-name" data-i18n="catCoding">Coding</span>
                     </div>
-                    <div class="category-card" data-category="learning" onclick="selectCategory('learning')">
+                    <div class="category-card" data-category="learning" data-i18n="catLearning" onclick="selectCategory('learning')">
                         <div class="category-icon">📚</div>
-                        <span class="category-name">Learning</span>
+                        <span class="category-name" data-i18n="catLearning">Learning</span>
                     </div>
-                    <div class="category-card" data-category="business" onclick="selectCategory('business')">
+                    <div class="category-card" data-category="business" data-i18n="catBusiness" onclick="selectCategory('business')">
                         <div class="category-icon">💼</div>
-                        <span class="category-name">Business</span>
+                        <span class="category-name" data-i18n="catBusiness">Business</span>
                     </div>
-                    <div class="category-card" data-category="creative" onclick="selectCategory('creative')">
+                    <div class="category-card" data-category="creative" data-i18n="catCreative" onclick="selectCategory('creative')">
                         <div class="category-icon">🎨</div>
-                        <span class="category-name">Creative</span>
+                        <span class="category-name" data-i18n="catCreative">Creative</span>
                     </div>
-                    <div class="category-card" data-category="productivity" onclick="selectCategory('productivity')">
+                    <div class="category-card" data-category="productivity" data-i18n="catProductivity" onclick="selectCategory('productivity')">
                         <div class="category-icon">⚡</div>
-                        <span class="category-name">Productivity</span>
+                        <span class="category-name" data-i18n="catProductivity">Productivity</span>
                     </div>
-                    <div class="category-card" data-category="analysis" onclick="selectCategory('analysis')">
+                    <div class="category-card" data-category="analysis" data-i18n="catAnalysis" onclick="selectCategory('analysis')">
                         <div class="category-icon">📊</div>
-                        <span class="category-name">Analysis</span>
+                        <span class="category-name" data-i18n="catAnalysis">Analysis</span>
                     </div>
                 </div>
             </section>
@@ -608,15 +608,15 @@
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
                         </svg>
-                        <input type="text" class="search-input" id="mainSearch" placeholder="Search for prompts..." oninput="filterPrompts(this.value)">
+                        <input type="text" class="search-input" id="mainSearch" placeholder="Search for prompts..." data-i18n-placeholder="searchForPrompts" oninput="filterPrompts(this.value)">
                     </div>
                 </div>
             </section>
             
             <section class="prompts-section">
                 <div class="section-header">
-                    <h2 class="section-title">Popular Prompts</h2>
-                    <span class="section-count" id="promptCount">24 prompts</span>
+                    <h2 class="section-title" data-i18n="popularPrompts">Popular Prompts</h2>
+                    <span class="section-count" id="promptCount"><span data-i18n="promptCount" data-count="24">24</span> <span data-i18n="promptsLabel">prompts</span></span>
                 </div>
                 <div class="prompts-grid" id="promptsGrid">
                     <!-- Prompt cards will be inserted here -->
@@ -629,7 +629,7 @@
         <svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        <span class="toast-text">Prompt copied to clipboard!</span>
+        <span class="toast-text" data-i18n="toastCopied">Prompt copied to clipboard!</span>
     </div>
 
     <script>
@@ -654,23 +654,119 @@
             }
         }
         
+        // Translations
+        const translations = {
+            en: {
+                navNavigation: 'Navigation',
+                navChat: 'Chat',
+                navImagine: 'Imagine',
+                navPromptHub: 'PromptHub',
+                openChat: 'Open Chat',
+                searchPrompts: 'Search prompts...',
+                searchForPrompts: 'Search for prompts...',
+                heroWord1: "Let's do",
+                heroWord2: 'everything',
+                heroWord3: 'with AI',
+                heroSubtitle: 'A place to share and discover prompts for SahyaGPT and other AI models. Learn from expert examples and apply them instantly.',
+                catAll: 'All',
+                catWriting: 'Writing',
+                catCoding: 'Coding',
+                catLearning: 'Learning',
+                catBusiness: 'Business',
+                catCreative: 'Creative',
+                catProductivity: 'Productivity',
+                catAnalysis: 'Analysis',
+                popularPrompts: 'Popular Prompts',
+                promptsLabel: 'prompts',
+                toastCopied: 'Prompt copied to clipboard!',
+                copy: 'Copy',
+                copied: 'Copied!',
+                useInChat: 'Use in Chat'
+            },
+            ru: {
+                navNavigation: 'Навигация',
+                navChat: 'Чат',
+                navImagine: 'Imagine',
+                navPromptHub: 'Промпт Хаб',
+                openChat: 'Открыть Чат',
+                searchPrompts: 'Поиск промптов...',
+                searchForPrompts: 'Искать промпты...',
+                heroWord1: 'Давайте делать',
+                heroWord2: 'всё',
+                heroWord3: 'с ИИ',
+                heroSubtitle: 'Место для обмена и поиска промптов для SahyaGPT и других ИИ моделей. Учитесь на примерах экспертов и применяйте их мгновенно.',
+                catAll: 'Все',
+                catWriting: 'Письмо',
+                catCoding: 'Кодинг',
+                catLearning: 'Обучение',
+                catBusiness: 'Бизнес',
+                catCreative: 'Творчество',
+                catProductivity: 'Продуктивность',
+                catAnalysis: 'Анализ',
+                popularPrompts: 'Популярные Промпты',
+                promptsLabel: 'промптов',
+                toastCopied: 'Промпт скопирован в буфер обмена!',
+                copy: 'Копировать',
+                copied: 'Скопировано!',
+                useInChat: 'Использовать в Чате'
+            }
+        };
+
+        function applyTranslations(lang) {
+            const t = translations[lang] || translations.en;
+            
+            // Update all elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                if (t[key]) {
+                    el.placeholder = t[key];
+                }
+            });
+            
+            // Update header title
+            const headerTitle = document.querySelector('.header-title');
+            if (headerTitle) headerTitle.textContent = t.navPromptHub;
+            
+            // Update prompt count label
+            const promptCountEl = document.querySelector('[data-i18n="promptCount"]');
+            if (promptCountEl) {
+                const count = promptCountEl.dataset.count || '24';
+                promptCountEl.textContent = count;
+            }
+            
+            // Update copy buttons in grid
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                if (!btn.classList.contains('copied')) {
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> ${t.copy}`;
+                }
+            });
+        }
+
         function selectLanguage(lang) {
             currentLanguage = lang;
             localStorage.setItem('sahyagpt_language', lang);
             
             const flag = document.getElementById('languageFlag');
             const text = document.getElementById('languageText');
-            const headerTitle = document.querySelector('.header-title');
             
             if (lang === 'en') {
                 flag.textContent = '🇬🇧';
                 text.textContent = 'English';
-                if (headerTitle) headerTitle.textContent = 'PromptHub';
             } else if (lang === 'ru') {
                 flag.textContent = '🇷🇺';
                 text.textContent = 'Русский';
-                if (headerTitle) headerTitle.textContent = 'Промпт Хаб';
             }
+            
+            // Apply translations
+            applyTranslations(lang);
             
             // Update selected state in dropdown
             document.querySelectorAll('#languageMenu .dropdown-item').forEach(item => {
@@ -730,6 +826,7 @@
 
         function renderPrompts() {
             const grid = document.getElementById('promptsGrid');
+            const t = translations[currentLanguage] || translations.en;
             const filtered = prompts.filter(p => {
                 const matchesCategory = currentCategory === 'all' || p.category === currentCategory;
                 const matchesSearch = !searchQuery || 
@@ -739,7 +836,9 @@
                 return matchesCategory && matchesSearch;
             });
 
-            document.getElementById('promptCount').textContent = `${filtered.length} prompt${filtered.length !== 1 ? 's' : ''}`;
+            // Update count with translation
+            const countLabel = filtered.length === 1 ? t.promptsLabel : t.promptsLabel;
+            document.getElementById('promptCount').innerHTML = `<span data-i18n="promptCount" data-count="${filtered.length}">${filtered.length}</span> <span data-i18n="promptsLabel">${countLabel}</span>`;
 
             grid.innerHTML = filtered.map(prompt => `
                 <div class="prompt-card" onclick="usePrompt(${prompt.id})">
@@ -748,7 +847,7 @@
                             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                             <line x1="7" y1="7" x2="7.01" y2="7"></line>
                         </svg>
-                        ${prompt.categoryName}
+                        ${t['cat' + prompt.categoryName] || prompt.categoryName}
                     </span>
                     <h3 class="prompt-title">${escapeHtml(prompt.title)}</h3>
                     <p class="prompt-text">${escapeHtml(prompt.text)}</p>
@@ -773,7 +872,7 @@
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
-                            Copy
+                            ${t.copy}
                         </button>
                     </div>
                 </div>
@@ -807,23 +906,29 @@
         async function copyPrompt(id) {
             const prompt = prompts.find(p => p.id === id);
             if (!prompt) return;
+            const t = translations[currentLanguage] || translations.en;
 
             try {
                 await navigator.clipboard.writeText(prompt.text);
                 showToast();
                 
                 const btn = document.getElementById(`copyBtn-${id}`);
-                const originalHTML = btn.innerHTML;
                 btn.classList.add('copied');
                 btn.innerHTML = `
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
-                    Copied!
+                    ${t.copied}
                 `;
                 setTimeout(() => {
                     btn.classList.remove('copied');
-                    btn.innerHTML = originalHTML;
+                    btn.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        ${t.copy}
+                    `;
                 }, 2000);
             } catch (err) {
                 console.error('Failed to copy:', err);

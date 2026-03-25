@@ -527,7 +527,7 @@
                     <!-- Language Dropdown -->
                     <div class="custom-dropdown language-dropdown" id="languageDropdown">
                         <div class="dropdown-trigger" onclick="toggleLanguageDropdown()">
-                            <span id="languageFlag">🇺🇸</span>
+                            <span id="languageFlag">🇬🇧</span>
                             <span class="dropdown-trigger-text" id="languageText">English</span>
                             <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
@@ -663,7 +663,7 @@
             const headerTitle = document.querySelector('.header-title');
             
             if (lang === 'en') {
-                flag.textContent = '🇺🇸';
+                flag.textContent = '🇬🇧';
                 text.textContent = 'English';
                 if (headerTitle) headerTitle.textContent = 'PromptHub';
             } else if (lang === 'ru') {

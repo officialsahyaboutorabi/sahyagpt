@@ -52,12 +52,12 @@
         /* Background utilities */
         .pointer-events-none { pointer-events: none; }
         .absolute { position: absolute; }
+        .fixed { position: fixed; }
         .inset-0 { inset: 0; }
         .inset-x-0 { left: 0; right: 0; }
         .top-0 { top: 0; }
         .z-0 { z-index: 0; }
         .z-\[1\] { z-index: 1; }
-        .h-screen { height: 100vh; }
         .h-full { height: 100%; }
         .w-full { width: 100%; }
         .object-cover { object-fit: cover; }
@@ -458,13 +458,13 @@
 </head>
 <body>
     <!-- Video Background -->
-    <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-0">
+    <div aria-hidden="true" class="pointer-events-none fixed inset-0 z-0">
         <video aria-label="" width="1920" height="1080" autoplay="" loop="" playsinline="" class="h-full w-full object-cover">
             <source src="https://storage.googleapis.com/gweb-gemini-cdn/gemini/uploads/89e9004d716a7803fc7c9aab18c985af783f5a36.mp4" type="video/mp4">
         </video>
     </div>
     <!-- Canvas Background Effect -->
-    <div class="pointer-events-none absolute inset-x-0 top-0 z-[1] h-screen" style="opacity: 1; transition: opacity 1.2s ease-in;">
+    <div class="pointer-events-none fixed inset-0 z-[1]" style="opacity: 1; transition: opacity 1.2s ease-in;">
         <canvas id="bgCanvas" aria-hidden="true" style="position: absolute; inset: 0px; width: 100%; height: 100%;"></canvas>
     </div>
     <div class="noise-overlay"></div>

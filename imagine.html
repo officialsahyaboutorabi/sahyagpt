@@ -905,6 +905,357 @@
         .dropdown-item:hover { background: var(--bg-hover); color: var(--text-primary); }
         .dropdown-item.selected { background: var(--bg-selected); color: var(--text-primary); }
         .language-dropdown .dropdown-trigger { min-width: 120px; }
+        
+        /* New Chat Input Component */
+        .chat-input-section {
+            width: 100%;
+            max-width: 896px;
+            padding: 0 24px;
+            margin: 0 auto;
+        }
+        
+        .chat-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            max-width: 768px;
+            margin: 0 auto;
+        }
+        
+        /* Shimmer border effect - 1px outline */
+        .shimmer-border {
+            position: relative;
+            border-radius: 27px;
+            background: #1c1b1b;
+        }
+        
+        .shimmer-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 28px;
+            background: linear-gradient(90deg, #ff5717, #ffb59e, #ff5717);
+            background-size: 200% 100%;
+            z-index: -1;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Inner Content */
+        .input-content {
+            position: relative;
+            background: #1c1b1b;
+            border-radius: 27px;
+            overflow: hidden;
+        }
+        
+        /* Image Upload Preview Area */
+        .upload-preview {
+            display: none;
+            gap: 8px;
+            padding: 8px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .upload-preview::-webkit-scrollbar { display: none; }
+        .upload-preview.visible { display: flex; }
+        
+        .preview-item {
+            position: relative;
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: white;
+            border: none;
+            padding: 0;
+        }
+        
+        .preview-remove:hover { background: rgba(255, 79, 0, 0.9); }
+        
+        /* Input Area */
+        .input-area {
+            position: relative;
+        }
+        
+        /* Attach Button */
+        .attach-button-wrapper {
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        
+        .file-input { display: none; }
+        
+        .attach-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: normal;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 40px;
+            width: 40px;
+            padding: 8px;
+            background: #2a2a2a;
+            color: #ff4f00;
+            transition: all 100ms ease;
+        }
+        
+        .attach-button:hover {
+            color: #ff4f00;
+            background: #353534;
+        }
+        
+        .attach-button:active { background: #3a3939; }
+        .attach-button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 1px #ff4f00;
+        }
+        
+        /* Text Input */
+        .text-input-wrapper {
+            padding-right: 0;
+            padding-left: 48px;
+        }
+        
+        .text-input-container {
+            position: relative;
+            min-height: 56px;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 14px 56px 14px 8px;
+            background: transparent;
+            color: white;
+            overflow-y: auto;
+            max-height: 160px;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            border: none;
+            resize: none;
+        }
+        
+        .text-input::placeholder {
+            color: rgba(229, 226, 225, 0.4);
+        }
+        
+        /* Submit Button */
+        .submit-button-wrapper {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        
+        .submit-button {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 9999px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .submit-button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 1px #ff4f00;
+        }
+        
+        .submit-button-inner {
+            height: 40px;
+            position: relative;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            background: #353534;
+            color: #e5e2e1;
+            box-shadow: 0 0 15px rgba(255, 79, 0, 0.3);
+            transition: transform 100ms ease;
+        }
+        
+        .submit-button-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: #ff5717;
+            clip-path: circle(100% at 50% 50%);
+            transition: clip-path 100ms ease, background-color 100ms ease;
+        }
+        
+        .submit-button:hover .submit-button-inner { transform: scale(1.05); }
+        .submit-button:active .submit-button-inner { transform: scale(0.95); }
+        
+        .submit-button svg {
+            stroke-width: 2.5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Bottom Controls */
+        .bottom-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            padding: 8px;
+        }
+        
+        /* Dropdown menu */
+        #aspectDropdown {
+            position: fixed;
+            background: #2a2a2a;
+            border: 1px solid rgba(255, 79, 0, 0.2);
+            border-radius: 16px;
+            padding: 4px;
+            min-width: 120px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.95);
+            transform-origin: bottom center;
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        
+        #aspectDropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        .dropdown-container { position: relative; }
+        
+        /* Aspect Ratio Button */
+        .aspect-ratio-button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #2a2a2a;
+            color: #ffb59e;
+            height: 32px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            transition: color 150ms ease;
+            font-family: inherit;
+        }
+        
+        .aspect-ratio-button:hover { color: #ffb59e; }
+        .aspect-ratio-button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px #ff4f00;
+        }
+        
+        .aspect-ratio-button svg {
+            stroke-width: 2;
+            transition: transform 200ms ease;
+        }
+        
+        .aspect-preview-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+        }
+        
+        .aspect-preview-inner {
+            border-radius: 2px;
+            background: currentColor;
+        }
+        
+        .aspect-box {
+            border-radius: 2px;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .aspect-box.selected { background-color: #ffb59e; }
+        
+        .aspect-preview {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Tips */
+        .tips-container {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            font-size: 10px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        
+        .tips-container kbd {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: inherit;
+        }
     </style>
 </head>
 <body>
@@ -1024,93 +1375,117 @@
             
             <!-- Content Area -->
             <div class="content-area">
-                <!-- Generation Panel -->
-                <div class="generation-panel">
-                    <!-- Aspect Ratio Selector -->
-                    <div class="aspect-ratio-section">
-                        <div class="section-label">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                            </svg>
-                            Aspect Ratio
+                <!-- New Chat Input Component -->
+                <section class="chat-input-section">
+                    <div class="chat-input-wrapper">
+                        <!-- Chat Input with Shimmer Border -->
+                        <div class="shimmer-border">
+                            <!-- Inner Content -->
+                            <div class="input-content">
+                                <!-- Image Upload Preview Area -->
+                                <div id="uploadPreview" class="upload-preview"></div>
+                                
+                                <!-- Input Area -->
+                                <div class="input-area">
+                                    <!-- Attach Button (Left) -->
+                                    <div class="attach-button-wrapper">
+                                        <input type="file" id="imageInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml" multiple class="file-input">
+                                        <button id="attachBtn" aria-label="Attach" class="attach-button" type="button">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M19 17H22V19H19V22H17V19H14V17H17V14H19V17Z" fill="currentColor"/>
+                                                <path d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V11H19.5V9.90039C19.5 8.76396 19.4996 7.97129 19.4492 7.35449C19.3998 6.74933 19.307 6.40105 19.1729 6.1377C18.8853 5.57347 18.4265 5.11472 17.8623 4.82715C17.599 4.69296 17.2507 4.60023 16.6455 4.55078C16.0287 4.50041 15.236 4.5 14.0996 4.5H9.90039C8.76396 4.5 7.97129 4.50041 7.35449 4.55078C6.74933 4.60023 6.40105 4.69296 6.1377 4.82715C5.57347 5.11472 5.11472 5.57347 4.82715 6.1377C4.69296 6.40105 4.60023 6.74933 4.55078 7.35449C4.50041 7.97129 4.5 8.76396 4.5 9.90039V12.7734L8.04004 9.62598L12.207 13.793L10.793 15.207L7.95899 12.373L4.50586 15.4424C4.51159 15.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H11V21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996Z" fill="currentColor"/>
+                                                <path d="M15 7C16.1046 7 17 7.89543 17 9C17 10.1046 16.1046 11 15 11C13.8954 11 13 10.1046 13 9C13 7.89543 13.8954 7 15 7Z" fill="currentColor"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Text Input -->
+                                    <div class="text-input-wrapper">
+                                        <div class="text-input-container">
+                                            <textarea id="imagineTextInput" class="text-input" placeholder="Type to imagine..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Submit Button (Right) -->
+                                <div class="submit-button-wrapper">
+                                    <button id="submitBtn" aria-label="Submit" class="submit-button" type="submit" onclick="imagineApp.generate()">
+                                        <div class="submit-button-inner">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M6 11L12 5M12 5L18 11M12 5V19" stroke="currentColor" stroke-linecap="square"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </div>
+                                
+                                <!-- Bottom Controls -->
+                                <div class="bottom-controls">
+                                    <!-- Aspect Ratio Dropdown Container -->
+                                    <div class="dropdown-container">
+                                        <button id="aspectRatioBtn" aria-label="Aspect Ratio" class="aspect-ratio-button" type="button">
+                                            <div class="aspect-preview-box">
+                                                <div id="currentAspectPreview" class="aspect-preview-inner" style="width: 9px; height: 14px;"></div>
+                                            </div>
+                                            <span id="currentAspectLabel">2:3</span>
+                                            <svg id="aspectChevron" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="square"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- API Key Button -->
+                                    <button class="aspect-ratio-button" onclick="imagineApp.openApiKeyModal()" title="API Settings">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="3"/>
+                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                        </svg>
+                                        <span>API</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="aspect-ratio-grid">
-                            <div class="aspect-option active" data-ratio="2:3" onclick="imagineApp.selectAspectRatio('2:3')">
-                                <div class="aspect-icon portrait"></div>
-                                <span>2:3</span>
-                            </div>
-                            <div class="aspect-option" data-ratio="3:2" onclick="imagineApp.selectAspectRatio('3:2')">
-                                <div class="aspect-icon landscape"></div>
-                                <span>3:2</span>
-                            </div>
-                            <div class="aspect-option" data-ratio="1:1" onclick="imagineApp.selectAspectRatio('1:1')">
-                                <div class="aspect-icon square"></div>
-                                <span>1:1</span>
-                            </div>
-                            <div class="aspect-option" data-ratio="9:16" onclick="imagineApp.selectAspectRatio('9:16')">
-                                <div class="aspect-icon portrait-mobile"></div>
-                                <span>9:16</span>
-                            </div>
-                            <div class="aspect-option" data-ratio="16:9" onclick="imagineApp.selectAspectRatio('16:9')">
-                                <div class="aspect-icon landscape-mobile"></div>
-                                <span>16:9</span>
-                            </div>
+                        
+                        <!-- Tips -->
+                        <div class="tips-container">
+                            <span>Press <kbd>Enter</kbd> to Generate</span>
+                            <span>•</span>
+                            <span>Style: Cinematic Obsidian</span>
                         </div>
                     </div>
-                    
-                    <!-- Image Upload (Video Mode Only) -->
-                    <div class="upload-section" id="uploadSection" style="display: none;">
-                        <div class="section-label">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            Upload Images (2-7 images for video)
+                </section>
+                
+                <!-- Aspect Ratio Dropdown -->
+                <div class="dropdown-menu" id="aspectDropdown">
+                    <button class="dropdown-item selected" data-ratio="2:3" data-width="11" data-height="16">
+                        <div class="aspect-preview">
+                            <div class="aspect-box selected" style="width: 11px; height: 16px;"></div>
                         </div>
-                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            <div class="upload-text">Click to upload images</div>
-                            <div class="upload-hint">or drag and drop (2-7 images required)</div>
+                        <span>2:3</span>
+                    </button>
+                    <button class="dropdown-item" data-ratio="3:2" data-width="16" data-height="11">
+                        <div class="aspect-preview">
+                            <div class="aspect-box" style="width: 16px; height: 11px;"></div>
                         </div>
-                        <div class="image-preview-grid" id="imagePreviewGrid"></div>
-                    </div>
-                    
-                    <!-- Prompt Input -->
-                    <div class="prompt-section">
-                        <div class="section-label">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 20h9"/>
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                            </svg>
-                            Prompt
+                        <span>3:2</span>
+                    </button>
+                    <button class="dropdown-item" data-ratio="1:1" data-width="16" data-height="16">
+                        <div class="aspect-preview">
+                            <div class="aspect-box" style="width: 16px; height: 16px;"></div>
                         </div>
-                        <textarea 
-                            class="prompt-textarea" 
-                            id="promptInput"
-                            placeholder="Describe what you want to generate... (e.g., 'A serene landscape with mountains at sunset, cinematic lighting')"
-                        ></textarea>
-                    </div>
-                    
-                    <!-- Generate Button -->
-                    <div class="generate-section">
-                        <button class="generate-btn" id="generateBtn" onclick="imagineApp.generate()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                            </svg>
-                            <span id="generateBtnText">Generate</span>
-                        </button>
-                        <button class="api-key-btn" onclick="imagineApp.openApiKeyModal()" title="API Settings">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                            </svg>
-                        </button>
-                    </div>
+                        <span>1:1</span>
+                    </button>
+                    <button class="dropdown-item" data-ratio="9:16" data-width="9" data-height="16">
+                        <div class="aspect-preview">
+                            <div class="aspect-box" style="width: 9px; height: 16px;"></div>
+                        </div>
+                        <span>9:16</span>
+                    </button>
+                    <button class="dropdown-item" data-ratio="16:9" data-width="16" data-height="9">
+                        <div class="aspect-preview">
+                            <div class="aspect-box" style="width: 16px; height: 9px;"></div>
+                        </div>
+                        <span>16:9</span>
+                    </button>
                 </div>
                 
                 <!-- Results Section -->
@@ -1394,19 +1769,18 @@
                 // Move slider to active button
                 this.updateModeSlider();
                 
-                const uploadSection = document.getElementById('uploadSection');
-                if (uploadSection) {
-                    uploadSection.style.display = mode === 'video' ? 'block' : 'none';
-                }
-                
-                if (mode === 'image') {
+                // Clear uploaded images when switching to image mode
+                if (mode === 'image' && this.uploadedImages.length > 0) {
                     this.uploadedImages = [];
                     this.updateImagePreviews();
                 }
                 
-                const btnText = document.getElementById('generateBtnText');
-                if (btnText) {
-                    btnText.textContent = mode === 'image' ? 'Generate Image' : 'Generate Video';
+                // Update placeholder text
+                const textInput = document.getElementById('imagineTextInput');
+                if (textInput) {
+                    textInput.placeholder = mode === 'image' 
+                        ? 'Describe what you want to imagine...' 
+                        : 'Describe the video you want to create...';
                 }
             }
             
@@ -1484,24 +1858,21 @@
             }
             
             updateImagePreviews() {
-                const grid = document.getElementById('imagePreviewGrid');
-                if (!grid) return;
-                
-                grid.innerHTML = this.uploadedImages.map((img, index) => `
-                    <div class="image-preview-item">
-                        <img src="${img.data}" alt="${img.name}">
-                        <button class="image-preview-remove" onclick="imagineApp.removeImage(${index})" title="Remove">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                        </button>
-                    </div>
-                `).join('');
-                
-                const uploadArea = document.getElementById('uploadArea');
-                if (uploadArea) {
-                    uploadArea.style.display = this.uploadedImages.length >= 7 ? 'none' : 'block';
+                // Update new component preview grid
+                const uploadPreview = document.getElementById('uploadPreview');
+                if (uploadPreview) {
+                    if (this.uploadedImages.length === 0) {
+                        uploadPreview.classList.remove('visible');
+                        uploadPreview.innerHTML = '';
+                    } else {
+                        uploadPreview.classList.add('visible');
+                        uploadPreview.innerHTML = this.uploadedImages.map((img, index) => `
+                            <div class="preview-item" data-id="${index}">
+                                <img src="${img.data}" alt="${img.name}">
+                                <button class="preview-remove" onclick="imagineApp.removeImage(${index})" title="Remove">×</button>
+                            </div>
+                        `).join('');
+                    }
                 }
             }
             
@@ -1513,7 +1884,8 @@
             async generate() {
                 if (this.isGenerating) return;
                 
-                const prompt = document.getElementById('promptInput').value.trim();
+                const textInput = document.getElementById('imagineTextInput');
+                const prompt = textInput ? textInput.value.trim() : '';
                 
                 if (!prompt) {
                     this.showToast('Please enter a prompt', 'error');
@@ -2212,6 +2584,144 @@
             imagineApp = new ImagineApp();
             initLanguageDropdown();
         }
+        
+        // New Chat Input Component JavaScript
+        document.addEventListener('DOMContentLoaded', () => {
+            // Aspect Ratio Dropdown
+            const aspectRatioBtn = document.getElementById('aspectRatioBtn');
+            const aspectDropdown = document.getElementById('aspectDropdown');
+            const aspectChevron = document.getElementById('aspectChevron');
+            const currentAspectLabel = document.getElementById('currentAspectLabel');
+            const currentAspectPreview = document.getElementById('currentAspectPreview');
+            const dropdownItems = aspectDropdown.querySelectorAll('.dropdown-item');
+            
+            function closeDropdown() {
+                aspectDropdown.classList.remove('open');
+                aspectChevron.style.transform = 'rotate(0deg)';
+            }
+            
+            aspectRatioBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = aspectDropdown.classList.contains('open');
+                
+                if (isOpen) {
+                    closeDropdown();
+                } else {
+                    const rect = aspectRatioBtn.getBoundingClientRect();
+                    const dropdownHeight = aspectDropdown.offsetHeight || 220;
+                    aspectDropdown.style.left = rect.left + 'px';
+                    aspectDropdown.style.top = (rect.top - dropdownHeight - 8) + 'px';
+                    aspectDropdown.classList.add('open');
+                    aspectChevron.style.transform = 'rotate(180deg)';
+                }
+            });
+            
+            document.addEventListener('click', closeDropdown);
+            
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const ratio = item.dataset.ratio;
+                    const width = item.dataset.width;
+                    const height = item.dataset.height;
+                    
+                    dropdownItems.forEach(i => {
+                        i.classList.remove('selected');
+                        i.querySelector('.aspect-box').classList.remove('selected');
+                    });
+                    item.classList.add('selected');
+                    item.querySelector('.aspect-box').classList.add('selected');
+                    
+                    currentAspectLabel.textContent = ratio;
+                    currentAspectPreview.style.width = width + 'px';
+                    currentAspectPreview.style.height = height + 'px';
+                    
+                    // Update imagineApp aspect ratio
+                    if (imagineApp) {
+                        imagineApp.aspectRatio = ratio;
+                    }
+                    
+                    closeDropdown();
+                });
+            });
+            
+            window.addEventListener('resize', () => {
+                if (aspectDropdown.classList.contains('open')) {
+                    const rect = aspectRatioBtn.getBoundingClientRect();
+                    const dropdownHeight = aspectDropdown.offsetHeight;
+                    aspectDropdown.style.left = rect.left + 'px';
+                    aspectDropdown.style.top = (rect.top - dropdownHeight - 8) + 'px';
+                }
+            });
+            
+            // Image Upload Functionality
+            const attachBtn = document.getElementById('attachBtn');
+            const imageInput = document.getElementById('imageInput');
+            const uploadPreview = document.getElementById('uploadPreview');
+            let uploadedImages = [];
+            
+            attachBtn.addEventListener('click', () => {
+                imageInput.click();
+            });
+            
+            imageInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            uploadedImages.push({
+                                id: Date.now() + Math.random(),
+                                src: event.target.result,
+                                name: file.name
+                            });
+                            renderPreviews();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                imageInput.value = '';
+            });
+            
+            function renderPreviews() {
+                if (uploadedImages.length === 0) {
+                    uploadPreview.classList.remove('visible');
+                    return;
+                }
+                
+                uploadPreview.classList.add('visible');
+                uploadPreview.innerHTML = uploadedImages.map(img => `
+                    <div class="preview-item" data-id="${img.id}">
+                        <img src="${img.src}" alt="${img.name}">
+                        <button class="preview-remove" onclick="removeImage(${img.id})">×</button>
+                    </div>
+                `).join('');
+                
+                // Update imagineApp uploaded images
+                if (imagineApp) {
+                    imagineApp.uploadedImages = uploadedImages;
+                }
+            }
+            
+            window.removeImage = (id) => {
+                uploadedImages = uploadedImages.filter(img => img.id !== id);
+                renderPreviews();
+            };
+            
+            // Enter key to generate
+            const textInput = document.getElementById('imagineTextInput');
+            textInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (imagineApp) {
+                        imagineApp.generate();
+                    }
+                }
+            });
+            
+        });
         
         function initLanguageDropdown() {
             // Close dropdowns when clicking outside

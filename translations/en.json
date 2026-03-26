@@ -5,6 +5,7 @@
   "footer": "SahyaGPT can make mistakes. Consider checking important information.",
   "navChat": "Chat",
   "navImagine": "Imagine",
+  "navPromptHub": "PromptHub",
   "chatHistory": "Chat History",
   "createSkills": "Create Skills",
   "skillsLibrary": "Skills Library",
@@ -107,5 +108,19 @@
   "skillPromptDesc": "Instructions for the AI when this skill is active",
   "saveSkill": "Save Skill",
   "cancel": "Cancel",
-  "active": "Active"
+  "active": "Active",
+  "searchSettings": "Search Settings",
+  "openSerpUrl": "OpenSerp URL",
+  "openSerpUrlDesc": "Optional: Your OpenSerp instance for multi-engine search",
+  "navHistory": "History",
+  "navNavigation": "Navigation",
+  "emptyTitle": "Start Creating",
+  "emptyText": "Enter a prompt and click Generate to create stunning AI images using Puter AI (free, no API key needed), or use HuggingFace Endpoint/OpenRouter for higher quality.",
+  "generatedResults": "Generated Results",
+  "clearAll": "Clear All",
+  "tipsEnter": "Press <kbd>Enter</kbd> to Generate",
+  "tipsStyle": "Style: Cinematic Obsidian",
+  "placeholderImage": "Type to imagine",
+  "placeholderVideo": "Describe the video you want to create",
+  "noHistory": "No history yet"
 }

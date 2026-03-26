@@ -5,6 +5,7 @@
   "footer": "SahyaGPT может ошибаться. Проверяйте важную информацию.",
   "navChat": "Чат",
   "navImagine": "Создание",
+  "navPromptHub": "ПромптХаб",
   "chatHistory": "История чатов",
   "createSkills": "Создать навыки",
   "skillsLibrary": "Библиотека навыков",
@@ -107,5 +108,19 @@
   "skillPromptDesc": "Инструкции для AI когда этот навык активен",
   "saveSkill": "Сохранить",
   "cancel": "Отмена",
-  "active": "Активно"
+  "active": "Активно",
+  "searchSettings": "Настройки поиска",
+  "openSerpUrl": "URL OpenSerp",
+  "openSerpUrlDesc": "Опционально: Ваш инстанс OpenSerp для поиска в нескольких движках",
+  "navHistory": "История",
+  "navNavigation": "Навигация",
+  "emptyTitle": "Начните создавать",
+  "emptyText": "Введите промпт и нажмите Generate, чтобы создать потрясающие AI-изображения с помощью Puter AI (бесплатно, без API-ключа) или используйте HuggingFace Endpoint/OpenRouter для более высокого качества.",
+  "generatedResults": "Сгенерированные результаты",
+  "clearAll": "Очистить все",
+  "tipsEnter": "Нажмите <kbd>Enter</kbd> для генерации",
+  "tipsStyle": "Стиль: Cinematic Obsidian",
+  "placeholderImage": "Введите для создания",
+  "placeholderVideo": "Опишите видео, которое хотите создать",
+  "noHistory": "История пуста"
 }

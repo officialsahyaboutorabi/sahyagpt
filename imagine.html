@@ -1903,15 +1903,16 @@
                 this.apiKey = localStorage.getItem('huggingface_api_key') || '';
                 this.videoModel = localStorage.getItem('huggingface_video_model') || 'stabilityai/stable-video-diffusion';
                 this.openrouterVideoModel = localStorage.getItem('openrouter_video_model') || 'openai/sora-2-pro';
-                
-                this.init();
             }
             
-            init() {
+            async init() {
                 this.setupEventListeners();
                 this.loadSettings();
                 this.renderResults();
                 this.updateHistory();
+                
+                // Load translations first
+                await this.loadTranslations();
                 
                 // Load and apply saved language
                 const savedLang = localStorage.getItem('sahyagpt_language') || 'en';
@@ -1919,6 +1920,20 @@
                 
                 // Initialize mode slider position after a short delay to ensure DOM is ready
                 setTimeout(() => this.updateModeSlider(), 50);
+            }
+            
+            async loadTranslations() {
+                try {
+                    const [en, ru] = await Promise.all([
+                        fetch('translations/en.json').then(r => r.json()).catch(() => ({})),
+                        fetch('translations/ru.json').then(r => r.json()).catch(() => ({}))
+                    ]);
+                    this.translations = { en, ru };
+                } catch (e) {
+                    console.error('Failed to load translations:', e);
+                    // Fallback empty translations
+                    this.translations = { en: {}, ru: {} };
+                }
             }
             
             setupEventListeners() {
@@ -2689,40 +2704,7 @@
                 this.applyTranslations(lang);
             }
             
-            translations = {
-                en: {
-                    navChat: 'Chat',
-                    navImagine: 'Imagine',
-                    navPromptHub: 'PromptHub',
-                    navHistory: 'History',
-                    navNavigation: 'Navigation',
-                    emptyTitle: 'Start Creating',
-                    emptyText: 'Enter a prompt and click Generate to create stunning AI images using Puter AI (free, no API key needed), or use HuggingFace Endpoint/OpenRouter for higher quality.',
-                    generatedResults: 'Generated Results',
-                    clearAll: 'Clear All',
-                    tipsEnter: 'Press <kbd>Enter</kbd> to Generate',
-                    tipsStyle: 'Style: Cinematic Obsidian',
-                    placeholderImage: 'Type to imagine',
-                    placeholderVideo: 'Describe the video you want to create',
-                    noHistory: 'No history yet'
-                },
-                ru: {
-                    navChat: 'Чат',
-                    navImagine: 'Создание',
-                    navPromptHub: 'ПромптХаб',
-                    navHistory: 'История',
-                    navNavigation: 'Навигация',
-                    emptyTitle: 'Начните создавать',
-                    emptyText: 'Введите промпт и нажмите Generate, чтобы создать потрясающие AI-изображения с помощью Puter AI (бесплатно, без API-ключа) или используйте HuggingFace Endpoint/OpenRouter для более высокого качества.',
-                    generatedResults: 'Сгенерированные результаты',
-                    clearAll: 'Очистить все',
-                    tipsEnter: 'Нажмите <kbd>Enter</kbd> для генерации',
-                    tipsStyle: 'Стиль: Cinematic Obsidian',
-                    placeholderImage: 'Введите для создания',
-                    placeholderVideo: 'Опишите видео, которое хотите создать',
-                    noHistory: 'История пуста'
-                }
-            };
+            translations = {};
             
             applyTranslations(lang) {
                 const t = this.translations[lang] || this.translations.en;
@@ -2883,13 +2865,16 @@
         // Initialize app when DOM is fully loaded
         let imagineApp;
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', async () => {
                 imagineApp = new ImagineApp();
+                await imagineApp.init();
                 initLanguageDropdown();
             });
         } else {
             imagineApp = new ImagineApp();
-            initLanguageDropdown();
+            imagineApp.init().then(() => {
+                initLanguageDropdown();
+            });
         }
         
         // Mode toggle (Image/Video)

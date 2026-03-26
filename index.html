@@ -1615,6 +1615,13 @@
                         </div>
                     </div>
                     <div class="settings-group">
+                        <div class="settings-group-title" id="searchSettingsTitle">Search Settings</div>
+                        <div class="form-group">
+                            <label class="form-label" id="openSerpUrlLabel">OpenSerp URL <span id="openSerpUrlDesc">Optional: Your OpenSerp instance for multi-engine search</span></label>
+                            <input type="text" class="form-input" id="openSerpUrl" placeholder="https://openserp.yourdomain.com or http://localhost:7000" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="settings-group">
                         <div class="settings-group-title" id="dangerZoneTitle">Danger Zone</div>
                         <button class="reset-btn" id="clearAllDataBtn" onclick="chatApp.clearAllData()" style="width: 100%; color: var(--error); border-color: var(--error);">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 8px; vertical-align: middle;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -2908,6 +2915,62 @@ Using the search results above as your primary source of information, provide a 
                     }
                 })());
 
+                // --- Source 8: Yandex Search ---
+                searchPromises.push((async () => {
+                    try {
+                        // Try OpenSerp instance if configured
+                        const openSerpUrl = this.settings?.openSerpUrl;
+                        if (openSerpUrl) {
+                            const yandexRes = await fetch(
+                                `${openSerpUrl}/yandex/search?text=${encodeURIComponent(query)}&limit=5`,
+                                { signal: AbortSignal.timeout(8000) }
+                            );
+                            if (yandexRes.ok) {
+                                const yandexData = await yandexRes.json();
+                                (yandexData || []).slice(0, 5).forEach(result => {
+                                    textParts.push(`- **${result.title}** (Yandex): ${result.description}\n  ${result.url}`);
+                                    rawResults.push({ title: result.title, source: 'Yandex', url: result.url, snippet: result.description });
+                                });
+                            }
+                        } else {
+                            // Fallback: Try direct Yandex scraping via CORS proxy
+                            const corsProxy = 'https://api.allorigins.win/raw?url=';
+                            const yandexUrl = encodeURIComponent(`https://yandex.com/search/?text=${encodeURIComponent(query)}&lr=lang_en`);
+                            const yandexRes = await fetch(
+                                `${corsProxy}${yandexUrl}`,
+                                { signal: AbortSignal.timeout(8000) }
+                            );
+                            if (yandexRes.ok) {
+                                const html = await yandexRes.text();
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(html, 'text/html');
+                                
+                                // Parse Yandex search results (basic extraction)
+                                const results = doc.querySelectorAll('li.serp-item');
+                                let count = 0;
+                                results.forEach(item => {
+                                    if (count >= 5) return;
+                                    const titleEl = item.querySelector('h2 a, .organic__url-text');
+                                    const snippetEl = item.querySelector('.organic__content-wrapper, .text-container');
+                                    const urlEl = item.querySelector('a.link');
+                                    
+                                    if (titleEl && snippetEl) {
+                                        const title = titleEl.textContent?.trim() || 'Untitled';
+                                        const snippet = snippetEl.textContent?.trim().slice(0, 200) || '';
+                                        const url = urlEl?.href || titleEl.href || '#';
+                                        
+                                        textParts.push(`- **${title}** (Yandex): ${snippet}${snippet.length >= 200 ? '...' : ''}\n  ${url}`);
+                                        rawResults.push({ title: title, source: 'Yandex', url: url, snippet: snippet.slice(0, 150) });
+                                        count++;
+                                    }
+                                });
+                            }
+                        }
+                    } catch (e) { 
+                        console.log('Yandex search skipped:', e.message); 
+                    }
+                })());
+
                 // Wait for all searches to complete
                 await Promise.all(searchPromises);
 
@@ -3383,6 +3446,12 @@ Using the search results above as your primary source of information, provide a 
                 const dangerZoneTitle = document.getElementById('dangerZoneTitle');
                 if (dangerZoneTitle) dangerZoneTitle.textContent = t.dangerZone;
                 
+                const searchSettingsTitle = document.getElementById('searchSettingsTitle');
+                if (searchSettingsTitle) searchSettingsTitle.textContent = t.searchSettings;
+                
+                const openSerpUrlLabel = document.getElementById('openSerpUrlLabel');
+                if (openSerpUrlLabel) openSerpUrlLabel.innerHTML = t.openSerpUrl + ' <span id="openSerpUrlDesc">' + t.openSerpUrlDesc + '</span>';
+                
                 const clearAllDataText = document.getElementById('clearAllDataText');
                 if (clearAllDataText) clearAllDataText.textContent = t.clearAllData;
                 
@@ -3503,6 +3572,9 @@ Using the search results above as your primary source of information, provide a 
                             yandexgptFolderIdDesc: 'Yandex Cloud folder/catalog ID',
                             proxyUrl: 'Proxy URL',
                             yandexgptProxyUrlDesc: '(optional, uses default if empty)',
+                            searchSettings: 'Search Settings',
+                            openSerpUrl: 'OpenSerp URL',
+                            openSerpUrlDesc: 'Optional: Your OpenSerp instance for multi-engine search',
                             yandexgptInfoTitle: 'ℹ️ About YandexGPT Proxy',
                             yandexgptInfoText1: 'Yandex Cloud API blocks browser requests. A proxy is required.',
                             yandexgptInfoText2: '✅ Default proxy available - leave empty to use shared proxy',
@@ -3603,6 +3675,9 @@ Using the search results above as your primary source of information, provide a 
                             yandexgptFolderIdDesc: 'ID папки/каталога Yandex Cloud',
                             proxyUrl: 'URL Прокси',
                             yandexgptProxyUrlDesc: '(опционально, используется по умолчанию если пусто)',
+                            searchSettings: 'Настройки поиска',
+                            openSerpUrl: 'URL OpenSerp',
+                            openSerpUrlDesc: 'Опционально: Ваш инстанс OpenSerp для поиска в нескольких движках',
                             yandexgptInfoTitle: 'ℹ️ О прокси YandexGPT',
                             yandexgptInfoText1: 'API Yandex Cloud блокирует запросы из браузера. Требуется прокси.',
                             yandexgptInfoText2: '✅ Доступен прокси по умолчанию - оставьте пустым для общего прокси',
@@ -5214,6 +5289,7 @@ When the user requests this skill:
                 this.settings.yandexgptApiKey = document.getElementById('yandexgptApiKey').value.trim();
                 this.settings.yandexgptFolderId = document.getElementById('yandexgptFolderId').value.trim();
                 this.settings.yandexgptProxyUrl = document.getElementById('yandexgptProxyUrl').value.trim().replace(/\/$/, '');
+                this.settings.openSerpUrl = document.getElementById('openSerpUrl').value.trim().replace(/\/$/, '');
                 if (!this.settings.toggles) this.settings.toggles = {};
                 ['autoSave', 'enterToSend', 'showTimestamps', 'stream', 'litellmEnabled', 'yandexgptEnabled'].forEach(key => {
                     const toggle = document.getElementById(`${key}Toggle`);
@@ -5256,7 +5332,7 @@ When the user requests this skill:
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
                         temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
-                        yandexgptApiKey: '', yandexgptFolderId: '', yandexgptProxyUrl: '',
+                        yandexgptApiKey: '', yandexgptFolderId: '', yandexgptProxyUrl: '', openSerpUrl: '',
                         toggles: { autoSave: true, enterToSend: true, showTimestamps: true, stream: true, litellmEnabled: false, yandexgptEnabled: false }
                     };
                     this.renderEndpoints();
@@ -5276,6 +5352,7 @@ When the user requests this skill:
                     document.getElementById('yandexgptApiKey').value   = '';
                     document.getElementById('yandexgptFolderId').value = '';
                     document.getElementById('yandexgptProxyUrl').value = '';
+                    document.getElementById('openSerpUrl').value = '';
                     // Activate all standard toggles, then explicitly deactivate opt-in ones
                     document.querySelectorAll('.toggle-switch').forEach(toggle => toggle.classList.add('active'));
                     document.getElementById('litellmEnabledToggle').classList.remove('active');
@@ -5320,7 +5397,7 @@ When the user requests this skill:
                         ],
                         systemPrompt: 'You are a helpful AI assistant.',
                         temperature: 0.7, maxTokens: 2048, topP: 0.9, theme: 'dark', fontSize: 'medium', codeTheme: 'atom-one-dark', thinkingStyle: 'cot', litellmApiKey: '', litellmEndpoint: 'https://llm.nexiant.ai',
-                        yandexgptApiKey: '', yandexgptFolderId: '', yandexgptProxyUrl: '',
+                        yandexgptApiKey: '', yandexgptFolderId: '', yandexgptProxyUrl: '', openSerpUrl: '',
                         ...parsed,
                         // Always deep-merge toggles so new keys get their defaults
                         // even when loading settings saved before those keys existed.
@@ -5343,6 +5420,7 @@ When the user requests this skill:
                     document.getElementById('yandexgptApiKey').value   = this.settings.yandexgptApiKey   || '';
                     document.getElementById('yandexgptFolderId').value = this.settings.yandexgptFolderId || '';
                     document.getElementById('yandexgptProxyUrl').value = this.settings.yandexgptProxyUrl || '';
+                    document.getElementById('openSerpUrl').value = this.settings.openSerpUrl || '';
                     if (this.settings.toggles) {
                         Object.entries(this.settings.toggles).forEach(([key, value]) => {
                             const toggle = document.getElementById(`${key}Toggle`);

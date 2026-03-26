@@ -2,6 +2,39 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.6.0] - 2026-03-26
+
+### Added
+
+#### Toggle Button Shimmer Animation (imagine.html)
+- **Orange gradient shimmer** on active toggle button text (Image/Video)
+  - Matches the shimmer-border animation style exactly
+  - Gradient: `#ff5717 → #ffb59e → #ff5717`
+  - Animation: Left-to-right movement (2s duration)
+  - Uses `background-clip: text` with `-webkit-text-fill-color: transparent`
+- **Icon styling** - Active button SVG icons show solid orange color (`#ff5717`)
+- **HTML structure cleanup** - Removed unnecessary wrapper divs from toggle buttons
+
+### Fixed
+
+#### JavaScript Error Fixes (imagine.html)
+- **Fixed `t.noHistory undefined` error** - Added fallback for missing translation keys
+- **Fixed `modeSlider not defined` error** - Changed to correct `chatModeSlider` ID
+
+#### UI/UX Improvements (imagine.html)
+- **Centralized translations** - All text moved to en.json/ru.json files
+- **Search timeout fixes** - Increased CORS proxy timeouts to 12-15s
+- **Disabled submit button state** - Button disabled when input is empty
+- **Removed `<base target="_blank">`** - Navigation now opens in same tab
+- **Fixed toggle slider positioning** - Correct horizontal placement
+- **Centered chat input** - Added `margin: 0 auto` for proper centering
+- **Complete Russian translation** - Full i18n support for imagine.html
+- **Integrated web search** - Yandex Search and OpenSerp support
+- **Reordered layout** - Chat input positioned below empty state
+- **Fixed dropdown CSS conflicts** - Language and aspect ratio dropdowns no longer conflict
+
+---
+
 ## [1.5.0] - 2026-03-24
 
 ### Added

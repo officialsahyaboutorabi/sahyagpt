@@ -869,5 +869,41 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.5*
-*Last Updated: March 24, 2026*
+## Recent Updates (March 26, 2026)
+
+### imagine.html Enhancements
+
+#### Visual Improvements
+- **Toggle Button Shimmer Animation**: Active Image/Video toggle buttons now feature an orange gradient shimmer effect matching the chat input border animation
+  - CSS `background-clip: text` technique for gradient text
+  - Synchronized animation timing and direction with `.shimmer-border`
+  - SVG icons show solid orange color when active
+
+#### Bug Fixes
+- Fixed JavaScript errors (`t.noHistory undefined`, `modeSlider not defined`)
+- Centralized all translations to JSON files (en.json, ru.json)
+- Fixed CORS proxy timeout issues for web search
+- Added disabled submit button state for empty input
+- Fixed toggle slider positioning and duplicate ID conflicts
+- Resolved dropdown CSS conflicts between language and aspect ratio selectors
+
+#### Internationalization
+- Complete Russian translation for imagine.html
+- Fallback text for all translation keys to prevent undefined errors
+- Translation system using async JSON loading
+
+#### Web Search Integration
+- Yandex Search integration via OpenSerp API
+- Multiple CORS proxy fallback support
+- Timeout handling: 12s for search sources, 15s for proxies
+
+---
+
+## License
+
+MIT License - See project root for details
+
+---
+
+*Architecture Documentation v1.6*
+*Last Updated: March 26, 2026*

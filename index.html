@@ -2759,13 +2759,15 @@ Using the search results above as your primary source of information, provide a 
                 const textParts = [];    // LLM-readable markdown lines
                 const rawResults = [];  // structured data for ToolCard display
                 const searchPromises = []; // Track all search promises
+                const TIMEOUT_MS = 12000; // 12 second timeout for main sources
+                const CORS_TIMEOUT_MS = 15000; // 15 second timeout for CORS proxy sources
 
                 // --- Source 1: DuckDuckGo Instant Answer API ---
                 searchPromises.push((async () => {
                     try {
                         const ddgRes = await fetch(
                             `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`,
-                            { signal: AbortSignal.timeout(9000) }
+                            { signal: AbortSignal.timeout(TIMEOUT_MS) }
                         );
                         if (ddgRes.ok) {
                             const d = await ddgRes.json();
@@ -2798,7 +2800,7 @@ Using the search results above as your primary source of information, provide a 
                     try {
                         const wikiRes = await fetch(
                             `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=5&format=json&origin=*`,
-                            { signal: AbortSignal.timeout(9000) }
+                            { signal: AbortSignal.timeout(TIMEOUT_MS) }
                         );
                         if (wikiRes.ok) {
                             const wikiData = await wikiRes.json();
@@ -2817,7 +2819,7 @@ Using the search results above as your primary source of information, provide a 
                     try {
                         const redditRes = await fetch(
                             `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`,
-                            { signal: AbortSignal.timeout(8000) }
+                            { signal: AbortSignal.timeout(TIMEOUT_MS) }
                         );
                         if (redditRes.ok) {
                             const redditData = await redditRes.json();
@@ -2837,7 +2839,7 @@ Using the search results above as your primary source of information, provide a 
                     try {
                         const hnRes = await fetch(
                             `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&hitsPerPage=5`,
-                            { signal: AbortSignal.timeout(8000) }
+                            { signal: AbortSignal.timeout(TIMEOUT_MS) }
                         );
                         if (hnRes.ok) {
                             const hnData = await hnRes.json();
@@ -2855,7 +2857,7 @@ Using the search results above as your primary source of information, provide a 
                     try {
                         const seRes = await fetch(
                             `https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=${encodeURIComponent(query)}&site=stackoverflow&pagesize=5`,
-                            { signal: AbortSignal.timeout(8000) }
+                            { signal: AbortSignal.timeout(TIMEOUT_MS) }
                         );
                         if (seRes.ok) {
                             const seData = await seRes.json();
@@ -2873,7 +2875,7 @@ Using the search results above as your primary source of information, provide a 
                     try {
                         const ghRes = await fetch(
                             `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=5`,
-                            { signal: AbortSignal.timeout(8000) }
+                            { signal: AbortSignal.timeout(TIMEOUT_MS) }
                         );
                         if (ghRes.ok) {
                             const ghData = await ghRes.json();
@@ -2889,14 +2891,27 @@ Using the search results above as your primary source of information, provide a 
                 // Note: ArXiv API requires CORS proxy in browser environment
                 searchPromises.push((async () => {
                     try {
-                        // Use CORS proxy for ArXiv API
-                        const corsProxy = 'https://api.allorigins.win/raw?url=';
-                        const arxivUrl = encodeURIComponent(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=5`);
-                        const arxivRes = await fetch(
-                            `${corsProxy}${arxivUrl}`,
-                            { signal: AbortSignal.timeout(8000) }
-                        );
-                        if (arxivRes.ok) {
+                        // Use CORS proxy for ArXiv API - try multiple proxies if one fails
+                        const corsProxies = [
+                            'https://api.allorigins.win/raw?url=',
+                            'https://corsproxy.io/?'
+                        ];
+                        let arxivRes = null;
+                        
+                        for (const corsProxy of corsProxies) {
+                            try {
+                                const arxivUrl = encodeURIComponent(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=5`);
+                                arxivRes = await fetch(
+                                    `${corsProxy}${arxivUrl}`,
+                                    { signal: AbortSignal.timeout(CORS_TIMEOUT_MS) }
+                                );
+                                if (arxivRes.ok) break;
+                            } catch (proxyError) {
+                                continue; // Try next proxy
+                            }
+                        }
+                        
+                        if (arxivRes && arxivRes.ok) {
                             const arxivText = await arxivRes.text();
                             const parser = new DOMParser();
                             const xmlDoc = parser.parseFromString(arxivText, 'text/xml');
@@ -2911,7 +2926,7 @@ Using the search results above as your primary source of information, provide a 
                         }
                     } catch (e) { 
                         // Silently ignore ArXiv errors - CORS issues are expected in browser
-                        console.log('ArXiv search skipped (CORS)'); 
+                        console.log('ArXiv search skipped (CORS proxy unavailable)'); 
                     }
                 })());
 
@@ -2923,7 +2938,7 @@ Using the search results above as your primary source of information, provide a 
                         if (openSerpUrl) {
                             const yandexRes = await fetch(
                                 `${openSerpUrl}/yandex/search?text=${encodeURIComponent(query)}&limit=5`,
-                                { signal: AbortSignal.timeout(8000) }
+                                { signal: AbortSignal.timeout(TIMEOUT_MS) }
                             );
                             if (yandexRes.ok) {
                                 const yandexData = await yandexRes.json();
@@ -2933,14 +2948,27 @@ Using the search results above as your primary source of information, provide a 
                                 });
                             }
                         } else {
-                            // Fallback: Try direct Yandex scraping via CORS proxy
-                            const corsProxy = 'https://api.allorigins.win/raw?url=';
-                            const yandexUrl = encodeURIComponent(`https://yandex.com/search/?text=${encodeURIComponent(query)}&lr=lang_en`);
-                            const yandexRes = await fetch(
-                                `${corsProxy}${yandexUrl}`,
-                                { signal: AbortSignal.timeout(8000) }
-                            );
-                            if (yandexRes.ok) {
+                            // Fallback: Try direct Yandex scraping via CORS proxy with multiple proxies
+                            const corsProxies = [
+                                'https://api.allorigins.win/raw?url=',
+                                'https://corsproxy.io/?'
+                            ];
+                            let yandexRes = null;
+                            
+                            for (const corsProxy of corsProxies) {
+                                try {
+                                    const yandexUrl = encodeURIComponent(`https://yandex.com/search/?text=${encodeURIComponent(query)}&lr=lang_en`);
+                                    yandexRes = await fetch(
+                                        `${corsProxy}${yandexUrl}`,
+                                        { signal: AbortSignal.timeout(CORS_TIMEOUT_MS) }
+                                    );
+                                    if (yandexRes.ok) break;
+                                } catch (proxyError) {
+                                    continue; // Try next proxy
+                                }
+                            }
+                            
+                            if (yandexRes && yandexRes.ok) {
                                 const html = await yandexRes.text();
                                 const parser = new DOMParser();
                                 const doc = parser.parseFromString(html, 'text/html');

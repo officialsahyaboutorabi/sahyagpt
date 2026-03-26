@@ -1261,7 +1261,7 @@
         
         .toggle-btn.active span {
             display: inline-block;
-            background: linear-gradient(90deg, #ff5717, #ffb59e, #ff5717, #ffb59e, #ff5717);
+            background: linear-gradient(90deg, #ff5717, #ffb59e, #ff5717);
             background-size: 200% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -1274,8 +1274,8 @@
         }
         
         @keyframes shimmer-text {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
         
         .toggle-btn:not(.active):hover {

@@ -226,6 +226,12 @@
             margin: 0 auto;
             width: 100%;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-input-section {
+            margin-top: auto;
         }
         
         /* Mode Toggle */
@@ -1257,8 +1263,8 @@
             transform: translateX(0);
         }
         
-        /* Dropdown menu */
-        .dropdown-menu {
+        /* Aspect Ratio Dropdown (specific to chat input) */
+        #aspectDropdown {
             position: fixed;
             background: #2a2a2a;
             border: 1px solid rgba(255, 79, 0, 0.2);
@@ -1274,13 +1280,13 @@
             z-index: 1000;
         }
         
-        .dropdown-menu.open {
+        #aspectDropdown.open {
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
         }
         
-        .dropdown-item {
+        #aspectDropdown .dropdown-item {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -1297,11 +1303,11 @@
             text-align: left;
         }
         
-        .dropdown-item:hover {
+        #aspectDropdown .dropdown-item:hover {
             background-color: rgba(255, 255, 255, 0.05);
         }
         
-        .dropdown-item.selected {
+        #aspectDropdown .dropdown-item.selected {
             font-weight: 600;
         }
         
@@ -1510,6 +1516,36 @@
             
             <!-- Content Area -->
             <div class="content-area">
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection" style="display: none;">
+                    <div class="results-header">
+                        <div class="results-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            Generated Results
+                            <span class="results-count" id="resultsCount">0</span>
+                        </div>
+                        <button class="clear-results-btn" onclick="imagineApp.clearResults()">
+                            Clear All
+                        </button>
+                    </div>
+                    <div class="results-grid" id="resultsGrid"></div>
+                </div>
+                
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <div class="empty-title">Start Creating</div>
+                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images using Puter AI (free, no API key needed), or use HuggingFace Endpoint/OpenRouter for higher quality.</div>
+                </div>
+                
                 <!-- Chat Input Component -->
                 <section class="chat-input-section">
                     <div class="chat-input-wrapper">
@@ -1664,36 +1700,6 @@
                         </div>
                         <span>16:9</span>
                     </button>
-                </div>
-                
-                <!-- Results Section -->
-                <div class="results-section" id="resultsSection" style="display: none;">
-                    <div class="results-header">
-                        <div class="results-title">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
-                            </svg>
-                            Generated Results
-                            <span class="results-count" id="resultsCount">0</span>
-                        </div>
-                        <button class="clear-results-btn" onclick="imagineApp.clearResults()">
-                            Clear All
-                        </button>
-                    </div>
-                    <div class="results-grid" id="resultsGrid"></div>
-                </div>
-                
-                <!-- Empty State -->
-                <div class="empty-state" id="emptyState">
-                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                    <div class="empty-title">Start Creating</div>
-                    <div class="empty-text">Enter a prompt and click Generate to create stunning AI images using Puter AI (free, no API key needed), or use HuggingFace Endpoint/OpenRouter for higher quality.</div>
                 </div>
             </div>
         </main>

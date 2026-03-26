@@ -232,6 +232,9 @@
         
         .chat-input-section {
             margin-top: auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
         
         /* Mode Toggle */
@@ -1268,9 +1271,10 @@
             position: fixed;
             background: #2a2a2a;
             border: 1px solid rgba(255, 79, 0, 0.2);
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 4px;
-            min-width: 120px;
+            min-width: 100px;
+            max-width: 140px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             opacity: 0;
             visibility: hidden;
@@ -1289,18 +1293,19 @@
         #aspectDropdown .dropdown-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            border-radius: 12px;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: background-color 150ms ease;
             background: transparent;
             border: none;
             color: inherit;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px;
             width: 100%;
             text-align: left;
+            line-height: 1.4;
         }
         
         #aspectDropdown .dropdown-item:hover {
@@ -1946,12 +1951,30 @@
             switchMode(mode) {
                 this.currentMode = mode;
                 
-                document.querySelectorAll('.mode-btn').forEach(btn => {
+                // Update toggle buttons
+                document.querySelectorAll('#modeToggle .toggle-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.mode === mode);
                 });
                 
                 // Move slider to active button
-                this.updateModeSlider();
+                const modeSlider = document.getElementById('modeSlider');
+                if (modeSlider) {
+                    if (mode === 'image') {
+                        modeSlider.style.left = '2px';
+                    } else {
+                        modeSlider.style.left = 'calc(50%)';
+                    }
+                }
+                
+                // Show/hide video options
+                const videoOptions = document.getElementById('videoOptions');
+                if (videoOptions) {
+                    if (mode === 'image') {
+                        videoOptions.classList.remove('visible');
+                    } else {
+                        videoOptions.classList.add('visible');
+                    }
+                }
                 
                 // Clear uploaded images when switching to image mode
                 if (mode === 'image' && this.uploadedImages.length > 0) {
@@ -1960,11 +1983,14 @@
                 }
                 
                 // Update placeholder text
-                const textInput = document.getElementById('imagineTextInput');
+                const textInput = document.getElementById('textInput');
                 if (textInput) {
-                    textInput.placeholder = mode === 'image' 
-                        ? 'Describe what you want to imagine...' 
-                        : 'Describe the video you want to create...';
+                    const placeholder = textInput.querySelector('.is-editor-empty');
+                    if (placeholder) {
+                        placeholder.setAttribute('data-placeholder', mode === 'image' 
+                            ? 'Type to imagine' 
+                            : 'Describe the video you want to create');
+                    }
                 }
             }
             
@@ -2794,6 +2820,11 @@
                     videoOptions.classList.remove('visible');
                 } else {
                     videoOptions.classList.add('visible');
+                }
+                
+                // Sync with imagineApp
+                if (imagineApp && imagineApp.switchMode) {
+                    imagineApp.switchMode(mode);
                 }
             });
         });

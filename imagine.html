@@ -65,6 +65,7 @@
             --accent: #ff4f00; 
             --accent-glow: rgba(255, 107, 44, .1);
             --accent-hover: #ff6b2c;
+            --secondary-accent: #ffb59e;
             --success: #00ff88; 
             --error: #ff3333; 
             --warning: #ffaa00;
@@ -1212,7 +1213,8 @@
             position: relative;
             display: inline-flex;
             align-items: center;
-            background: #3a3939;
+            background: transparent;
+            border: 1px solid var(--border);
             gap: 2px;
             height: 32px;
             border-radius: 16px;
@@ -1252,7 +1254,7 @@
         }
         
         .toggle-btn.active {
-            color: #ffb59e;
+            color: var(--accent);
             font-weight: 600;
         }
         

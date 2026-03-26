@@ -1605,7 +1605,7 @@
                                 <div class="bottom-controls">
                                     <!-- Mode Toggle (Image/Video) -->
                                     <div class="toggle-group" id="modeToggle">
-                                        <div class="toggle-slider" id="modeSlider" style="left: 2px;"></div>
+                                        <div class="toggle-slider" id="chatModeSlider" style="left: 2px;"></div>
                                         <button class="toggle-btn active" data-mode="image" type="button">
                                             <div style="display: flex; align-items: center; gap: 4px;">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1958,13 +1958,13 @@
                     btn.classList.toggle('active', btn.dataset.mode === mode);
                 });
                 
-                // Move slider to active button
-                const modeSlider = document.getElementById('modeSlider');
-                if (modeSlider) {
+                // Move slider to active button (chat input toggle)
+                const chatModeSlider = document.getElementById('chatModeSlider');
+                if (chatModeSlider) {
                     if (mode === 'image') {
-                        modeSlider.style.left = '2px';
+                        chatModeSlider.style.left = '2px';
                     } else {
-                        modeSlider.style.left = 'calc(50% + 2px)';
+                        chatModeSlider.style.left = 'calc(50% + 1px)';
                     }
                 }
                 
@@ -2797,9 +2797,9 @@
             initLanguageDropdown();
         }
         
-        // Mode toggle (Image/Video)
+        // Mode toggle (Image/Video) - Chat Input
         const modeToggle = document.getElementById('modeToggle');
-        const modeSlider = document.getElementById('modeSlider');
+        const chatModeSlider = document.getElementById('chatModeSlider');
         const modeBtns = modeToggle.querySelectorAll('.toggle-btn');
         const videoOptions = document.getElementById('videoOptions');
         
@@ -2809,9 +2809,9 @@
                 const isImage = mode === 'image';
                 
                 if (isImage) {
-                    modeSlider.style.left = '2px';
+                    chatModeSlider.style.left = '2px';
                 } else {
-                    modeSlider.style.left = 'calc(50% + 1px)';
+                    chatModeSlider.style.left = 'calc(50% + 1px)';
                 }
                 
                 modeBtns.forEach(b => {
@@ -2824,7 +2824,7 @@
                     videoOptions.classList.add('visible');
                 }
                 
-                // Sync with imagineApp
+                // Sync with imagineApp (header toggle)
                 if (imagineApp && imagineApp.switchMode) {
                     imagineApp.switchMode(mode);
                 }

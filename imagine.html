@@ -1974,11 +1974,11 @@
                 
                 // Move slider to active button
                 const chatModeSlider = document.getElementById('chatModeSlider');
-                if (modeSlider) {
+                if (chatModeSlider) {
                     if (mode === 'image') {
-                        modeSlider.style.left = '2px';
+                        chatModeSlider.style.left = '2px';
                     } else {
-                        modeSlider.style.left = 'calc(50% + 1px)';
+                        chatModeSlider.style.left = 'calc(50% + 1px)';
                     }
                 }
                 
@@ -2788,10 +2788,11 @@
                 if (!container) return;
                 
                 const lang = localStorage.getItem('sahyagpt_language') || 'en';
-                const t = this.translations[lang] || this.translations.en;
+                const t = this.translations[lang] || this.translations.en || {};
+                const noHistoryText = t.noHistory || 'No history yet';
                 
                 if (this.generatedResults.length === 0) {
-                    container.innerHTML = `<div style="padding: 16px 20px; color: var(--text-secondary); font-size: 0.85rem;">${t.noHistory}</div>`;
+                    container.innerHTML = `<div style="padding: 16px 20px; color: var(--text-secondary); font-size: 0.85rem;">${noHistoryText}</div>`;
                     return;
                 }
                 

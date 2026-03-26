@@ -1043,29 +1043,30 @@
             font-weight: 500;
             line-height: normal;
             cursor: pointer;
-            border: 1px solid transparent;
+            border: 1px solid var(--border);
             border-radius: 9999px;
             overflow: hidden;
             height: 40px;
             width: 40px;
             padding: 8px;
-            background: #2a2a2a;
-            color: #ff4f00;
+            background: transparent;
+            color: var(--text-secondary);
             transition: all 100ms ease;
         }
         
         .attach-button:hover {
-            color: #ff4f00;
-            background: #353534;
+            color: #fbfbfb;
+            background: #1f1f1f;
+            border-color: var(--border);
         }
         
         .attach-button:active {
-            background: #3a3939;
+            transform: scale(0.96);
         }
         
         .attach-button:focus-visible {
             outline: none;
-            box-shadow: 0 0 0 1px #ff4f00;
+            /* box-shadow: 0 0 0 1px #ff4f00; */
         }
         
         .attach-button svg {

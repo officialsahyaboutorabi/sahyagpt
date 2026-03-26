@@ -65,6 +65,7 @@
             --accent: #ff4f00; 
             --accent-glow: rgba(255, 107, 44, .1);
             --accent-hover: #ff6b2c;
+            --secondary-accent: #ffb59e;
             --success: #00ff88; 
             --error: #ff3333; 
             --warning: #ffaa00;
@@ -1212,7 +1213,8 @@
             position: relative;
             display: inline-flex;
             align-items: center;
-            background: #3a3939;
+            background: transparent;
+            border: 1px solid var(--border);
             gap: 2px;
             height: 32px;
             border-radius: 16px;
@@ -1237,6 +1239,8 @@
             z-index: 1;
             display: flex;
             align-items: center;
+            justify-content: center;
+            gap: 4px;
             padding: 4px 10px;
             font-size: 12px;
             font-weight: 500;
@@ -1252,8 +1256,26 @@
         }
         
         .toggle-btn.active {
-            color: #ffb59e;
             font-weight: 600;
+        }
+        
+        .toggle-btn.active span {
+            display: inline-block;
+            background: linear-gradient(90deg, #ff5717, #ffb59e, #ff5717, #ffb59e, #ff5717);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer-text 2s linear infinite;
+        }
+        
+        .toggle-btn.active svg {
+            color: #ff5717;
+        }
+        
+        @keyframes shimmer-text {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
         
         .toggle-btn:not(.active):hover {
@@ -1607,21 +1629,17 @@
                                     <div class="toggle-group" id="modeToggle">
                                         <div class="toggle-slider" id="chatModeSlider" style="left: 2px;"></div>
                                         <button class="toggle-btn active" data-mode="image" type="button">
-                                            <div style="display: flex; align-items: center; gap: 4px;">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path clip-rule="evenodd" d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z" fill="currentColor" fill-rule="evenodd"/>
-                                                </svg>
-                                                <span>Image</span>
-                                            </div>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path clip-rule="evenodd" d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z" fill="currentColor" fill-rule="evenodd"/>
+                                            </svg>
+                                            <span>Image</span>
                                         </button>
                                         <button class="toggle-btn" data-mode="video" type="button">
-                                            <div style="display: flex; align-items: center; gap: 4px;">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path clip-rule="evenodd" d="M12 4C14.4853 4 16.5 6.01472 16.5 8.5V15.5C16.5 17.9853 14.4853 20 12 20H6C3.51472 20 1.5 17.9853 1.5 15.5V8.5C1.5 6.01472 3.51472 4 6 4H12Z" fill="currentColor" fill-rule="evenodd"/>
-                                                    <path d="M22.5 19.0811L18.375 15.7812L18 15.4805V8.51953L18.375 8.21875L22.5 4.91895V19.0811Z" fill="currentColor"/>
-                                                </svg>
-                                                <span>Video</span>
-                                            </div>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path clip-rule="evenodd" d="M12 4C14.4853 4 16.5 6.01472 16.5 8.5V15.5C16.5 17.9853 14.4853 20 12 20H6C3.51472 20 1.5 17.9853 1.5 15.5V8.5C1.5 6.01472 3.51472 4 6 4H12Z" fill="currentColor" fill-rule="evenodd"/>
+                                                <path d="M22.5 19.0811L18.375 15.7812L18 15.4805V8.51953L18.375 8.21875L22.5 4.91895V19.0811Z" fill="currentColor"/>
+                                            </svg>
+                                            <span>Video</span>
                                         </button>
                                     </div>
                                     

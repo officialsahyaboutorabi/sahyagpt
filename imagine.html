@@ -654,11 +654,14 @@
         .modal {
             width: 90%;
             max-width: 480px;
+            max-height: 85vh;
             background: var(--bg-card);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 20px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
             transform: scale(0.9) translateY(20px);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -682,7 +685,11 @@
             transition: all 0.2s ease;
         }
         .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
-        .modal-body { padding: 24px; }
+        .modal-body { 
+            padding: 24px; 
+            max-height: 60vh;
+            overflow-y: auto;
+        }
         .form-group { margin-bottom: 20px; }
         .form-group:last-child { margin-bottom: 0; }
         .form-label {

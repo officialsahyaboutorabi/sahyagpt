@@ -2751,17 +2751,18 @@
             }
             
             updateGenerateButton() {
-                const btn = document.getElementById('generateBtn');
-                const text = document.getElementById('generateBtnText');
+                // Update the submit button state based on generation status
+                const submitBtn = document.getElementById('submitBtn');
+                const textInput = document.getElementById('textInput');
                 
-                if (this.isGenerating) {
-                    btn.disabled = true;
-                    btn.classList.add('loading');
-                    text.textContent = 'Generating...';
-                } else {
-                    btn.disabled = false;
-                    btn.classList.remove('loading');
-                    text.textContent = this.currentMode === 'image' ? 'Generate Image' : 'Generate Video';
+                if (submitBtn) {
+                    if (this.isGenerating) {
+                        submitBtn.disabled = true;
+                    } else {
+                        // Re-enable only if there's text content
+                        const hasContent = textInput && textInput.innerText.trim().length > 0;
+                        submitBtn.disabled = !hasContent;
+                    }
                 }
             }
             

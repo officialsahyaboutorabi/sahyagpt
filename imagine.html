@@ -2428,15 +2428,21 @@
                 
                 // Add user's own creations from galleryImages (persists even when history is deleted)
                 // Get URL from imageDataStore if available (for base64 images), otherwise use the stored URL
+                console.log('loadGallery - galleryImages count:', this.galleryImages.length);
+                console.log('loadGallery - imageDataStore keys:', Array.from(this.imageDataStore.keys()));
+                
                 const userCreations = this.galleryImages
                     .filter(img => {
                         const imageUrl = this.imageDataStore.get(img.id) || img.url;
+                        console.log('loadGallery - filtering img.id:', img.id, 'has URL:', !!imageUrl);
                         return imageUrl; // Has image in memory or stored URL
                     })
                     .map(img => {
                         const imageUrl = this.imageDataStore.get(img.id) || img.url;
                         return { url: imageUrl, height: Math.round(itemWidth * 1.2), id: img.id }; // Default aspect ratio for user images
                     });
+                
+                console.log('loadGallery - userCreations count:', userCreations.length);
                 
                 const allCreations = [...userCreations, ...demoImages];
                 
@@ -2533,9 +2539,31 @@
                 const userMsg = conversation.messages.find(m => m.role === 'user');
                 const assistantMsg = conversation.messages.find(m => m.role === 'assistant');
                 
+                console.log('renderChatSession - conversationId:', conversationId);
+                console.log('renderChatSession - assistantMsg:', assistantMsg);
+                console.log('renderChatSession - imageDataStore keys:', Array.from(this.imageDataStore.keys()));
+                
                 // Get image URL from in-memory store or from the message itself
-                const imageUrl = this.imageDataStore.get(conversationId) || (assistantMsg && assistantMsg.url);
-                const hasImage = imageUrl || (assistantMsg && assistantMsg.hasImage);
+                // Check both imageDataStore and galleryImages for the URL
+                let imageUrl = this.imageDataStore.get(conversationId);
+                console.log('renderChatSession - imageUrl from imageDataStore:', imageUrl ? 'found' : 'not found');
+                
+                if (!imageUrl && assistantMsg) {
+                    imageUrl = assistantMsg.url;
+                    console.log('renderChatSession - imageUrl from assistantMsg:', imageUrl ? 'found' : 'not found');
+                }
+                // Also check galleryImages as fallback
+                if (!imageUrl) {
+                    const galleryItem = this.galleryImages.find(img => img.id == conversationId);
+                    if (galleryItem) {
+                        imageUrl = galleryItem.url;
+                        console.log('renderChatSession - imageUrl from galleryImages:', imageUrl ? 'found' : 'not found');
+                    }
+                }
+                
+                // Check if there's supposed to be an image (hasImage flag or status is complete)
+                const hasImage = imageUrl || (assistantMsg && (assistantMsg.hasImage || assistantMsg.status === 'complete'));
+                console.log('renderChatSession - hasImage:', hasImage, 'assistantMsg?.status:', assistantMsg?.status);
                 
                 // Check if we already have the user message rendered
                 let userMsgEl = container.querySelector('.chat-session-message.user');
@@ -3030,17 +3058,22 @@
             }
             
             replaceGeneratingWithResult(id, result) {
+                console.log('replaceGeneratingWithResult called with id:', id, 'result:', result);
                 const conversation = this.chatHistory.find(c => c.id == id);
+                console.log('Found conversation:', conversation);
                 if (conversation) {
                     const assistantMessage = conversation.messages.find(m => m.role === 'assistant');
+                    console.log('Found assistant message:', assistantMessage);
                     if (assistantMessage) {
                         assistantMessage.status = 'complete';
                         assistantMessage.url = result.url;
                         assistantMessage.content = 'Image generated successfully';
                         assistantMessage.model = result.model;
+                        console.log('Updated assistant message with URL:', result.url.substring(0, 50) + '...');
                     }
                     // Store image data in memory (base64 is too large for localStorage)
                     this.imageDataStore.set(id, result.url);
+                    console.log('Stored image in imageDataStore, keys:', Array.from(this.imageDataStore.keys()));
                     
                     // Add to gallery images (persists even when history is deleted)
                     const existingIndex = this.galleryImages.findIndex(img => img.id == id);
@@ -3057,12 +3090,14 @@
                     } else {
                         this.galleryImages.unshift(galleryItem);
                     }
+                    console.log('Gallery images count:', this.galleryImages.length);
                     
                     this.saveResults();
                     this.updateHistory();
                     this.loadGallery(); // Update gallery with new image
                     // Update chat session view if visible (use loose comparison for type safety)
                     if (this.currentConversationId == id) {
+                        console.log('Current conversation matches, rendering chat session');
                         this.renderChatSession(id);
                     }
                     // Show success toast with preview

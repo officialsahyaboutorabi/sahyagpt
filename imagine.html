@@ -689,12 +689,13 @@
         .gallery-section {
             width: 100%;
             min-height: 100vh;
-            padding: 24px;
+            padding: 24px 32px;
             padding-bottom: 200px; /* Space for chat input */
+            box-sizing: border-box;
         }
         .gallery-header {
             margin-bottom: 20px;
-            padding: 0 16px;
+            padding: 0;
             max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
@@ -2190,11 +2191,18 @@
                     return;
                 }
                 
-                // Calculate masonry layout - fill entire width
+                // Calculate masonry layout - force 4 columns, fill entire width
                 const itemWidth = 312;
                 const gap = 16;
+                const targetColumns = 4;
                 const containerWidth = galleryGrid.parentElement.clientWidth || (window.innerWidth - 280 - 48); // Account for sidebar and padding
-                const maxColumns = Math.max(1, Math.floor((containerWidth + gap) / (itemWidth + gap)));
+                // Calculate column count: prefer 4, but reduce if screen is too small
+                let maxColumns = Math.max(1, Math.floor((containerWidth + gap) / (itemWidth + gap)));
+                maxColumns = Math.min(maxColumns, targetColumns); // Cap at 4 columns max
+                // For larger screens, force 4 columns and spread them evenly
+                if (containerWidth >= 1400) {
+                    maxColumns = targetColumns;
+                }
                 // Distribute items evenly across the full width
                 const totalItemsWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
                 const extraSpace = containerWidth - totalItemsWidth;

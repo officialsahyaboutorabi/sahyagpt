@@ -722,7 +722,7 @@
         .gallery-section {
             width: 100%;
             min-height: 100vh;
-            padding: 24px 16px;
+            padding: 0; /* No padding - images right next to edges */
             padding-bottom: 200px; /* Space for chat input */
             box-sizing: border-box;
             overflow-x: hidden;
@@ -730,10 +730,8 @@
         }
         .gallery-header {
             margin-bottom: 20px;
-            padding: 0;
-            max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 24px 16px 0;
+            max-width: none;
         }
         .gallery-title {
             font-size: 1.1rem;
@@ -2182,20 +2180,22 @@
                 if (!galleryGrid) return;
                 
                 // Sample demo images (in production, these would come from a server)
+                // Heights scaled proportionally for 250px width (previously 312px)
+                const scaleFactor = 250 / 312;
                 const demoImages = [
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6.mp4', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/5a6b543a-dd89-4fdc-984b-beb65c0de25c_thumbnail.jpg', height: 465 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11.mp4', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e.mp4', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/a7f8ec7f-0e99-4d57-baf5-eb7aa049ca34_thumbnail.jpg', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/09926fc2-8e63-440e-a7fc-c0ba7d9a213b_thumbnail.jpg', height: 173 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/d6be8b7b-a399-422e-85c7-9a0083811b0e_thumbnail.jpg', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/ba94a4eb-7348-4b66-9acf-3a784b39eeed_thumbnail.jpg', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/4f241ddd-3926-47c9-b320-0f62d2c6488d_thumbnail.jpg', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7c51a38c-1ccf-49ea-9182-4f7542227083_thumbnail.jpg', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7a373788-8343-4351-83f7-f5f9fd8af9ef_thumbnail.jpg', height: 210 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/836d3f98-c264-4af7-a461-2716e780065f_thumbnail.jpg', height: 463 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/23c46f19-6171-4358-8b5f-172268fcffc2_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6.mp4', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/5a6b543a-dd89-4fdc-984b-beb65c0de25c_thumbnail.jpg', height: Math.round(465 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11.mp4', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e.mp4', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/a7f8ec7f-0e99-4d57-baf5-eb7aa049ca34_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/09926fc2-8e63-440e-a7fc-c0ba7d9a213b_thumbnail.jpg', height: Math.round(173 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/d6be8b7b-a399-422e-85c7-9a0083811b0e_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/ba94a4eb-7348-4b66-9acf-3a784b39eeed_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/4f241ddd-3926-47c9-b320-0f62d2c6488d_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7c51a38c-1ccf-49ea-9182-4f7542227083_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7a373788-8343-4351-83f7-f5f9fd8af9ef_thumbnail.jpg', height: Math.round(210 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/836d3f98-c264-4af7-a461-2716e780065f_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/23c46f19-6171-4358-8b5f-172268fcffc2_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
                 ];
                 
                 // Add user's own creations from chat history
@@ -2206,7 +2206,7 @@
                     })
                     .map(conv => {
                         const assistantMsg = conv.messages.find(m => m.role === 'assistant');
-                        return { url: assistantMsg.url, height: 400 }; // Default height for user images
+                        return { url: assistantMsg.url, height: 320 }; // Default height for user images (scaled)
                     });
                 
                 const allCreations = [...userCreations, ...demoImages];
@@ -2226,36 +2226,39 @@
                     return;
                 }
                 
-                // Calculate masonry layout - FORCE 4 columns
-                const itemWidth = 312;
-                const gap = 16;
-                const targetColumns = 4;
+                // Calculate masonry layout - FORCE 5 columns
+                const itemWidth = 250; // Reduced from 312 to fit 5 columns
+                const gap = 1; // 1px gap as requested
+                const targetColumns = 5;
                 
                 // Get the actual visible container width (accounting for sidebar)
                 const sidebar = document.getElementById('sidebar');
                 const sidebarWidth = sidebar && !sidebar.classList.contains('collapsed') ? 280 : 0;
                 const containerWidth = window.innerWidth - sidebarWidth;
                 
-                // Check if 4 columns can fit
-                const requiredWidth4Col = targetColumns * itemWidth + (targetColumns - 1) * gap + 64; // 64px padding
+                // Calculate 5 column layout
                 let maxColumns = targetColumns;
+                const totalItemsWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
                 
-                if (containerWidth < requiredWidth4Col) {
-                    // Can't fit 4 columns, try 3
-                    const requiredWidth3Col = 3 * itemWidth + 2 * gap + 48;
-                    if (containerWidth < requiredWidth3Col) {
-                        // Can't fit 3, try 2
-                        const requiredWidth2Col = 2 * itemWidth + gap + 32;
-                        maxColumns = containerWidth < requiredWidth2Col ? 1 : 2;
-                    } else {
+                // If 5 columns don't fit, reduce
+                if (containerWidth < totalItemsWidth) {
+                    maxColumns = 4;
+                    const total4 = 4 * itemWidth + 3 * gap;
+                    if (containerWidth < total4) {
                         maxColumns = 3;
+                        const total3 = 3 * itemWidth + 2 * gap;
+                        if (containerWidth < total3) {
+                            maxColumns = 2;
+                            const total2 = 2 * itemWidth + gap;
+                            if (containerWidth < total2) {
+                                maxColumns = 1;
+                            }
+                        }
                     }
                 }
                 
-                // Distribute items evenly across the full width
-                const totalItemsWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
-                const extraSpace = Math.max(0, containerWidth - totalItemsWidth - 64); // 64px for padding
-                const startLeft = (extraSpace / 2) + 16; // 16px base padding
+                // Left side right next to sidebar (0px), right side 1px gap
+                const startLeft = 0;
                 
                 const columnHeights = new Array(maxColumns).fill(0);
                 

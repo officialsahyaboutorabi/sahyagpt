@@ -2,7 +2,7 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
-## [1.7.1] - 2026-03-31
+## [1.2.8] - 2026-03-31
 
 ### Added
 

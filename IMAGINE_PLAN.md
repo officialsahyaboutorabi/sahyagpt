@@ -164,7 +164,7 @@ border: 1px solid var(--border);
 - [x] Translation support (en, ru)
 - [x] Invisible scrollbars throughout
 
-#### Phase 6: Persistence ✅ COMPLETED (v1.7.1)
+#### Phase 6: Persistence ✅ COMPLETED (v1.2.8)
 - [x] IndexedDB integration for image storage
 - [x] Images persist across page refreshes
 - [x] Gallery shows user images after reload
@@ -192,7 +192,7 @@ Instead of simple results grid, imagine.html now uses:
 - Smooth CSS transitions on resize
 - 1px gaps between items
 
-#### IndexedDB Image Storage (v1.7.1)
+#### IndexedDB Image Storage (v1.2.8)
 - **Problem**: localStorage quota (~5-10MB) too small for base64 images
 - **Solution**: IndexedDB for persistent image storage
   - Database: `ImagineImagesDB`

@@ -1927,13 +1927,16 @@
                 // Image settings
                 this.imageProvider = localStorage.getItem('image_provider') || 'ollama';
                 this.ollamaUrl = localStorage.getItem('ollama_url') || 'http://localhost:11434';
-                this.ollamaImageModel = localStorage.getItem('ollama_image_model') || 'x/z-image-turbo';
+                // Allow any x/z-image-turbo* or x/flux2-klein* variant
+                const savedImageModel = localStorage.getItem('ollama_image_model');
+                this.ollamaImageModel = savedImageModel || '';
                 this.hfEndpointUrl = localStorage.getItem('hf_endpoint_url') || '';
                 
                 // Video settings
                 this.videoProvider = localStorage.getItem('video_provider') || 'ollama';
                 this.ollamaVideoUrl = localStorage.getItem('ollama_video_url') || 'http://localhost:11434';
-                this.ollamaVideoModel = localStorage.getItem('ollama_video_model') || 'x/z-image-turbo';
+                const savedVideoModel = localStorage.getItem('ollama_video_model');
+                this.ollamaVideoModel = savedVideoModel || '';
                 this.apiKey = localStorage.getItem('huggingface_api_key') || '';
                 this.videoModel = localStorage.getItem('huggingface_video_model') || 'stabilityai/stable-video-diffusion';
             }
@@ -2216,6 +2219,18 @@
                 try {
                     // Ollama API for local image generation
                     // Supports x/z-image-turbo and x/flux2-klein models
+                    
+                    // If no model is selected, try to fetch and use the first available compatible model
+                    if (!this.ollamaImageModel) {
+                        const models = await this.fetchOllamaModels();
+                        const compatible = this.filterCompatibleModels(models);
+                        if (compatible.length > 0) {
+                            this.ollamaImageModel = compatible[0].name || compatible[0].model;
+                        } else {
+                            throw new Error('No compatible Ollama models found. Please install x/z-image-turbo or x/flux2-klein: ollama pull x/z-image-turbo');
+                        }
+                    }
+                    
                     const dimensions = this.getAspectRatioDimensions(this.currentAspectRatio);
                     
                     const response = await fetch(`${this.ollamaUrl}/api/generate`, {
@@ -2260,7 +2275,7 @@
                     
                     if (!imageUrl) {
                         console.error('Ollama response:', data);
-                        throw new Error('No image data found in Ollama response. Make sure you have pulled the model: ollama pull ' + this.ollamaImageModel);
+                        throw new Error('No image data found in Ollama response. Make sure you have a compatible model pulled. Run: ollama pull x/z-image-turbo or ollama pull x/flux2-klein');
                     }
                     
                     this.removeGeneratingPlaceholder();
@@ -2552,19 +2567,66 @@
                 this.showToast('Settings saved successfully!', 'success');
             }
             
-            openApiKeyModal() {
+            async fetchOllamaModels() {
+                try {
+                    const response = await fetch(`${this.ollamaUrl}/api/tags`);
+                    if (!response.ok) throw new Error('Failed to fetch models');
+                    const data = await response.json();
+                    return data.models || [];
+                } catch (error) {
+                    console.error('Error fetching Ollama models:', error);
+                    return [];
+                }
+            }
+            
+            filterCompatibleModels(models) {
+                // Compatible model patterns - models that start with these
+                const compatiblePatterns = ['x/z-image-turbo', 'x/flux2-klein'];
+                return models.filter(model => {
+                    const name = model.name || model.model || '';
+                    return compatiblePatterns.some(pattern => name.startsWith(pattern));
+                });
+            }
+            
+            updateOllamaModelDropdowns(models) {
+                const compatibleModels = this.filterCompatibleModels(models);
+                const imageSelect = document.getElementById('ollamaModelSelect');
+                const videoSelect = document.getElementById('ollamaVideoModelSelect');
+                
+                const generateOptions = (models, currentValue) => {
+                    if (models.length === 0) {
+                        return '<option value="">No compatible models found</option>';
+                    }
+                    return models.map(m => {
+                        const name = m.name || m.model;
+                        const isSelected = name === currentValue ? 'selected' : '';
+                        return `<option value="${name}" ${isSelected}>${name}</option>`;
+                    }).join('');
+                };
+                
+                if (imageSelect) {
+                    imageSelect.innerHTML = generateOptions(compatibleModels, this.ollamaImageModel);
+                }
+                if (videoSelect) {
+                    videoSelect.innerHTML = generateOptions(compatibleModels, this.ollamaVideoModel);
+                }
+            }
+            
+            async openApiKeyModal() {
                 document.getElementById('apiKeyModal').classList.add('active');
                 
                 // Set current values
                 document.getElementById('imageProviderSelect').value = this.imageProvider;
                 document.getElementById('ollamaUrlInput').value = this.ollamaUrl;
-                document.getElementById('ollamaModelSelect').value = this.ollamaImageModel;
                 document.getElementById('hfEndpointUrl').value = this.hfEndpointUrl;
                 document.getElementById('videoProviderSelect').value = this.videoProvider;
                 document.getElementById('ollamaVideoUrlInput').value = this.ollamaVideoUrl;
-                document.getElementById('ollamaVideoModelSelect').value = this.ollamaVideoModel;
                 document.getElementById('apiKeyInput').value = this.apiKey;
                 document.getElementById('videoModelSelect').value = this.videoModel;
+                
+                // Fetch and populate Ollama models
+                const models = await this.fetchOllamaModels();
+                this.updateOllamaModelDropdowns(models);
                 
                 // Show/hide appropriate fields
                 this.onProviderChange();

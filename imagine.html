@@ -2216,6 +2216,10 @@
             }
             
             async generateImageWithOllama(prompt) {
+                // Create a placeholder entry for tracking progress
+                const placeholderId = 'generating-' + Date.now();
+                this.addGeneratingPlaceholderWithId(placeholderId, prompt);
+                
                 try {
                     // Ollama API for local image generation
                     // Supports x/z-image-turbo and x/flux2-klein models
@@ -2255,21 +2259,28 @@
                     }
                     
                     const data = await response.json();
+                    console.log('Ollama response:', data);
                     
                     // Ollama returns base64-encoded image in the response
                     let imageUrl = null;
                     
-                    if (data.images && data.images.length > 0) {
-                        // If images array is returned
+                    // Check for 'image' field first (newer Ollama versions)
+                    if (data.image && typeof data.image === 'string' && data.image.length > 100) {
+                        imageUrl = `data:image/png;base64,${data.image}`;
+                    }
+                    // Check for images array
+                    else if (data.images && data.images.length > 0) {
                         imageUrl = `data:image/png;base64,${data.images[0]}`;
-                    } else if (data.response && data.response.includes('data:image')) {
-                        // If image is embedded in response
+                    }
+                    // Check if response field contains image data
+                    else if (data.response && data.response.includes('data:image')) {
                         const base64Match = data.response.match(/data:image\/[^;]+;base64,([^"']+)/);
                         if (base64Match) {
                             imageUrl = base64Match[0];
                         }
-                    } else if (typeof data.response === 'string' && data.response.length > 100) {
-                        // Assume response is base64 image data
+                    }
+                    // Check if response is base64 image data directly
+                    else if (typeof data.response === 'string' && data.response.length > 100) {
                         imageUrl = `data:image/png;base64,${data.response}`;
                     }
                     
@@ -2278,8 +2289,7 @@
                         throw new Error('No image data found in Ollama response. Make sure you have a compatible model pulled. Run: ollama pull x/z-image-turbo or ollama pull x/flux2-klein');
                     }
                     
-                    this.removeGeneratingPlaceholder();
-                    this.addResult({
+                    this.replaceGeneratingWithResult(placeholderId, {
                         type: 'image',
                         url: imageUrl,
                         prompt: prompt,
@@ -2293,8 +2303,42 @@
                 } catch (error) {
                     console.error('Ollama image generation failed:', error);
                     this.showToast(`Ollama failed: ${error.message}`, 'error');
-                    this.removeGeneratingPlaceholder();
-                    // Don't fall back - let user know Ollama isn't working
+                    this.removeGeneratingById(placeholderId);
+                }
+            }
+            
+            addGeneratingPlaceholderWithId(id, prompt) {
+                const result = {
+                    id: id,
+                    type: 'image',
+                    status: 'generating',
+                    prompt: prompt,
+                    aspectRatio: this.currentAspectRatio,
+                    timestamp: Date.now(),
+                    model: this.ollamaImageModel || 'generating...'
+                };
+                this.generatedResults.unshift(result);
+                this.renderResults();
+                this.updateHistory();
+                return id;
+            }
+            
+            replaceGeneratingWithResult(id, result) {
+                const index = this.generatedResults.findIndex(r => r.id === id);
+                if (index !== -1) {
+                    this.generatedResults[index] = { ...result, id: id };
+                    this.saveResults();
+                    this.renderResults();
+                    this.updateHistory();
+                }
+            }
+            
+            removeGeneratingById(id) {
+                const index = this.generatedResults.findIndex(r => r.id === id);
+                if (index !== -1) {
+                    this.generatedResults.splice(index, 1);
+                    this.renderResults();
+                    this.updateHistory();
                 }
             }
             
@@ -2411,6 +2455,28 @@
             createResultCard(result, index) {
                 const date = new Date(result.timestamp).toLocaleString();
                 const aspectRatioClass = result.type === 'video' ? 'result-video' : 'result-media';
+                
+                // Check if this is a generating placeholder
+                if (result.status === 'generating') {
+                    return `
+                        <div class="result-card generating" id="${result.id}">
+                            <div class="generating-placeholder" style="aspect-ratio: ${result.aspectRatio.replace(':', '/')}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+                                <div class="generating-spinner"></div>
+                                <div class="generating-text" style="font-size: 0.9rem; color: var(--text-secondary); text-align: center;">
+                                    Generating with ${this.escapeHtml(result.model || 'Ollama')}...<br>
+                                    <span style="font-size: 0.75rem; opacity: 0.7;">${this.escapeHtml(result.prompt.substring(0, 50))}${result.prompt.length > 50 ? '...' : ''}</span>
+                                </div>
+                            </div>
+                            <div class="result-info">
+                                <div class="result-prompt">${this.escapeHtml(result.prompt)}</div>
+                                <div class="result-meta">
+                                    <span>${date}</span>
+                                    <span>${result.aspectRatio}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
                 
                 if (result.type === 'video') {
                     return `

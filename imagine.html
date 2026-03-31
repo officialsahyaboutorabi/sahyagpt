@@ -743,6 +743,14 @@
         .gallery-masonry {
             position: relative;
             width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1px;
+        }
+        .gallery-masonry::after {
+            content: '';
+            flex: 1 1 250px;
+            min-width: 250px;
         }
         .gallery-item {
             width: 312px;
@@ -2179,24 +2187,55 @@
                 const galleryGrid = document.getElementById('galleryGrid');
                 if (!galleryGrid) return;
                 
+                // Calculate masonry layout first to get itemWidth
+                const targetColumns = 5;
+                const gap = 1; // 1px gap
+                
+                // Get the actual visible container width (accounting for sidebar)
+                const sidebar = document.getElementById('sidebar');
+                const sidebarWidth = sidebar && !sidebar.classList.contains('collapsed') ? 280 : 0;
+                const containerWidth = window.innerWidth - sidebarWidth;
+                
+                // Calculate item width to fill entire width: (containerWidth - (columns-1)*gap) / columns
+                let maxColumns = targetColumns;
+                let itemWidth = Math.floor((containerWidth - (maxColumns - 1) * gap) / maxColumns);
+                
+                // If calculated width is too small, reduce columns
+                if (itemWidth < 200) {
+                    maxColumns = 4;
+                    itemWidth = Math.floor((containerWidth - (maxColumns - 1) * gap) / maxColumns);
+                    if (itemWidth < 200) {
+                        maxColumns = 3;
+                        itemWidth = Math.floor((containerWidth - (maxColumns - 1) * gap) / maxColumns);
+                        if (itemWidth < 200) {
+                            maxColumns = 2;
+                            itemWidth = Math.floor((containerWidth - (maxColumns - 1) * gap) / maxColumns);
+                            if (itemWidth < 200) {
+                                maxColumns = 1;
+                                itemWidth = containerWidth;
+                            }
+                        }
+                    }
+                }
+                
                 // Sample demo images (in production, these would come from a server)
-                // Heights scaled proportionally for 250px width (previously 312px)
-                const scaleFactor = 250 / 312;
+                // Heights scaled proportionally for dynamic width
+                const baseWidth = 312;
                 const demoImages = [
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6.mp4', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/5a6b543a-dd89-4fdc-984b-beb65c0de25c_thumbnail.jpg', height: Math.round(465 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11.mp4', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e.mp4', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/a7f8ec7f-0e99-4d57-baf5-eb7aa049ca34_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/09926fc2-8e63-440e-a7fc-c0ba7d9a213b_thumbnail.jpg', height: Math.round(173 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/d6be8b7b-a399-422e-85c7-9a0083811b0e_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/ba94a4eb-7348-4b66-9acf-3a784b39eeed_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/4f241ddd-3926-47c9-b320-0f62d2c6488d_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7c51a38c-1ccf-49ea-9182-4f7542227083_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7a373788-8343-4351-83f7-f5f9fd8af9ef_thumbnail.jpg', height: Math.round(210 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/836d3f98-c264-4af7-a461-2716e780065f_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/23c46f19-6171-4358-8b5f-172268fcffc2_thumbnail.jpg', height: Math.round(463 * scaleFactor) },
-                ];
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6.mp4', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/5a6b543a-dd89-4fdc-984b-beb65c0de25c_thumbnail.jpg', aspectRatio: 465/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11.mp4', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e.mp4', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/a7f8ec7f-0e99-4d57-baf5-eb7aa049ca34_thumbnail.jpg', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/09926fc2-8e63-440e-a7fc-c0ba7d9a213b_thumbnail.jpg', aspectRatio: 173/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/d6be8b7b-a399-422e-85c7-9a0083811b0e_thumbnail.jpg', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/ba94a4eb-7348-4b66-9acf-3a784b39eeed_thumbnail.jpg', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/4f241ddd-3926-47c9-b320-0f62d2c6488d_thumbnail.jpg', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7c51a38c-1ccf-49ea-9182-4f7542227083_thumbnail.jpg', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7a373788-8343-4351-83f7-f5f9fd8af9ef_thumbnail.jpg', aspectRatio: 210/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/836d3f98-c264-4af7-a461-2716e780065f_thumbnail.jpg', aspectRatio: 463/312 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/23c46f19-6171-4358-8b5f-172268fcffc2_thumbnail.jpg', aspectRatio: 463/312 },
+                ].map(img => ({...img, height: Math.round(itemWidth * img.aspectRatio)}));
                 
                 // Add user's own creations from chat history
                 const userCreations = this.chatHistory
@@ -2206,7 +2245,7 @@
                     })
                     .map(conv => {
                         const assistantMsg = conv.messages.find(m => m.role === 'assistant');
-                        return { url: assistantMsg.url, height: 320 }; // Default height for user images (scaled)
+                        return { url: assistantMsg.url, height: Math.round(itemWidth * 1.2) }; // Default aspect ratio for user images
                     });
                 
                 const allCreations = [...userCreations, ...demoImages];
@@ -2226,50 +2265,18 @@
                     return;
                 }
                 
-                // Calculate masonry layout - FORCE 5 columns
-                const itemWidth = 250; // Reduced from 312 to fit 5 columns
-                const gap = 1; // 1px gap as requested
-                const targetColumns = 5;
-                
-                // Get the actual visible container width (accounting for sidebar)
-                const sidebar = document.getElementById('sidebar');
-                const sidebarWidth = sidebar && !sidebar.classList.contains('collapsed') ? 280 : 0;
-                const containerWidth = window.innerWidth - sidebarWidth;
-                
-                // Calculate 5 column layout
-                let maxColumns = targetColumns;
-                const totalItemsWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
-                
-                // If 5 columns don't fit, reduce
-                if (containerWidth < totalItemsWidth) {
-                    maxColumns = 4;
-                    const total4 = 4 * itemWidth + 3 * gap;
-                    if (containerWidth < total4) {
-                        maxColumns = 3;
-                        const total3 = 3 * itemWidth + 2 * gap;
-                        if (containerWidth < total3) {
-                            maxColumns = 2;
-                            const total2 = 2 * itemWidth + gap;
-                            if (containerWidth < total2) {
-                                maxColumns = 1;
-                            }
-                        }
-                    }
-                }
-                
-                // Left side right next to sidebar (0px), right side 1px gap
+                // Layout configuration (already calculated above)
                 const startLeft = 0;
-                
                 const columnHeights = new Array(maxColumns).fill(0);
                 
                 galleryGrid.innerHTML = allCreations.map((item, index) => {
-                    // Find shortest column
-                    const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
-                    const left = startLeft + shortestCol * (itemWidth + gap);
-                    const top = columnHeights[shortestCol];
+                    // Assign to column based on index (modulo) to keep items in same column when resizing
+                    const columnIndex = index % maxColumns;
+                    const left = startLeft + columnIndex * (itemWidth + gap);
+                    const top = columnHeights[columnIndex];
                     
                     // Update column height
-                    columnHeights[shortestCol] += item.height + gap;
+                    columnHeights[columnIndex] += item.height + gap;
                     
                     const videoHtml = item.video ? `
                         <video src="${item.video}" autoplay loop playsinline poster="${item.url}" 
@@ -2278,9 +2285,9 @@
                     ` : '';
                     
                     return `
-                        <div role="listitem" class="gallery-item" style="width: ${itemWidth}px; position: absolute; top: ${top}px; left: ${left}px;">
+                        <div role="listitem" class="gallery-item" style="width: ${itemWidth}px; position: absolute; top: ${top}px; left: ${left}px; transition: left 0.3s ease, width 0.3s ease;">
                             <div class="gallery-card" onclick="imagineApp.openImagePreview('${item.url}')">
-                                <img src="${item.url}" alt="Generated image" style="width: ${itemWidth}px; height: ${item.height}px;">
+                                <img src="${item.url}" alt="Generated image" style="width: ${itemWidth}px; height: ${item.height}px; transition: width 0.3s ease;">
                                 ${videoHtml}
                                 <div class="gallery-overlay"></div>
                                 <div class="gallery-actions">

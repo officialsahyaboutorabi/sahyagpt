@@ -2536,8 +2536,6 @@
                 this.isGenerating = true;
                 this.updateGenerateButton();
                 
-                this.addGeneratingPlaceholder();
-                
                 try {
                     if (this.currentMode === 'image') {
                         await this.generateImage(prompt);
@@ -2547,7 +2545,6 @@
                 } catch (error) {
                     console.error('Generation error:', error);
                     this.showToast(`Generation failed: ${error.message}`, 'error');
-                    this.removeGeneratingPlaceholder();
                 } finally {
                     this.isGenerating = false;
                     this.updateGenerateButton();
@@ -2768,20 +2765,12 @@
             }
             
             addGeneratingPlaceholder() {
-                const grid = document.getElementById('resultsGrid');
-                const placeholder = document.createElement('div');
-                placeholder.className = 'result-card generating';
-                placeholder.id = 'generatingPlaceholder';
-                placeholder.innerHTML = `
-                    <div class="generating-placeholder" style="aspect-ratio: ${this.currentAspectRatio.replace(':', '/')}">
-                        <div class="generating-spinner"></div>
-                        <div class="generating-text">Generating ${this.currentMode}...</div>
-                    </div>
-                `;
-                grid.insertBefore(placeholder, grid.firstChild);
+                // This method is deprecated - use addGeneratingPlaceholderWithId instead
+                // Keeping for backwards compatibility, does nothing now
             }
             
             removeGeneratingPlaceholder() {
+                // This method is deprecated - use removeGeneratingById instead
                 const placeholder = document.getElementById('generatingPlaceholder');
                 if (placeholder) placeholder.remove();
             }

@@ -722,10 +722,11 @@
         .gallery-section {
             width: 100%;
             min-height: 100vh;
-            padding: 24px 32px;
+            padding: 24px 16px;
             padding-bottom: 200px; /* Space for chat input */
             box-sizing: border-box;
             overflow-x: hidden;
+            transition: width 0.3s ease;
         }
         .gallery-header {
             margin-bottom: 20px;
@@ -2225,26 +2226,36 @@
                     return;
                 }
                 
-                // Calculate masonry layout - FORCE 4 columns always on desktop
+                // Calculate masonry layout - FORCE 4 columns
                 const itemWidth = 312;
                 const gap = 16;
                 const targetColumns = 4;
-                // Get actual container width
-                const containerWidth = galleryGrid.parentElement ? galleryGrid.parentElement.clientWidth : (window.innerWidth - 280);
                 
-                // Always 4 columns on desktop, only reduce on smaller screens
+                // Get the actual visible container width (accounting for sidebar)
+                const sidebar = document.getElementById('sidebar');
+                const sidebarWidth = sidebar && !sidebar.classList.contains('collapsed') ? 280 : 0;
+                const containerWidth = window.innerWidth - sidebarWidth;
+                
+                // Check if 4 columns can fit
+                const requiredWidth4Col = targetColumns * itemWidth + (targetColumns - 1) * gap + 64; // 64px padding
                 let maxColumns = targetColumns;
-                if (containerWidth < 750) {
-                    maxColumns = 1;
-                } else if (containerWidth < 1050) {
-                    maxColumns = 2;
+                
+                if (containerWidth < requiredWidth4Col) {
+                    // Can't fit 4 columns, try 3
+                    const requiredWidth3Col = 3 * itemWidth + 2 * gap + 48;
+                    if (containerWidth < requiredWidth3Col) {
+                        // Can't fit 3, try 2
+                        const requiredWidth2Col = 2 * itemWidth + gap + 32;
+                        maxColumns = containerWidth < requiredWidth2Col ? 1 : 2;
+                    } else {
+                        maxColumns = 3;
+                    }
                 }
-                // Note: Removed the 3-column threshold - now only 4, 2, or 1 columns
                 
                 // Distribute items evenly across the full width
                 const totalItemsWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
-                const extraSpace = Math.max(0, containerWidth - totalItemsWidth);
-                const startLeft = extraSpace / 2;
+                const extraSpace = Math.max(0, containerWidth - totalItemsWidth - 64); // 64px for padding
+                const startLeft = (extraSpace / 2) + 16; // 16px base padding
                 
                 const columnHeights = new Array(maxColumns).fill(0);
                 
@@ -3055,6 +3066,11 @@
                     sidebar.classList.toggle('collapsed');
                     document.getElementById('mainContent').classList.toggle('full-width');
                 }
+                
+                // Recalculate gallery layout after sidebar transition
+                setTimeout(() => {
+                    this.loadGallery();
+                }, 350);
             }
             
             closeSidebar() {

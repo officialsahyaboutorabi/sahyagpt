@@ -155,6 +155,7 @@ border: 1px solid var(--border);
 - [x] Regenerate option
 - [x] Real-time progress indication
 - [x] History sidebar integration
+- [x] Individual history deletion with trash button
 
 #### Phase 5: Integration ✅ COMPLETED
 - [x] Link from main app sidebar
@@ -162,6 +163,13 @@ border: 1px solid var(--border);
 - [x] Consistent navigation with index.html
 - [x] Translation support (en, ru)
 - [x] Invisible scrollbars throughout
+
+#### Phase 6: Persistence ✅ COMPLETED (v1.7.1)
+- [x] IndexedDB integration for image storage
+- [x] Images persist across page refreshes
+- [x] Gallery shows user images after reload
+- [x] Chat session displays images from IndexedDB
+- [x] Dual storage strategy (localStorage + IndexedDB)
 
 ### 8. Architecture Changes (March 31, 2026)
 
@@ -183,6 +191,26 @@ Instead of simple results grid, imagine.html now uses:
 - Dynamic column calculation (5→1 based on width)
 - Smooth CSS transitions on resize
 - 1px gaps between items
+
+#### IndexedDB Image Storage (v1.7.1)
+- **Problem**: localStorage quota (~5-10MB) too small for base64 images
+- **Solution**: IndexedDB for persistent image storage
+  - Database: `ImagineImagesDB`
+  - Object store: `images` with schema `{ id, url, timestamp }`
+  - Typical quota: 50MB+ (varies by browser)
+  - Images persist across page refreshes
+  - Gallery displays user creations after browser restart
+- **Dual Storage Strategy**:
+  - `chatHistory` in localStorage (metadata only, no image URLs)
+  - `galleryImages` in localStorage (metadata, stripped URLs)
+  - Actual image data in IndexedDB
+  - In-memory `imageDataStore` Map for runtime caching
+- **Methods**:
+  - `initImageDB()` - Initialize on app start
+  - `saveImageToDB(id, url)` - Persist after generation
+  - `getImageFromDB(id)` - Retrieve for display
+  - `loadAllImagesFromDB()` - Load all on gallery render
+  - `deleteImageFromDB(id)` - Cleanup (future admin feature)
 
 ## Technical Notes
 

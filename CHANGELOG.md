@@ -2,6 +2,33 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.7.1] - 2026-03-31
+
+### Added
+
+#### IndexedDB Image Storage (imagine.html)
+- **Persistent image storage** across page refreshes
+  - Uses IndexedDB (`ImagineImagesDB`) for storing generated images
+  - Base64 images too large for localStorage now persist properly
+  - Images display in chat session after page reload
+  - Gallery shows user creations even after browser restart
+  - Automatic fallback if IndexedDB is unavailable
+
+#### History Management (imagine.html)
+- **Individual history deletion** with trash icon on hover
+  - Delete button matches index.html styling (26×26px, red hover)
+  - Removes history entry but keeps image in gallery
+  - Confirmation toast on deletion
+
+### Fixed
+
+#### Image Display Issues (imagine.html)
+- **Images now display correctly** in chat session after generation
+- **Gallery shows user images** alongside demo images
+- **Fixed ID mismatch** between chat session and storage
+
+---
+
 ## [1.7.0] - 2026-03-31
 
 ### Added

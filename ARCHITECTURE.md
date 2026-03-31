@@ -605,7 +605,9 @@ ImagineApp (Image/Video Generation Controller)
 │   ├── imageProvider ('ollama' | 'hf_endpoint')
 │   ├── ollamaUrl - Local Ollama endpoint
 │   ├── ollamaImageModel - Selected model
-│   └── hfEndpointUrl - HuggingFace endpoint
+│   ├── hfEndpointUrl - HuggingFace endpoint
+│   ├── imageDataStore (Map) - In-memory image cache
+│   └── galleryImages[] - Persisted gallery items
 ├── UI Components
 │   ├── showChatSession() - Display chat conversation
 │   ├── showGallery() - Display masonry gallery
@@ -623,7 +625,14 @@ ImagineApp (Image/Video Generation Controller)
 │   ├── replaceGeneratingWithResult() - Add generated image
 │   ├── removeGeneratingById() - Cleanup on error
 │   ├── updateHistory() - Sidebar history list
-│   └── loadFromHistory() - Open chat from history
+│   ├── loadFromHistory() - Open chat from history
+│   └── deleteHistoryItem() - Remove history entry
+├── IndexedDB Storage
+│   ├── initImageDB() - Initialize image database
+│   ├── saveImageToDB() - Persist image to IndexedDB
+│   ├── getImageFromDB() - Retrieve image from IndexedDB
+│   ├── loadAllImagesFromDB() - Load all images on startup
+│   └── deleteImageFromDB() - Remove image from storage
 └── Utilities
     ├── saveSettings() - Provider settings persistence
     ├── saveChatImage() - Download image
@@ -652,6 +661,22 @@ ImagineApp (Image/Video Generation Controller)
 - **Key**: `chatHistory`
   - All chat sessions with messages
   - Chat metadata (title, timestamp)
+
+- **Key**: `imagine_chat_history` (imagine.html)
+  - Generation history with prompts and metadata
+  - Image URLs are stripped (stored in IndexedDB instead)
+
+- **Key**: `imagine_gallery_images` (imagine.html)
+  - Gallery image metadata
+  - Actual image data stored in IndexedDB
+
+### IndexedDB Storage (imagine.html)
+- **Database**: `ImagineImagesDB`
+  - Object store: `images`
+  - Schema: `{ id, url, timestamp }`
+  - Used for storing base64-encoded generated images
+  - Persists across page refreshes
+  - Quota much larger than localStorage (typically 50MB+)
 
 ### Session State
 - `abortController`: For cancelling streams

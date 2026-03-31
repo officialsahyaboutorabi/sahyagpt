@@ -530,12 +530,262 @@
         }
         .clear-results-btn:hover { border-color: var(--error); color: var(--error); }
         
-        /* Results Grid */
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+        /* Chat Section */
+        .chat-section {
+            margin-bottom: 32px;
         }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .chat-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .clear-chat-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .clear-chat-btn:hover { border-color: var(--error); color: var(--error); }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        /* Chat Messages */
+        .chat-conversation {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .chat-message:last-child {
+            border-bottom: none;
+        }
+        
+        .chat-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .chat-avatar.user {
+            background: var(--accent);
+            color: white;
+        }
+        .chat-avatar.assistant {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        
+        .chat-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .chat-text {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+        
+        .chat-image-container {
+            margin-top: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .chat-image {
+            width: 100%;
+            max-width: 512px;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .chat-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .chat-generating {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 24px;
+            color: var(--text-secondary);
+        }
+        
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .chat-action-btn {
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+        .chat-action-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: rgba(255, 79, 0, 0.1);
+        }
+        
+        /* Gallery Section - Masonry Layout */
+        .gallery-section {
+            margin-bottom: 32px;
+            width: 100%;
+        }
+        .gallery-header {
+            margin-bottom: 20px;
+        }
+        .gallery-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .gallery-masonry {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+        }
+        .gallery-item {
+            width: 312px;
+            position: absolute;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .gallery-card {
+            position: relative;
+            border-radius: 2px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            transform-origin: center;
+        }
+        .gallery-card:hover {
+            transform: scale(1.02);
+        }
+        .gallery-card img {
+            width: 100%;
+            display: block;
+            border-radius: 2px;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .gallery-card video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .gallery-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .gallery-card:hover .gallery-overlay {
+            opacity: 1;
+        }
+        .gallery-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .gallery-card:hover .gallery-actions {
+            opacity: 1;
+        }
+        .gallery-save-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.1s ease;
+        }
+        .gallery-save-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .gallery-save-btn svg {
+            width: 16px;
+            height: 16px;
+            color: white;
+            stroke-width: 2;
+        }
+        .gallery-placeholder {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        @media (max-width: 1400px) {
+            .gallery-masonry { width: calc(312px * 4 + 48px); margin: 0 auto; }
+        }
+        @media (max-width: 1300px) {
+            .gallery-masonry { width: calc(312px * 3 + 32px); margin: 0 auto; }
+        }
+        @media (max-width: 1000px) {
+            .gallery-masonry { width: calc(312px * 2 + 16px); margin: 0 auto; }
+        }
+        @media (max-width: 680px) {
+            .gallery-masonry { width: 312px; margin: 0 auto; }
+        }
+        
+        /* Legacy result card styles for compatibility */
         .result-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -548,68 +798,6 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .result-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            border-color: var(--accent);
-        }
-        .result-media {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: cover;
-            background: var(--bg-secondary);
-        }
-        .result-video {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: var(--bg-secondary);
-        }
-        .result-info {
-            padding: 16px;
-        }
-        .result-prompt {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-        .result-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-        }
-        .result-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .result-action-btn {
-            flex: 1;
-            padding: 10px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-family: inherit;
-        }
-        .result-action-btn:hover {
-            border-color: var(--accent);
-            color: var(--text-primary);
-            background: rgba(255, 79, 0, 0.1);
-        }
-        .result-action-btn svg { width: 14px; height: 14px; }
         
         /* Loading State */
         .generating-placeholder {
@@ -1121,9 +1309,10 @@
             height: 0;
         }
 
-        /* Hide placeholder when input is focused */
+        /* Hide placeholder when input is focused OR has content */
         .text-input:focus p.is-editor-empty:first-child::before,
-        .text-input:focus-within p.is-editor-empty:first-child::before {
+        .text-input:focus-within p.is-editor-empty:first-child::before,
+        .text-input.has-content p.is-editor-empty:first-child::before {
             content: none;
         }
         
@@ -1557,23 +1746,39 @@
             
             <!-- Content Area -->
             <div class="content-area">
-                <!-- Results Section -->
-                <div class="results-section" id="resultsSection" style="display: none;">
-                    <div class="results-header">
-                        <div class="results-title">
+                <!-- Chat Section -->
+                <div class="chat-section" id="chatSection" style="display: none;">
+                    <div class="chat-header">
+                        <div class="chat-title">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                                 <circle cx="8.5" cy="8.5" r="1.5"/>
                                 <polyline points="21 15 16 10 5 21"/>
                             </svg>
-                            <span id="generatedResults">Generated Results</span>
-                            <span class="results-count" id="resultsCount">0</span>
+                            <span id="chatHistoryTitle">Generation History</span>
                         </div>
-                        <button class="clear-results-btn" onclick="imagineApp.clearResults()">
-                            <span id="clearAll">Clear All</span>
+                        <button class="clear-chat-btn" onclick="imagineApp.clearChat()">
+                            <span id="clearChat">Clear All</span>
                         </button>
                     </div>
-                    <div class="results-grid" id="resultsGrid"></div>
+                    <div class="chat-container" id="chatContainer"></div>
+                </div>
+                
+                <!-- Gallery Section - Public Showcase -->
+                <div class="gallery-section" id="gallerySection">
+                    <div class="gallery-header">
+                        <div class="gallery-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <span>Community Creations</span>
+                        </div>
+                    </div>
+                    <div role="list" tabindex="0" class="gallery-masonry" id="galleryGrid">
+                        <div class="gallery-placeholder">Loading community creations...</div>
+                    </div>
                 </div>
                 
                 <!-- Empty State -->
@@ -1921,7 +2126,7 @@
                 this.currentMode = 'image';
                 this.currentAspectRatio = '2:3';
                 this.uploadedImages = [];
-                this.generatedResults = [];
+                this.chatHistory = []; // Chat-like history: [{id, messages: [{role, content, type, url, ...}]}]
                 this.isGenerating = false;
                 
                 // Image settings
@@ -1944,8 +2149,9 @@
             async init() {
                 this.setupEventListeners();
                 this.loadSettings();
-                this.renderResults();
+                this.renderChat();
                 this.updateHistory();
+                this.loadGallery();
                 
                 // Load translations first
                 await this.loadTranslations();
@@ -1956,6 +2162,100 @@
                 
                 // Initialize mode slider position after a short delay to ensure DOM is ready
                 setTimeout(() => this.updateModeSlider(), 50);
+            }
+            
+            async loadGallery() {
+                const galleryGrid = document.getElementById('galleryGrid');
+                if (!galleryGrid) return;
+                
+                // Sample demo images (in production, these would come from a server)
+                const demoImages = [
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6.mp4', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/5a6b543a-dd89-4fdc-984b-beb65c0de25c_thumbnail.jpg', height: 465 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11.mp4', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e.mp4', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/a7f8ec7f-0e99-4d57-baf5-eb7aa049ca34_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/09926fc2-8e63-440e-a7fc-c0ba7d9a213b_thumbnail.jpg', height: 173 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/d6be8b7b-a399-422e-85c7-9a0083811b0e_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/ba94a4eb-7348-4b66-9acf-3a784b39eeed_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/4f241ddd-3926-47c9-b320-0f62d2c6488d_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7c51a38c-1ccf-49ea-9182-4f7542227083_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7a373788-8343-4351-83f7-f5f9fd8af9ef_thumbnail.jpg', height: 210 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/836d3f98-c264-4af7-a461-2716e780065f_thumbnail.jpg', height: 463 },
+                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/23c46f19-6171-4358-8b5f-172268fcffc2_thumbnail.jpg', height: 463 },
+                ];
+                
+                // Add user's own creations from chat history
+                const userCreations = this.chatHistory
+                    .filter(conv => {
+                        const assistantMsg = conv.messages.find(m => m.role === 'assistant');
+                        return assistantMsg && assistantMsg.url;
+                    })
+                    .map(conv => {
+                        const assistantMsg = conv.messages.find(m => m.role === 'assistant');
+                        return { url: assistantMsg.url, height: 400 }; // Default height for user images
+                    });
+                
+                const allCreations = [...userCreations, ...demoImages];
+                
+                if (allCreations.length === 0) {
+                    galleryGrid.innerHTML = `
+                        <div class="gallery-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 12px; opacity: 0.5;">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <div>No community creations yet</div>
+                            <div style="font-size: 0.85rem; margin-top: 8px;">Generate your first image to see it here!</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Calculate masonry layout
+                const itemWidth = 312;
+                const gap = 16;
+                const containerWidth = galleryGrid.clientWidth || 1300;
+                const columns = Math.max(1, Math.floor(containerWidth / (itemWidth + gap)));
+                const columnHeights = new Array(columns).fill(0);
+                
+                galleryGrid.innerHTML = allCreations.map((item, index) => {
+                    // Find shortest column
+                    const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+                    const left = shortestCol * (itemWidth + gap);
+                    const top = columnHeights[shortestCol];
+                    
+                    // Update column height
+                    columnHeights[shortestCol] += item.height + gap;
+                    
+                    const videoHtml = item.video ? `
+                        <video src="${item.video}" autoplay loop playsinline poster="${item.url}" 
+                            style="width: ${itemWidth}px; height: ${item.height}px;" 
+                            class="top-0 left-0 col-start-1 row-start-1 object-cover rounded-[2px] pointer-events-none absolute">Your browser does not support the video tag.</video>
+                    ` : '';
+                    
+                    return `
+                        <div role="listitem" class="gallery-item" style="width: ${itemWidth}px; position: absolute; top: ${top}px; left: ${left}px;">
+                            <div class="gallery-card" onclick="imagineApp.openImagePreview('${item.url}')">
+                                <img src="${item.url}" alt="Generated image" style="width: ${itemWidth}px; height: ${item.height}px;">
+                                ${videoHtml}
+                                <div class="gallery-overlay"></div>
+                                <div class="gallery-actions">
+                                    <button class="gallery-save-btn" onclick="event.stopPropagation(); imagineApp.saveChatImage('${item.url}')" type="button" aria-label="Save">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12.0014 6.339C17.9734 -0.991518 30.0007 10.3 12.0015 21C-6.00236 10.3 6.02624 -0.991426 12.0014 6.339Z" stroke="currentColor"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Set container height
+                const maxHeight = Math.max(...columnHeights);
+                galleryGrid.style.height = maxHeight + 'px';
             }
             
             async loadTranslations() {
@@ -2308,36 +2608,45 @@
             }
             
             addGeneratingPlaceholderWithId(id, prompt) {
-                const result = {
+                // Create a chat-like conversation entry
+                const conversation = {
                     id: id,
-                    type: 'image',
-                    status: 'generating',
-                    prompt: prompt,
-                    aspectRatio: this.currentAspectRatio,
                     timestamp: Date.now(),
-                    model: this.ollamaImageModel || 'generating...'
+                    aspectRatio: this.currentAspectRatio,
+                    model: this.ollamaImageModel || 'generating...',
+                    messages: [
+                        { role: 'user', content: prompt, type: 'text' },
+                        { role: 'assistant', content: '', type: 'image', status: 'generating', url: null }
+                    ]
                 };
-                this.generatedResults.unshift(result);
-                this.renderResults();
+                this.chatHistory.unshift(conversation);
+                this.renderChat();
                 this.updateHistory();
                 return id;
             }
             
             replaceGeneratingWithResult(id, result) {
-                const index = this.generatedResults.findIndex(r => r.id === id);
-                if (index !== -1) {
-                    this.generatedResults[index] = { ...result, id: id };
+                const conversation = this.chatHistory.find(c => c.id === id);
+                if (conversation) {
+                    const assistantMessage = conversation.messages.find(m => m.role === 'assistant');
+                    if (assistantMessage) {
+                        assistantMessage.status = 'complete';
+                        assistantMessage.url = result.url;
+                        assistantMessage.content = 'Image generated successfully';
+                        assistantMessage.model = result.model;
+                    }
                     this.saveResults();
-                    this.renderResults();
+                    this.renderChat();
                     this.updateHistory();
+                    this.loadGallery(); // Update gallery with new image
                 }
             }
             
             removeGeneratingById(id) {
-                const index = this.generatedResults.findIndex(r => r.id === id);
+                const index = this.chatHistory.findIndex(c => c.id === id);
                 if (index !== -1) {
-                    this.generatedResults.splice(index, 1);
-                    this.renderResults();
+                    this.chatHistory.splice(index, 1);
+                    this.renderChat();
                     this.updateHistory();
                 }
             }
@@ -2427,144 +2736,131 @@
             }
             
             addResult(result) {
-                this.generatedResults.unshift(result);
+                // Convert old result format to chat format
+                const conversation = {
+                    id: 'conv-' + Date.now(),
+                    timestamp: result.timestamp || Date.now(),
+                    aspectRatio: result.aspectRatio || '1:1',
+                    model: result.model,
+                    messages: [
+                        { role: 'user', content: result.prompt, type: 'text' },
+                        { role: 'assistant', content: 'Generated image', type: 'image', url: result.url, status: 'complete' }
+                    ]
+                };
+                this.chatHistory.unshift(conversation);
                 this.saveResults();
-                this.renderResults();
+                this.renderChat();
                 this.updateHistory();
+                this.loadGallery();
             }
             
-            renderResults() {
-                const section = document.getElementById('resultsSection');
-                const emptyState = document.getElementById('emptyState');
-                const grid = document.getElementById('resultsGrid');
-                const countEl = document.getElementById('resultsCount');
+            renderChat() {
+                const section = document.getElementById('chatSection');
+                const container = document.getElementById('chatContainer');
                 
-                if (this.generatedResults.length === 0) {
+                if (this.chatHistory.length === 0) {
                     section.style.display = 'none';
-                    emptyState.style.display = 'block';
                     return;
                 }
                 
                 section.style.display = 'block';
-                emptyState.style.display = 'none';
-                countEl.textContent = this.generatedResults.length;
-                
-                grid.innerHTML = this.generatedResults.map((result, index) => this.createResultCard(result, index)).join('');
+                container.innerHTML = this.chatHistory.map((conversation, index) => this.createChatConversation(conversation, index)).join('');
             }
             
-            createResultCard(result, index) {
-                const date = new Date(result.timestamp).toLocaleString();
-                const aspectRatioClass = result.type === 'video' ? 'result-video' : 'result-media';
+            createChatConversation(conversation, index) {
+                const date = new Date(conversation.timestamp).toLocaleString();
                 
-                // Check if this is a generating placeholder
-                if (result.status === 'generating') {
-                    return `
-                        <div class="result-card generating" id="${result.id}">
-                            <div class="generating-placeholder" style="aspect-ratio: ${result.aspectRatio.replace(':', '/')}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
-                                <div class="generating-spinner"></div>
-                                <div class="generating-text" style="font-size: 0.9rem; color: var(--text-secondary); text-align: center;">
-                                    Generating with ${this.escapeHtml(result.model || 'Ollama')}...<br>
-                                    <span style="font-size: 0.75rem; opacity: 0.7;">${this.escapeHtml(result.prompt.substring(0, 50))}${result.prompt.length > 50 ? '...' : ''}</span>
-                                </div>
-                            </div>
-                            <div class="result-info">
-                                <div class="result-prompt">${this.escapeHtml(result.prompt)}</div>
-                                <div class="result-meta">
-                                    <span>${date}</span>
-                                    <span>${result.aspectRatio}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
+                const userMessage = conversation.messages.find(m => m.role === 'user');
+                const assistantMessage = conversation.messages.find(m => m.role === 'assistant');
                 
-                if (result.type === 'video') {
-                    return `
-                        <div class="result-card">
-                            <div class="${aspectRatioClass}" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); display: flex; align-items: center; justify-content: center;">
-                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.5">
-                                    <polygon points="23 7 16 12 23 17 23 7"/>
-                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                                </svg>
-                            </div>
-                            <div class="result-info">
-                                <div class="result-prompt">${this.escapeHtml(result.prompt)}</div>
-                                <div class="result-meta">
-                                    <span>${date}</span>
-                                    <span>${result.aspectRatio}</span>
-                                </div>
-                                <div class="result-actions">
-                                    <button class="result-action-btn" onclick="imagineApp.saveResult(${index})">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                                            <polyline points="17 21 17 13 7 13 7 21"/>
-                                            <polyline points="7 3 7 8 15 8"/>
-                                        </svg>
-                                        Save
-                                    </button>
-                                    <button class="result-action-btn" onclick="imagineApp.redoResult(${index})">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="23 4 23 10 17 10"/>
-                                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                                        </svg>
-                                        Redo
-                                    </button>
+                let assistantHtml = '';
+                if (assistantMessage) {
+                    if (assistantMessage.status === 'generating') {
+                        assistantHtml = `
+                            <div class="chat-message">
+                                <div class="chat-avatar assistant">AI</div>
+                                <div class="chat-content">
+                                    <div class="chat-generating">
+                                        <div class="generating-spinner" style="width: 24px; height: 24px;"></div>
+                                        <span>Generating with ${this.escapeHtml(conversation.model || 'Ollama')}...</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    } else if (assistantMessage.url) {
+                        assistantHtml = `
+                            <div class="chat-message">
+                                <div class="chat-avatar assistant">AI</div>
+                                <div class="chat-content">
+                                    <div class="chat-text">Here's your generated image:</div>
+                                    <div class="chat-image-container">
+                                        <img src="${assistantMessage.url}" alt="Generated image" class="chat-image" onclick="imagineApp.openImagePreview('${assistantMessage.url}')">
+                                    </div>
+                                    <div class="chat-actions">
+                                        <button class="chat-action-btn" onclick="imagineApp.saveChatImage('${assistantMessage.url}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                            </svg>
+                                            Save
+                                        </button>
+                                        <button class="chat-action-btn" onclick="imagineApp.redoConversation(${index})">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="23 4 23 10 17 10"/>
+                                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                            </svg>
+                                            Redo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
                 
                 return `
-                    <div class="result-card">
-                        <img src="${result.url}" alt="${this.escapeHtml(result.prompt)}" class="${aspectRatioClass}" onclick="imagineApp.openImagePreview('${result.url}')">
-                        <div class="result-info">
-                            <div class="result-prompt">${this.escapeHtml(result.prompt)}</div>
-                            <div class="result-meta">
-                                <span>${date}</span>
-                                <span>${result.aspectRatio}</span>
-                            </div>
-                            <div class="result-actions">
-                                <button class="result-action-btn" onclick="imagineApp.saveResult(${index})">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                                        <polyline points="17 21 17 13 7 13 7 21"/>
-                                        <polyline points="7 3 7 8 15 8"/>
-                                    </svg>
-                                    Save
-                                </button>
-                                <button class="result-action-btn" onclick="imagineApp.upscaleResult(${index})">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="15 3 21 3 21 9"/>
-                                        <polyline points="9 21 3 21 3 15"/>
-                                        <line x1="21" y1="3" x2="14" y2="10"/>
-                                        <line x1="3" y1="21" x2="10" y2="14"/>
-                                    </svg>
-                                    Upscale
-                                </button>
-                                <button class="result-action-btn" onclick="imagineApp.redoResult(${index})">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="23 4 23 10 17 10"/>
-                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                                    </svg>
-                                    Redo
-                                </button>
+                    <div class="chat-conversation" id="${conversation.id}">
+                        <div class="chat-message">
+                            <div class="chat-avatar user">You</div>
+                            <div class="chat-content">
+                                <div class="chat-text">${this.escapeHtml(userMessage ? userMessage.content : '')}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">${date} · ${conversation.aspectRatio}</div>
                             </div>
                         </div>
+                        ${assistantHtml}
                     </div>
                 `;
             }
             
+            // Legacy method for compatibility
+            renderResults() {
+                this.renderChat();
+            }
+            
+            // Legacy method for compatibility  
+            createResultCard(result, index) {
+                // Convert old format to new if needed
+                return '';
+            }
+            
             saveResult(index) {
-                const result = this.generatedResults[index];
-                if (result.type === 'image' && result.url) {
+                // Legacy method - redirect to chat save
+                const conversation = this.chatHistory[index];
+                if (conversation) {
+                    const assistantMsg = conversation.messages.find(m => m.role === 'assistant');
+                    if (assistantMsg && assistantMsg.url) {
+                        this.saveChatImage(assistantMsg.url);
+                    }
+                }
+            }
+            
+            saveChatImage(url) {
+                if (url) {
                     const link = document.createElement('a');
-                    link.href = result.url;
+                    link.href = url;
                     link.download = `sahyagpt-${Date.now()}.png`;
                     link.click();
                     this.showToast('Image saved!', 'success');
-                } else {
-                    this.showToast('Save feature coming soon!', 'success');
                 }
             }
             
@@ -2573,18 +2869,32 @@
             }
             
             redoResult(index) {
-                const result = this.generatedResults[index];
-                document.getElementById('textInput').innerText = result.prompt;
-                this.selectAspectRatio(result.aspectRatio);
-                this.generate();
+                const conversation = this.chatHistory[index];
+                if (conversation) {
+                    const userMsg = conversation.messages.find(m => m.role === 'user');
+                    if (userMsg) {
+                        document.getElementById('textInput').innerText = userMsg.content;
+                        this.selectAspectRatio(conversation.aspectRatio);
+                        this.generate();
+                    }
+                }
+            }
+            
+            redoConversation(index) {
+                this.redoResult(index);
             }
             
             clearResults() {
-                if (confirm('Are you sure you want to clear all results?')) {
-                    this.generatedResults = [];
+                this.clearChat();
+            }
+            
+            clearChat() {
+                if (confirm('Are you sure you want to clear all generation history?')) {
+                    this.chatHistory = [];
                     this.saveResults();
-                    this.renderResults();
-                    this.showToast('All results cleared', 'success');
+                    this.renderChat();
+                    this.updateHistory();
+                    this.showToast('All history cleared', 'success');
                 }
             }
             
@@ -2804,8 +3114,8 @@
                 if (emptyText) emptyText.textContent = t.emptyText;
                 
                 // Results section
-                const generatedResults = document.getElementById('generatedResults');
-                if (generatedResults) generatedResults.textContent = t.generatedResults;
+                const chatHistoryTitle = document.getElementById('chatHistoryTitle');
+                if (chatHistoryTitle) chatHistoryTitle.textContent = t.chatHistoryTitle || 'Generation History';
                 
                 const clearAll = document.getElementById('clearAll');
                 if (clearAll) clearAll.textContent = t.clearAll;
@@ -2833,10 +3143,33 @@
             }
             
             loadSettings() {
+                // Try loading new chat format first
+                const savedChat = localStorage.getItem('imagine_chat_history');
+                if (savedChat) {
+                    try {
+                        this.chatHistory = JSON.parse(savedChat);
+                        return;
+                    } catch (e) {
+                        console.error('Failed to load chat history:', e);
+                    }
+                }
+                
+                // Fallback to old format
                 const savedResults = localStorage.getItem('imagine_results');
                 if (savedResults) {
                     try {
-                        this.generatedResults = JSON.parse(savedResults);
+                        const oldResults = JSON.parse(savedResults);
+                        // Convert old format to new chat format
+                        this.chatHistory = oldResults.map(r => ({
+                            id: 'conv-' + Date.now() + Math.random(),
+                            timestamp: r.timestamp,
+                            aspectRatio: r.aspectRatio,
+                            model: r.model,
+                            messages: [
+                                { role: 'user', content: r.prompt, type: 'text' },
+                                { role: 'assistant', content: 'Generated image', type: 'image', url: r.url, status: 'complete' }
+                            ]
+                        }));
                     } catch (e) {
                         console.error('Failed to load saved results:', e);
                     }
@@ -2844,14 +3177,7 @@
             }
             
             saveResults() {
-                const metadata = this.generatedResults.map(r => ({
-                    type: r.type,
-                    prompt: r.prompt,
-                    aspectRatio: r.aspectRatio,
-                    timestamp: r.timestamp,
-                    model: r.model
-                }));
-                localStorage.setItem('imagine_results', JSON.stringify(metadata));
+                localStorage.setItem('imagine_chat_history', JSON.stringify(this.chatHistory));
             }
             
             updateHistory() {
@@ -2862,31 +3188,40 @@
                 const t = this.translations[lang] || this.translations.en || {};
                 const noHistoryText = t.noHistory || 'No history yet';
                 
-                if (this.generatedResults.length === 0) {
+                if (this.chatHistory.length === 0) {
                     container.innerHTML = `<div style="padding: 16px 20px; color: var(--text-secondary); font-size: 0.85rem;">${noHistoryText}</div>`;
                     return;
                 }
                 
-                container.innerHTML = this.generatedResults.slice(0, 5).map((result, index) => `
-                    <div class="nav-item" onclick="imagineApp.loadFromHistory(${index})" style="margin: 0 12px 4px; font-size: 0.85rem;">
+                container.innerHTML = this.chatHistory.slice(0, 5).map((conversation, index) => {
+                    const userMsg = conversation.messages.find(m => m.role === 'user');
+                    const prompt = userMsg ? userMsg.content : 'Unknown';
+                    return `
+                    <div class="nav-item" onclick="imagineApp.loadFromHistory(${index})" style="margin: 0 12px 4px; font-size: 0.85rem; cursor: pointer;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            ${result.type === 'image' 
-                                ? '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'
-                                : '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>'
-                            }
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
                         </svg>
-                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(result.prompt.substring(0, 30))}${result.prompt.length > 30 ? '...' : ''}</span>
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(prompt.substring(0, 30))}${prompt.length > 30 ? '...' : ''}</span>
                     </div>
-                `).join('');
+                `}).join('');
             }
             
             loadFromHistory(index) {
-                const result = this.generatedResults[index];
-                if (result) {
-                    document.getElementById('textInput').innerText = result.prompt;
-                    this.selectAspectRatio(result.aspectRatio);
-                    this.switchMode(result.type);
-                    document.getElementById('textInput').focus();
+                const conversation = this.chatHistory[index];
+                if (conversation) {
+                    const userMsg = conversation.messages.find(m => m.role === 'user');
+                    if (userMsg) {
+                        document.getElementById('textInput').innerText = userMsg.content;
+                        this.selectAspectRatio(conversation.aspectRatio);
+                        document.getElementById('textInput').focus();
+                        // Update input state to hide placeholder
+                        const textInput = document.getElementById('textInput');
+                        if (textInput) {
+                            textInput.classList.add('has-content');
+                        }
+                    }
                 }
             }
             
@@ -3146,23 +3481,32 @@
             const textInput = document.getElementById('textInput');
             const submitBtn = document.getElementById('submitBtn');
 
-            // Function to check input and toggle submit button
-            function updateSubmitButton() {
-                if (!textInput || !submitBtn) return;
+            // Function to check input and toggle submit button and placeholder
+            function updateInputState() {
+                if (!textInput) return;
                 const text = textInput.innerText.trim();
-                const hasContent = text.length > 0 && text !== '';
-                submitBtn.disabled = !hasContent;
+                const hasContent = text.length > 0;
+                
+                // Toggle has-content class for placeholder visibility
+                textInput.classList.toggle('has-content', hasContent);
+                
+                // Update submit button
+                if (submitBtn) {
+                    submitBtn.disabled = !hasContent;
+                }
             }
 
             // Initial check
-            updateSubmitButton();
+            updateInputState();
 
             // Handle input events
             if (textInput) {
-                textInput.addEventListener('input', updateSubmitButton);
-                textInput.addEventListener('keyup', updateSubmitButton);
+                textInput.addEventListener('input', updateInputState);
+                textInput.addEventListener('keyup', updateInputState);
+                textInput.addEventListener('blur', updateInputState);
+                textInput.addEventListener('focus', updateInputState);
                 textInput.addEventListener('paste', () => {
-                    setTimeout(updateSubmitButton, 0);
+                    setTimeout(updateInputState, 0);
                 });
             }
 
@@ -3207,6 +3551,10 @@
             resizeTimeout = setTimeout(() => {
                 if (typeof imagineApp !== 'undefined' && imagineApp.updateModeSlider) {
                     imagineApp.updateModeSlider();
+                }
+                // Recalculate gallery masonry layout
+                if (typeof imagineApp !== 'undefined' && imagineApp.loadGallery) {
+                    imagineApp.loadGallery();
                 }
             }, 100);
         });

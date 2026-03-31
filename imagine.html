@@ -689,6 +689,11 @@
             padding: 24px; 
             max-height: 60vh;
             overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+        .modal-body::-webkit-scrollbar { 
+            display: none; /* Chrome, Safari, Edge */
         }
         .form-group { margin-bottom: 20px; }
         .form-group:last-child { margin-bottom: 0; }

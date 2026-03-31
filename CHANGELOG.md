@@ -2,6 +2,62 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.7.0] - 2026-03-31
+
+### Added
+
+#### Ollama Image Generation Integration (imagine.html)
+- **Ollama Provider Support** - Local AI image generation using Ollama
+  - Supports `x/z-image-turbo` and `x/flux2-klein` models
+  - Fetches installed models dynamically from `/api/tags`
+  - Filters compatible models automatically
+  - Configurable Ollama URL (default: `http://localhost:11434`)
+  - Base64 image response handling
+
+#### Chat Session View (imagine.html)
+- **New chat-style interface** for image generation
+  - Shows user prompt and AI response in conversation format
+  - Real-time generation progress with spinner animation
+  - Generated image appears in chat when complete
+  - Save and Regenerate action buttons
+  - "Back to Gallery" button to return to community creations
+  - Clicking history item opens the chat session
+  - Auto-switches to chat view when pressing Generate
+
+#### Pinterest-Style Masonry Gallery (imagine.html)
+- **5-column masonry layout** for community creations
+  - Dynamic column calculation based on screen width
+  - 1px gap between items
+  - Images touch sidebar on left, edge on right
+  - Items stay in same column when sidebar toggles
+  - Responsive: 5→4→3→2→1 columns based on width
+  - Save button appears on hover
+  - Support for video previews with autoplay
+
+#### Provider Selection (imagine.html)
+- **Image Providers**: Ollama (default) or HuggingFace Endpoint
+- **Video Providers**: Ollama or HuggingFace Cloud
+- Settings modal with provider-specific configuration
+- API key management for HuggingFace
+
+### Fixed
+
+#### UI/UX Improvements (imagine.html)
+- **Fixed placeholder overlap** - Placeholder hides when text is entered
+- **Invisible scrollbars** - All scrollbars hidden globally
+- **Fixed gallery layout** - Properly accounts for sidebar width
+- **Centered chat input** - Fixed positioning at bottom with gradient background
+- **Modal scrolling** - Settings modal has scrollable body with hidden scrollbar
+
+### Changed
+
+#### Architecture Updates
+- Removed Puter AI and OpenRouter providers (replaced with Ollama)
+- Chat history stored as conversation objects with messages array
+- Gallery displays demo images from xAI when no user creations
+
+---
+
 ## [1.6.0] - 2026-03-26
 
 ### Added

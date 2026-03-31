@@ -597,23 +597,37 @@ ChainOfThought (Multi-step Display)
 ImagineApp (Image/Video Generation Controller)
 ├── State Management
 │   ├── currentMode ('image' | 'video')
-│   ├── selectedRatio ('2:3' | '3:2' | '1:1' | '9:16' | '16:9')
-│   ├── uploadedImage (File | null)
-│   ├── results[]
-│   └── isGenerating (boolean)
+│   ├── currentAspectRatio ('2:3' | '3:2' | '1:1' | '9:16' | '16:9')
+│   ├── uploadedImages[] - For video generation
+│   ├── chatHistory[] - Conversation-based history
+│   ├── currentConversationId - Active chat session
+│   ├── isGenerating (boolean)
+│   ├── imageProvider ('ollama' | 'hf_endpoint')
+│   ├── ollamaUrl - Local Ollama endpoint
+│   ├── ollamaImageModel - Selected model
+│   └── hfEndpointUrl - HuggingFace endpoint
 ├── UI Components
-│   ├── updateModeSlider() - Animated mode toggle
-│   ├── selectAspectRatio() - Ratio grid selection
-│   ├── handleImageUpload() - Drag & drop handling
-│   └── renderResults() - Gallery display
+│   ├── showChatSession() - Display chat conversation
+│   ├── showGallery() - Display masonry gallery
+│   ├── renderChatSession() - Render conversation messages
+│   ├── loadGallery() - Masonry layout calculation
+│   ├── toggleSidebar() - Sidebar with gallery recalculation
+│   └── updateModeSlider() - Animated mode toggle
 ├── API Integration
-│   ├── generateImage() - HuggingFace text-to-image
-│   ├── generateVideo() - HuggingFace image-to-video
-│   └── upscaleImage() - 4x upscaling
+│   ├── generateImageWithOllama() - Ollama text-to-image
+│   ├── generateImageWithHFEndpoint() - HuggingFace text-to-image
+│   ├── fetchOllamaModels() - Get installed models
+│   └── filterCompatibleModels() - Filter image models
+├── History Management
+│   ├── addGeneratingPlaceholderWithId() - Create conversation
+│   ├── replaceGeneratingWithResult() - Add generated image
+│   ├── removeGeneratingById() - Cleanup on error
+│   ├── updateHistory() - Sidebar history list
+│   └── loadFromHistory() - Open chat from history
 └── Utilities
-    ├── saveSettings() - API key persistence
-    ├── downloadImage() - Save to disk
-    └── formatFileSize()
+    ├── saveSettings() - Provider settings persistence
+    ├── saveChatImage() - Download image
+    └── escapeHtml() - XSS prevention
 ```
 
 ---
@@ -869,33 +883,51 @@ MIT License - See project root for details
 
 ---
 
-## Recent Updates (March 26, 2026)
+## Recent Updates (March 31, 2026)
 
-### imagine.html Enhancements
+### imagine.html Major Redesign
 
-#### Visual Improvements
-- **Toggle Button Shimmer Animation**: Active Image/Video toggle buttons now feature an orange gradient shimmer effect matching the chat input border animation
-  - CSS `background-clip: text` technique for gradient text
-  - Synchronized animation timing and direction with `.shimmer-border`
-  - SVG icons show solid orange color when active
+#### Ollama Integration
+- **Local AI Image Generation** - Full Ollama API integration
+  - Endpoint: `http://localhost:11434/api/generate`
+  - Compatible models: `x/z-image-turbo`, `x/flux2-klein`
+  - Dynamic model fetching from `/api/tags`
+  - Base64 image response parsing
+  - Streaming generation status
 
-#### Bug Fixes
-- Fixed JavaScript errors (`t.noHistory undefined`, `modeSlider not defined`)
-- Centralized all translations to JSON files (en.json, ru.json)
-- Fixed CORS proxy timeout issues for web search
-- Added disabled submit button state for empty input
-- Fixed toggle slider positioning and duplicate ID conflicts
-- Resolved dropdown CSS conflicts between language and aspect ratio selectors
+#### Chat Session Architecture
+- **Conversation-Based History** - Each generation is a conversation
+  ```javascript
+  {
+    id: 'conv-timestamp',
+    timestamp: Date.now(),
+    aspectRatio: '2:3',
+    model: 'x/z-image-turbo:fp8',
+    messages: [
+      { role: 'user', content: 'prompt', type: 'text' },
+      { role: 'assistant', content: '', type: 'image', status: 'generating', url: null }
+    ]
+  }
+  ```
+- **Chat Session View** - Full-screen chat interface
+  - Shows conversation between user and AI
+  - Real-time generation updates
+  - Generated image display with actions
+  - Back navigation to gallery
 
-#### Internationalization
-- Complete Russian translation for imagine.html
-- Fallback text for all translation keys to prevent undefined errors
-- Translation system using async JSON loading
+#### Masonry Gallery Layout
+- **5-Column Pinterest-Style Grid**
+  - Absolute positioning for masonry effect
+  - Items assigned by index modulo column count
+  - Smooth transitions on resize
+  - Dynamic column calculation (5→4→3→2→1)
+  - 1px gaps between items
 
-#### Web Search Integration
-- Yandex Search integration via OpenSerp API
-- Multiple CORS proxy fallback support
-- Timeout handling: 12s for search sources, 15s for proxies
+#### Provider System
+- **Image Providers**: Ollama (default) | HuggingFace Endpoint
+- **Video Providers**: Ollama | HuggingFace Cloud
+- Provider-specific settings in modal
+- Model selection dropdowns
 
 ---
 
@@ -905,5 +937,5 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.6*
-*Last Updated: March 26, 2026*
+*Architecture Documentation v1.7*
+*Last Updated: March 31, 2026*

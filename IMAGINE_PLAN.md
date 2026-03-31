@@ -125,36 +125,64 @@ border: 1px solid var(--border);
 
 ### 7. Execution Tasks
 
-#### Phase 1: Setup & Structure
-- [ ] Create `imagine.html` with base structure
-- [ ] Create `js/imagine.js` with core logic
-- [ ] Create `css/imagine.css` with styles
-- [ ] Add "Imagine" to sidebar navigation
+#### Phase 1: Setup & Structure ✅ COMPLETED
+- [x] Create `imagine.html` with base structure
+- [x] Add "Imagine" to sidebar navigation
+- [x] Starfield background integration
 
-#### Phase 2: UI Implementation
-- [ ] Mode toggle (Image/Video)
-- [ ] Aspect ratio selector
-- [ ] Prompt input component
-- [ ] Image upload for video mode
-- [ ] Generate button
+#### Phase 2: UI Implementation ✅ COMPLETED
+- [x] Mode toggle (Image/Video) with shimmer animation
+- [x] Aspect ratio selector (2:3, 3:2, 1:1, 9:16, 16:9)
+- [x] Chat-style prompt input component
+- [x] Image upload for video mode
+- [x] Generate button with loading states
+- [x] Chat session view for generations
+- [x] Masonry gallery (5-column Pinterest-style)
 
-#### Phase 3: API Integration
-- [ ] HuggingFace API client
-- [ ] Image generation endpoint
-- [ ] Video generation endpoint
-- [ ] Error handling
+#### Phase 3: API Integration ✅ COMPLETED
+- [x] Ollama API integration (primary provider)
+  - [x] Dynamic model fetching
+  - [x] Base64 image response handling
+  - [x] Compatible model filtering
+- [x] HuggingFace Endpoint support (optional)
+- [x] Provider selection in settings
+- [x] Error handling and fallbacks
 
-#### Phase 4: Results & Actions
-- [ ] Results gallery display
-- [ ] Save/download functionality
-- [ ] Upscale option
-- [ ] Redo/Regenerate option
-- [ ] Progress indication
+#### Phase 4: Results & Actions ✅ COMPLETED
+- [x] Masonry gallery display (5 columns)
+- [x] Chat session view for active generations
+- [x] Save/download functionality
+- [x] Regenerate option
+- [x] Real-time progress indication
+- [x] History sidebar integration
 
-#### Phase 5: Integration
-- [ ] Link from main app sidebar
-- [ ] Settings integration for API key
-- [ ] Consistent navigation
+#### Phase 5: Integration ✅ COMPLETED
+- [x] Link from main app sidebar
+- [x] Settings integration for providers
+- [x] Consistent navigation with index.html
+- [x] Translation support (en, ru)
+- [x] Invisible scrollbars throughout
+
+### 8. Architecture Changes (March 31, 2026)
+
+#### Provider System
+- **Primary**: Ollama (local) - No API key needed
+- **Optional**: HuggingFace Endpoint - Self-hosted
+- Removed: Puter AI, OpenRouter
+
+#### Chat Session Pattern
+Instead of simple results grid, imagine.html now uses:
+- Conversation objects with messages array
+- User message (prompt)
+- Assistant message (generating → complete with image)
+- Chat session view for real-time generation
+
+#### Masonry Gallery Layout
+- Absolute positioning for true masonry effect
+- Items assigned by index % columnCount
+- Dynamic column calculation (5→1 based on width)
+- Smooth CSS transitions on resize
+- 1px gaps between items
 
 ## Technical Notes
 

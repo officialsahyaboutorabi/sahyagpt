@@ -718,6 +718,154 @@
             background: rgba(255, 79, 0, 0.1);
         }
         
+        /* Chat Session View */
+        .chat-session-view {
+            width: 100%;
+            min-height: 100vh;
+            padding: 0 24px 200px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-session-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .back-to-gallery-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .back-to-gallery-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        .chat-session-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+        .chat-session-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .chat-session-messages::-webkit-scrollbar {
+            display: none;
+        }
+        .chat-session-message {
+            display: flex;
+            gap: 16px;
+            padding: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+        .chat-session-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .chat-session-avatar.user {
+            background: var(--accent);
+            color: white;
+        }
+        .chat-session-avatar.assistant {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .chat-session-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-session-text {
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .chat-session-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .chat-session-generating {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+        .chat-session-image-container {
+            margin-top: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            max-width: 512px;
+        }
+        .chat-session-image {
+            width: 100%;
+            max-width: 512px;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .chat-session-image:hover {
+            transform: scale(1.02);
+        }
+        .chat-session-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .chat-session-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .chat-session-action-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: rgba(255, 79, 0, 0.1);
+        }
+        
         /* Gallery Section - Masonry Layout */
         .gallery-section {
             width: 100%;
@@ -1795,6 +1943,27 @@
             
             <!-- Content Area -->
             <div class="content-area">
+                <!-- Chat Session View -->
+                <div class="chat-session-view" id="chatSessionView" style="display: none;">
+                    <div class="chat-session-header">
+                        <button class="back-to-gallery-btn" onclick="imagineApp.showGallery()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Back to Gallery
+                        </button>
+                        <div class="chat-session-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            Generation Session
+                        </div>
+                    </div>
+                    <div class="chat-session-messages" id="chatSessionMessages"></div>
+                </div>
+                
                 <!-- Gallery Section - Public Showcase -->
                 <div class="gallery-section" id="gallerySection">
                     <div class="gallery-header">
@@ -2147,6 +2316,7 @@
                 this.currentAspectRatio = '2:3';
                 this.uploadedImages = [];
                 this.chatHistory = []; // Chat-like history: [{id, messages: [{role, content, type, url, ...}]}]
+                this.currentConversationId = null; // Currently viewed conversation in chat session view
                 this.isGenerating = false;
                 
                 // Image settings
@@ -2306,6 +2476,106 @@
                 const maxHeight = Math.max(...columnHeights);
                 galleryGrid.style.height = maxHeight + 'px';
                 galleryGrid.style.width = '100%';
+            }
+            
+            showChatSession(conversationId) {
+                const gallerySection = document.getElementById('gallerySection');
+                const chatSessionView = document.getElementById('chatSessionView');
+                
+                if (gallerySection) gallerySection.style.display = 'none';
+                if (chatSessionView) chatSessionView.style.display = 'flex';
+                
+                this.currentConversationId = conversationId;
+                this.renderChatSession(conversationId);
+            }
+            
+            showGallery() {
+                const gallerySection = document.getElementById('gallerySection');
+                const chatSessionView = document.getElementById('chatSessionView');
+                
+                if (gallerySection) gallerySection.style.display = 'block';
+                if (chatSessionView) chatSessionView.style.display = 'none';
+                
+                this.currentConversationId = null;
+            }
+            
+            renderChatSession(conversationId) {
+                const container = document.getElementById('chatSessionMessages');
+                if (!container) return;
+                
+                const conversation = this.chatHistory.find(c => c.id === conversationId);
+                if (!conversation) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">No conversation found</div>';
+                    return;
+                }
+                
+                const userMsg = conversation.messages.find(m => m.role === 'user');
+                const assistantMsg = conversation.messages.find(m => m.role === 'assistant');
+                
+                let html = '';
+                
+                // User message
+                if (userMsg) {
+                    html += `
+                        <div class="chat-session-message user">
+                            <div class="chat-session-avatar user">You</div>
+                            <div class="chat-session-content">
+                                <div class="chat-session-text">${this.escapeHtml(userMsg.content)}</div>
+                                <div class="chat-session-meta">${new Date(conversation.timestamp).toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Assistant message
+                if (assistantMsg) {
+                    if (assistantMsg.status === 'generating') {
+                        html += `
+                            <div class="chat-session-message assistant">
+                                <div class="chat-session-avatar assistant">AI</div>
+                                <div class="chat-session-content">
+                                    <div class="chat-session-generating">
+                                        <div class="generating-spinner" style="width: 24px; height: 24px;"></div>
+                                        <span>Generating image with ${this.escapeHtml(conversation.model || 'Ollama')}...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (assistantMsg.url) {
+                        html += `
+                            <div class="chat-session-message assistant">
+                                <div class="chat-session-avatar assistant">AI</div>
+                                <div class="chat-session-content">
+                                    <div class="chat-session-text">Here's your generated image:</div>
+                                    <div class="chat-session-image-container">
+                                        <img src="${assistantMsg.url}" alt="Generated image" class="chat-session-image" onclick="imagineApp.openImagePreview('${assistantMsg.url}')">
+                                    </div>
+                                    <div class="chat-session-actions">
+                                        <button class="chat-session-action-btn" onclick="imagineApp.saveChatImage('${assistantMsg.url}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                            </svg>
+                                            Save Image
+                                        </button>
+                                        <button class="chat-session-action-btn" onclick="imagineApp.redoConversation('${conversation.id}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="23 4 23 10 17 10"/>
+                                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                            </svg>
+                                            Regenerate
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                container.innerHTML = html;
+                
+                // Scroll to bottom
+                container.scrollTop = container.scrollHeight;
             }
             
             async loadTranslations() {
@@ -2536,15 +2806,21 @@
                 this.isGenerating = true;
                 this.updateGenerateButton();
                 
+                // Create conversation entry and show chat session
+                const conversationId = 'conv-' + Date.now();
+                this.addGeneratingPlaceholderWithId(conversationId, prompt);
+                this.showChatSession(conversationId);
+                
                 try {
                     if (this.currentMode === 'image') {
-                        await this.generateImage(prompt);
+                        await this.generateImageWithOllama(prompt, conversationId);
                     } else {
                         await this.generateVideo(prompt);
                     }
                 } catch (error) {
                     console.error('Generation error:', error);
                     this.showToast(`Generation failed: ${error.message}`, 'error');
+                    this.removeGeneratingById(conversationId);
                 } finally {
                     this.isGenerating = false;
                     this.updateGenerateButton();
@@ -2668,8 +2944,10 @@
                 };
                 this.chatHistory.unshift(conversation);
                 this.updateHistory();
-                // Show generating toast
-                this.showToast(`Generating image with ${this.ollamaImageModel || 'Ollama'}...`, 'info');
+                // Update chat session view if visible
+                if (this.currentConversationId === id) {
+                    this.renderChatSession(id);
+                }
                 return id;
             }
             
@@ -2686,6 +2964,10 @@
                     this.saveResults();
                     this.updateHistory();
                     this.loadGallery(); // Update gallery with new image
+                    // Update chat session view if visible
+                    if (this.currentConversationId === id) {
+                        this.renderChatSession(id);
+                    }
                     // Show success toast with preview
                     this.showToast('Image generated successfully!', 'success');
                 }
@@ -2696,6 +2978,10 @@
                 if (index !== -1) {
                     this.chatHistory.splice(index, 1);
                     this.updateHistory();
+                    // Update chat session view if visible
+                    if (this.currentConversationId === id) {
+                        this.showGallery();
+                    }
                 }
             }
             

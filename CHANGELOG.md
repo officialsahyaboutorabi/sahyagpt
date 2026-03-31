@@ -27,6 +27,13 @@ All notable changes to the SahyaGPT project will be documented in this file.
 - **Gallery shows user images** alongside demo images
 - **Fixed ID mismatch** between chat session and storage
 
+#### Error Handling (imagine.html)
+- **Improved Ollama error handling** for server crashes
+  - Detects empty or corrupted JSON responses
+  - Provides clearer error messages when server crashes during generation
+  - Parses response as text first before JSON to catch parsing errors
+  - Shows helpful message: "The server may have crashed during image generation"
+
 ---
 
 ## [1.7.0] - 2026-03-31

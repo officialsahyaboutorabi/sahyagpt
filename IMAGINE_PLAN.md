@@ -212,6 +212,13 @@ Instead of simple results grid, imagine.html now uses:
   - `loadAllImagesFromDB()` - Load all on gallery render
   - `deleteImageFromDB(id)` - Cleanup (future admin feature)
 
+#### Error Handling Improvements (v1.2.8)
+- **Robust Ollama response parsing** to handle server crashes
+  - Read response as text before JSON parsing
+  - Detect empty responses from server panics
+  - Graceful handling of malformed JSON
+  - User-friendly error messages suggesting to check server logs
+
 ## Technical Notes
 
 ### HuggingFace API Usage

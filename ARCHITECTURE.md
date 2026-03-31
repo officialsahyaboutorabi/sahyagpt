@@ -619,7 +619,8 @@ ImagineApp (Image/Video Generation Controller)
 │   ├── generateImageWithOllama() - Ollama text-to-image
 │   ├── generateImageWithHFEndpoint() - HuggingFace text-to-image
 │   ├── fetchOllamaModels() - Get installed models
-│   └── filterCompatibleModels() - Filter image models
+│   ├── filterCompatibleModels() - Filter image models
+│   └── Error Handling - Robust response parsing for server crashes
 ├── History Management
 │   ├── addGeneratingPlaceholderWithId() - Create conversation
 │   ├── replaceGeneratingWithResult() - Add generated image

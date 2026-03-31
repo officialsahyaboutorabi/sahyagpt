@@ -235,19 +235,21 @@
             bottom: 0;
             left: var(--sidebar-width);
             right: 0;
-            width: 100%;
             max-width: none;
             margin: 0;
             padding: 32px 24px 24px;
             background: linear-gradient(to top, rgba(13,13,13,0.95) 0%, rgba(13,13,13,0.8) 60%, transparent 100%);
             z-index: 100;
             pointer-events: none;
+            display: flex;
+            justify-content: center;
         }
         .chat-input-section > * {
             pointer-events: auto;
         }
         .chat-input-wrapper {
             position: relative;
+            width: 100%;
             max-width: 768px;
             margin: 0 auto;
         }
@@ -693,6 +695,9 @@
         .gallery-header {
             margin-bottom: 20px;
             padding: 0 16px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .gallery-title {
             font-size: 1.1rem;
@@ -704,7 +709,6 @@
         .gallery-masonry {
             position: relative;
             width: 100%;
-            max-width: 100%;
         }
         .gallery-item {
             width: 312px;
@@ -789,20 +793,9 @@
             padding: 40px;
             color: var(--text-secondary);
         }
-        @media (max-width: 1400px) {
-            .gallery-masonry { width: calc(312px * 4 + 48px); margin: 0 auto; }
-        }
-        @media (max-width: 1300px) {
-            .gallery-masonry { width: calc(312px * 3 + 32px); margin: 0 auto; }
-        }
-        @media (max-width: 1000px) {
-            .gallery-masonry { width: calc(312px * 2 + 16px); margin: 0 auto; }
-        }
-        @media (max-width: 680px) {
-            .gallery-masonry { width: 312px; margin: 0 auto; }
-        }
         @media (max-width: 768px) {
             .chat-input-section { left: 0; }
+            .gallery-section { padding: 16px; padding-bottom: 180px; }
         }
         
         /* Legacy result card styles for compatibility */
@@ -2197,13 +2190,15 @@
                     return;
                 }
                 
-                // Calculate masonry layout - center the grid
+                // Calculate masonry layout - fill entire width
                 const itemWidth = 312;
                 const gap = 16;
-                const containerWidth = galleryGrid.parentElement.clientWidth || (window.innerWidth - 280); // Account for sidebar
-                const maxColumns = Math.max(1, Math.floor(containerWidth / (itemWidth + gap)));
-                const gridWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
-                const startLeft = Math.max(0, (containerWidth - gridWidth) / 2);
+                const containerWidth = galleryGrid.parentElement.clientWidth || (window.innerWidth - 280 - 48); // Account for sidebar and padding
+                const maxColumns = Math.max(1, Math.floor((containerWidth + gap) / (itemWidth + gap)));
+                // Distribute items evenly across the full width
+                const totalItemsWidth = maxColumns * itemWidth + (maxColumns - 1) * gap;
+                const extraSpace = containerWidth - totalItemsWidth;
+                const startLeft = extraSpace > 0 ? extraSpace / 2 : 0;
                 
                 const columnHeights = new Array(maxColumns).fill(0);
                 

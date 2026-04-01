@@ -2,6 +2,38 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.4.0] - 2026-03-31
+
+### Added
+
+#### New Code CLI Page (codecli.html)
+- **Created dedicated CLI installation page** with modern Qwen Code-inspired design
+  - Hero section with gradient title and platform tabs (Linux/macOS & Windows)
+  - One-click install command: `curl -fsSL https://sbgpt.qzz.io/install.sh | bash`
+  - Windows support: `irm https://sbgpt.qzz.io/install.ps1 | iex`
+  - Copy-to-clipboard functionality with visual feedback
+  - GitHub repository and documentation links
+
+#### Feature Showcase Section
+- **"Why Sahya Code?"** features grid with 4 key highlights:
+  - ⚡ Lightning Fast - Efficient streaming and local caching
+  - 🔒 Privacy First - On-device processing priority
+  - 🚀 Multi-Model Support - OpenAI, Anthropic, Ollama compatible
+  - 🛠️ Extensible Tools - Built-in tools + plugin system
+
+#### Usage Documentation
+- **Interactive examples** with terminal mockups:
+  - Interactive mode - Launch terminal UI with `sahya`
+  - Headless mode - Script automation with `sahya -p "prompt"`
+  - Configuration - Easy settings management
+
+#### Navigation Updates
+- **Added Code CLI link** to sidebar on all pages:
+  - index.html, imagine.html, prompthub.html, codecli.html
+  - Consistent active state styling across all navigation
+
+---
+
 ## [1.3.2] - 2026-03-31
 
 ### Changed (imagine.html)

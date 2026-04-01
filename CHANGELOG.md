@@ -2,6 +2,18 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.3.2] - 2026-03-31
+
+### Changed (imagine.html)
+
+#### Gallery Updates
+- **Removed Grok AI demo images** - Gallery now only shows user-generated images
+  - Removed all xAI/Grok sample images from gallery
+  - Empty state shows "No images yet" message
+  - Gallery is now truly personal to each user
+
+---
+
 ## [1.3.0] - 2026-03-31
 
 ### Fixed (imagine.html)

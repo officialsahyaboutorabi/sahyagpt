@@ -2,6 +2,40 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.3.0] - 2026-03-31
+
+### Fixed (imagine.html)
+
+#### Code Review Fixes
+- **Added constants object** - `ImagineApp.CONSTANTS` for all magic numbers
+  - `MAX_VIDEO_IMAGES` (7), `GALLERY_BASE_WIDTH` (312), `MAX_GALLERY_ITEMS` (100)
+  - `MAX_IMAGE_SIZE_MB` (10), `SIDEBAR_WIDTH` (280), etc.
+- **Translations initialization** - Default values in constructor prevent undefined errors
+- **Fixed orphan image cleanup** - `deleteHistoryItem()` now removes from:
+  - `imageDataStore` (memory)
+  - IndexedDB (persistent storage)
+  - `galleryImages` array
+- **URL validation** - `isValidUrl()` helper validates HTTP/HTTPS URLs
+- **Ollama health check** - `isOllamaReachable()` pings server before generation
+- **Prompt sanitization** - Basic XSS prevention in `generate()`
+- **File size validation** - 10MB limit for uploaded images
+- **Gallery size limit** - `cleanupOldGalleryImages()` enforces max 100 items
+- **Improved IndexedDB error handling** - Better logging and graceful fallbacks
+
+---
+
+## [1.3.1] - 2026-03-31
+
+### Fixed (index.html)
+
+#### Critical Bug Fix
+- **Fixed JavaScript syntax error** - Removed orphaned HTML code inside ChatApp class
+  - Was causing `SyntaxError: expected property name, got '<'`
+  - Also fixed `ReferenceError: chatApp is not defined`
+  - 175 lines of legacy modal HTML were incorrectly left inside the JavaScript class
+
+---
+
 ## [1.2.9] - 2026-03-31
 
 ### Fixed (index.html)

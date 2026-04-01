@@ -4219,8 +4219,30 @@ Using the search results above as your primary source of information, provide a 
                                             continuationContent += content;
                                             // Update the message content live - append new content to original
                                             msg.content = originalContent + continuationContent;
-                                            this.renderAIContent(bubble, msg.content);
-                                            this.scrollToBottom();
+                                            // Only re-render at checkpoints (every ~100 chars) or at end to avoid flicker
+                                            if (continuationContent.length % 50 === 0 || continuationContent.length < 10) {
+                                                this.renderAIContent(bubble, msg.content);
+                                            } else {
+                                                // Just append to the bubble directly for smoother experience
+                                                const textNodes = bubble.querySelectorAll('.message-text, .message-content');
+                                                const lastNode = textNodes[textNodes.length - 1];
+                                                if (lastNode) {
+                                                    // Find or create a text container
+                                                    let textContainer = bubble.querySelector('.message-text');
+                                                    if (!textContainer) {
+                                                        textContainer = document.createElement('div');
+                                                        textContainer.className = 'message-text';
+                                                        bubble.appendChild(textContainer);
+                                                    }
+                                                    // Only append the new content
+                                                    const newText = document.createTextNode(content);
+                                                    textContainer.appendChild(newText);
+                                                }
+                                            }
+                                            // Throttle scrolling - only scroll every few chunks or if near bottom
+                                            if (continuationContent.length % 100 === 0) {
+                                                this.scrollToBottom();
+                                            }
                                         }
                                     } catch (e) {}
                                 }
@@ -4257,11 +4279,18 @@ Using the search results above as your primary source of information, provide a 
                                 try {
                                     const parsed = JSON.parse(line);
                                     if (parsed.message?.content) {
-                                        continuationContent += parsed.message.content;
+                                        const newContent = parsed.message.content;
+                                        continuationContent += newContent;
                                         // Update the message content live
                                         msg.content = originalContent + continuationContent;
-                                        this.renderAIContent(bubble, msg.content);
-                                        this.scrollToBottom();
+                                        // Only re-render at checkpoints to avoid flicker
+                                        if (continuationContent.length % 50 === 0 || continuationContent.length < 10) {
+                                            this.renderAIContent(bubble, msg.content);
+                                        }
+                                        // Throttle scrolling
+                                        if (continuationContent.length % 100 === 0) {
+                                            this.scrollToBottom();
+                                        }
                                     }
                                 } catch (e) {}
                             }
@@ -4271,6 +4300,7 @@ Using the search results above as your primary source of information, provide a 
                     // Final save after completion
                     this.saveMessages();
                     this.renderMessages(); // Re-render to update the continue button visibility
+                    this.scrollToBottom(); // Ensure user sees the final result
                     this.showToast('Response continued', 'success');
                     
                 } catch (error) {

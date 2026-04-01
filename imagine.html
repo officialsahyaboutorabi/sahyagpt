@@ -2548,26 +2548,7 @@
                     }
                 }
                 
-                // Sample demo images (in production, these would come from a server)
-                // Heights scaled proportionally for dynamic width
-                const baseWidth = 312;
-                const demoImages = [
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/28114c11-6e66-4c8e-8e5b-53f44f7455f6.mp4', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/5a6b543a-dd89-4fdc-984b-beb65c0de25c_thumbnail.jpg', aspectRatio: 465/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/2efbb3a7-5587-4bdb-a1a1-20dac38edf11.mp4', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e_thumbnail.jpg', video: 'https://imagine-public.x.ai/imagine-public/share-videos/953d39f4-7fa7-45c2-8614-64dffe844c7e.mp4', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/a7f8ec7f-0e99-4d57-baf5-eb7aa049ca34_thumbnail.jpg', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/09926fc2-8e63-440e-a7fc-c0ba7d9a213b_thumbnail.jpg', aspectRatio: 173/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/d6be8b7b-a399-422e-85c7-9a0083811b0e_thumbnail.jpg', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/ba94a4eb-7348-4b66-9acf-3a784b39eeed_thumbnail.jpg', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/4f241ddd-3926-47c9-b320-0f62d2c6488d_thumbnail.jpg', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7c51a38c-1ccf-49ea-9182-4f7542227083_thumbnail.jpg', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/7a373788-8343-4351-83f7-f5f9fd8af9ef_thumbnail.jpg', aspectRatio: 210/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/836d3f98-c264-4af7-a461-2716e780065f_thumbnail.jpg', aspectRatio: 463/312 },
-                    { url: 'https://imagine-public.x.ai/imagine-public/share-videos/23c46f19-6171-4358-8b5f-172268fcffc2_thumbnail.jpg', aspectRatio: 463/312 },
-                ].map(img => ({...img, height: Math.round(itemWidth * img.aspectRatio)}));
-                
-                // Add user's own creations from galleryImages (persists even when history is deleted)
+                // Display user's own creations from galleryImages (persists even when history is deleted)
                 // Get URL from imageDataStore if available (for base64 images), otherwise use the stored URL or IndexedDB
                 const userCreations = this.galleryImages
                     .filter(img => {
@@ -2579,9 +2560,7 @@
                         return { url: imageUrl, height: Math.round(itemWidth * 1.2), id: img.id }; // Default aspect ratio for user images
                     });
                 
-                const allCreations = [...userCreations, ...demoImages];
-                
-                if (allCreations.length === 0) {
+                if (userCreations.length === 0) {
                     galleryGrid.innerHTML = `
                         <div class="gallery-placeholder">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 12px; opacity: 0.5;">
@@ -2589,7 +2568,7 @@
                                 <circle cx="8.5" cy="8.5" r="1.5"/>
                                 <polyline points="21 15 16 10 5 21"/>
                             </svg>
-                            <div>No community creations yet</div>
+                            <div>No images yet</div>
                             <div style="font-size: 0.85rem; margin-top: 8px;">Generate your first image to see it here!</div>
                         </div>
                     `;
@@ -2600,7 +2579,7 @@
                 const startLeft = 0;
                 const columnHeights = new Array(maxColumns).fill(0);
                 
-                galleryGrid.innerHTML = allCreations.map((item, index) => {
+                galleryGrid.innerHTML = userCreations.map((item, index) => {
                     // Assign to column based on index (modulo) to keep items in same column when resizing
                     const columnIndex = index % maxColumns;
                     const left = startLeft + columnIndex * (itemWidth + gap);

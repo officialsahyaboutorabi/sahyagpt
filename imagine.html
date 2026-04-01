@@ -2322,6 +2322,19 @@
         // Imagine App Class
         // ============================================
         class ImagineApp {
+            // Constants
+            static CONSTANTS = {
+                MAX_VIDEO_IMAGES: 7,
+                GALLERY_BASE_WIDTH: 312,
+                SIDEBAR_WIDTH: 280,
+                GALLERY_GAP: 1,
+                SEARCH_DEBOUNCE_MS: 150,
+                GALLERY_RESIZE_DEBOUNCE_MS: 250,
+                MAX_GALLERY_ITEMS: 100, // Limit to prevent memory issues
+                DEFAULT_OLLAMA_URL: 'http://localhost:11434',
+                MAX_IMAGE_SIZE_MB: 10
+            };
+            
             constructor() {
                 this.currentMode = 'image';
                 this.currentAspectRatio = '2:3';
@@ -2329,6 +2342,20 @@
                 this.chatHistory = []; // Chat-like history: [{id, messages: [{role, content, type, url, ...}]}]
                 this.currentConversationId = null; // Currently viewed conversation in chat session view
                 this.isGenerating = false;
+                
+                // Translations with default fallback
+                this.translations = {
+                    en: {
+                        noHistory: 'No history yet',
+                        placeholderImage: 'Type to imagine',
+                        placeholderVideo: 'Describe the video you want to create'
+                    },
+                    ru: {
+                        noHistory: 'Истории пока нет',
+                        placeholderImage: 'Начните печатать',
+                        placeholderVideo: 'Опишите видео, которое хотите создать'
+                    }
+                };
                 
                 // In-memory storage for image data (base64 URLs are too large for localStorage)
                 // Key: conversation ID, Value: image URL (base64 or blob URL)
@@ -2344,7 +2371,7 @@
                 
                 // Image settings
                 this.imageProvider = localStorage.getItem('image_provider') || 'ollama';
-                this.ollamaUrl = localStorage.getItem('ollama_url') || 'http://localhost:11434';
+                this.ollamaUrl = localStorage.getItem('ollama_url') || ImagineApp.CONSTANTS.DEFAULT_OLLAMA_URL;
                 // Allow any x/z-image-turbo* or x/flux2-klein* variant
                 const savedImageModel = localStorage.getItem('ollama_image_model');
                 this.ollamaImageModel = savedImageModel || '';
@@ -2352,11 +2379,14 @@
                 
                 // Video settings
                 this.videoProvider = localStorage.getItem('video_provider') || 'ollama';
-                this.ollamaVideoUrl = localStorage.getItem('ollama_video_url') || 'http://localhost:11434';
+                this.ollamaVideoUrl = localStorage.getItem('ollama_video_url') || ImagineApp.CONSTANTS.DEFAULT_OLLAMA_URL;
                 const savedVideoModel = localStorage.getItem('ollama_video_model');
                 this.ollamaVideoModel = savedVideoModel || '';
                 this.apiKey = localStorage.getItem('huggingface_api_key') || '';
                 this.videoModel = localStorage.getItem('huggingface_video_model') || 'stabilityai/stable-video-diffusion';
+                
+                // Debounce timer for gallery resize
+                this.galleryResizeTimeout = null;
             }
             
             async init() {
@@ -2402,15 +2432,30 @@
             }
             
             async saveImageToDB(id, imageUrl) {
-                if (!this.imageDB) return false;
+                if (!this.imageDB) {
+                    console.warn('IndexedDB not available, image will not persist after page refresh');
+                    return false;
+                }
                 
                 return new Promise((resolve) => {
-                    const transaction = this.imageDB.transaction(['images'], 'readwrite');
-                    const store = transaction.objectStore('images');
-                    const request = store.put({ id, url: imageUrl, timestamp: Date.now() });
-                    
-                    request.onsuccess = () => resolve(true);
-                    request.onerror = () => resolve(false);
+                    try {
+                        const transaction = this.imageDB.transaction(['images'], 'readwrite');
+                        const store = transaction.objectStore('images');
+                        const request = store.put({ id, url: imageUrl, timestamp: Date.now() });
+                        
+                        request.onsuccess = () => resolve(true);
+                        request.onerror = () => {
+                            console.error('Failed to save image to IndexedDB:', request.error);
+                            resolve(false);
+                        };
+                        transaction.onerror = () => {
+                            console.error('IndexedDB transaction failed:', transaction.error);
+                            resolve(false);
+                        };
+                    } catch (error) {
+                        console.error('Error saving to IndexedDB:', error);
+                        resolve(false);
+                    }
                 });
             }
             
@@ -2901,14 +2946,30 @@
                     return;
                 }
                 
-                const remainingSlots = 7 - this.uploadedImages.length;
+                const maxImages = ImagineApp.CONSTANTS.MAX_VIDEO_IMAGES;
+                const remainingSlots = maxImages - this.uploadedImages.length;
+                
+                if (remainingSlots <= 0) {
+                    this.showToast(`Maximum ${maxImages} images allowed`, 'warning');
+                    return;
+                }
+                
                 const filesToAdd = validFiles.slice(0, remainingSlots);
                 
                 if (validFiles.length > remainingSlots) {
-                    this.showToast(`Only ${remainingSlots} more images can be added (max 7)`, 'warning');
+                    this.showToast(`Only ${remainingSlots} more images can be added (max ${maxImages})`, 'warning');
                 }
                 
-                filesToAdd.forEach(file => {
+                // Check file sizes
+                const maxSizeMB = ImagineApp.CONSTANTS.MAX_IMAGE_SIZE_MB;
+                const oversizedFiles = filesToAdd.filter(file => file.size > maxSizeMB * 1024 * 1024);
+                if (oversizedFiles.length > 0) {
+                    this.showToast(`Some images exceed ${maxSizeMB}MB limit and were skipped`, 'warning');
+                }
+                
+                const validSizedFiles = filesToAdd.filter(file => file.size <= maxSizeMB * 1024 * 1024);
+                
+                validSizedFiles.forEach(file => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         this.uploadedImages.push({
@@ -2957,17 +3018,33 @@
                     return;
                 }
                 
+                // Sanitize prompt (basic XSS prevention)
+                const sanitizedPrompt = prompt
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+                
                 // Check API keys/settings based on provider selection
                 if (this.currentMode === 'image') {
-                    if (this.imageProvider === 'hf_endpoint' && !this.hfEndpointUrl) {
-                        this.showToast('Please set your HuggingFace Endpoint URL', 'warning');
-                        this.openApiKeyModal();
-                        return;
+                    if (this.imageProvider === 'hf_endpoint') {
+                        if (!this.hfEndpointUrl || !this.isValidUrl(this.hfEndpointUrl)) {
+                            this.showToast('Please set a valid HuggingFace Endpoint URL', 'warning');
+                            this.openApiKeyModal();
+                            return;
+                        }
                     }
-                    if (this.imageProvider === 'ollama' && !this.ollamaUrl) {
-                        this.showToast('Please set your Ollama URL', 'warning');
-                        this.openApiKeyModal();
-                        return;
+                    if (this.imageProvider === 'ollama') {
+                        if (!this.ollamaUrl || !this.isValidUrl(this.ollamaUrl)) {
+                            this.showToast('Please set a valid Ollama URL', 'warning');
+                            this.openApiKeyModal();
+                            return;
+                        }
+                        // Check if Ollama is reachable
+                        const isReachable = await this.isOllamaReachable();
+                        if (!isReachable) {
+                            this.showToast('Cannot connect to Ollama server. Please ensure it is running.', 'error');
+                            return;
+                        }
                     }
                 } else if (this.currentMode === 'video') {
                     if (this.videoProvider === 'huggingface' && !this.apiKey) {
@@ -2975,10 +3052,12 @@
                         this.openApiKeyModal();
                         return;
                     }
-                    if (this.videoProvider === 'ollama' && !this.ollamaVideoUrl) {
-                        this.showToast('Please set your Ollama URL for video generation', 'warning');
-                        this.openApiKeyModal();
-                        return;
+                    if (this.videoProvider === 'ollama') {
+                        if (!this.ollamaVideoUrl || !this.isValidUrl(this.ollamaVideoUrl)) {
+                            this.showToast('Please set a valid Ollama URL for video generation', 'warning');
+                            this.openApiKeyModal();
+                            return;
+                        }
                     }
                     if (this.uploadedImages.length < 2) {
                         this.showToast('Please upload at least 2 images for video generation', 'error');
@@ -3851,20 +3930,33 @@
                 });
             }
             
-            deleteHistoryItem(index) {
+            async deleteHistoryItem(index) {
                 const conversation = this.chatHistory[index];
                 if (!conversation) return;
                 
-                // Remove from chat history only - image stays in gallery
+                // Clean up associated image data
+                const conversationId = conversation.id;
+                
+                // Remove from memory
+                this.imageDataStore.delete(conversationId);
+                
+                // Remove from IndexedDB
+                await this.deleteImageFromDB(conversationId);
+                
+                // Remove from gallery
+                this.galleryImages = this.galleryImages.filter(img => img.id != conversationId);
+                
+                // Remove from chat history
                 this.chatHistory.splice(index, 1);
                 
                 // If currently viewing this conversation, go back to gallery
-                if (this.currentConversationId == conversation.id) {
+                if (this.currentConversationId == conversationId) {
                     this.showGallery();
                 }
                 
                 this.saveResults();
                 this.updateHistory();
+                this.loadGallery(); // Refresh gallery to remove deleted image
                 this.showToast('Removed from history', 'success');
             }
             
@@ -3929,6 +4021,54 @@
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
+            }
+            
+            // URL validation helper
+            isValidUrl(string) {
+                if (!string) return false;
+                try {
+                    const url = new URL(string);
+                    return url.protocol === 'http:' || url.protocol === 'https:';
+                } catch (_) {
+                    return false;
+                }
+            }
+            
+            // Check if Ollama server is reachable
+            async isOllamaReachable() {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    
+                    const response = await fetch(`${this.ollamaUrl}/api/tags`, {
+                        method: 'GET',
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    return response.ok;
+                } catch (error) {
+                    console.warn('Ollama server not reachable:', error);
+                    return false;
+                }
+            }
+            
+            // Cleanup old gallery images to prevent memory issues
+            cleanupOldGalleryImages() {
+                const maxItems = ImagineApp.CONSTANTS.MAX_GALLERY_ITEMS;
+                if (this.galleryImages.length > maxItems) {
+                    // Remove oldest items
+                    const itemsToRemove = this.galleryImages.slice(maxItems);
+                    this.galleryImages = this.galleryImages.slice(0, maxItems);
+                    
+                    // Clean up associated data
+                    itemsToRemove.forEach(async (item) => {
+                        this.imageDataStore.delete(item.id);
+                        await this.deleteImageFromDB(item.id);
+                    });
+                    
+                    this.saveResults();
+                }
             }
         }
         
@@ -4206,7 +4346,7 @@
 
 
         
-        // Update mode slider on window resize
+        // Update mode slider on window resize with debouncing
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
@@ -4214,11 +4354,11 @@
                 if (typeof imagineApp !== 'undefined' && imagineApp.updateModeSlider) {
                     imagineApp.updateModeSlider();
                 }
-                // Recalculate gallery masonry layout
+                // Recalculate gallery masonry layout (debounced via class constant)
                 if (typeof imagineApp !== 'undefined' && imagineApp.loadGallery) {
                     imagineApp.loadGallery();
                 }
-            }, 100);
+            }, 250); // 250ms debounce for smooth resizing
         });
         
         // Ensure sidebar remains visible after all scripts load

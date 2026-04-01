@@ -36,6 +36,19 @@ All notable changes to the SahyaGPT project will be documented in this file.
 
 ---
 
+## [1.3.3] - 2026-03-31
+
+### Fixed (index.html)
+
+#### Continue Button Scrolling Bug
+- **Fixed non-stop scrolling** when using "Continue" button
+  - Throttled `renderAIContent` calls (every 50 chars instead of every chunk)
+  - Throttled `scrollToBottom` calls (every 100 chars instead of every chunk)
+  - Added final scroll after completion to show result
+  - Prevents flickering and smooths the continuation experience
+
+---
+
 ## [1.3.1] - 2026-03-31
 
 ### Fixed (index.html)

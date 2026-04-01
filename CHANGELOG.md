@@ -2,6 +2,21 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.2.9] - 2026-03-31
+
+### Fixed (index.html)
+
+#### Code Analysis Fixes
+- **Removed duplicate methods** - `createNewSkill()` and dead `_legacyDownloadSkillTemplate()`
+- **Fixed event.target fragility** - `switchSettingsTab` now uses `currentTarget` parameter
+- **AIAvatar memory leak fixed** - Added static registry with `destroy()` and `destroyAll()` methods
+- **XSS vulnerability patched** - `_appendItem()` now checks content type before using innerHTML
+- **Download timing fixed** - `downloadFile()` delays URL cleanup to ensure download starts
+- **Search debouncing added** - Skills search input now debounced (150ms)
+- **Implemented empty method** - `updateEditButton()` now properly updates button visibility
+
+---
+
 ## [1.2.8] - 2026-03-31
 
 ### Added

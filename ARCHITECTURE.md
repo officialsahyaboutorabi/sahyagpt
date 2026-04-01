@@ -128,15 +128,20 @@ Displays tool calls (like web search) with rich formatting.
 
 ### 5. AIAvatar
 
-**File**: `index.html` (lines 1336-1451)
+**File**: `index.html` (lines 1716+)
 
-Canvas-based animated avatar with eye-tracking.
+Canvas-based animated avatar with eye-tracking and memory management.
 
 **Features**:
 - Mouse-following eyes
 - Breathing animation
 - Glow effects
 - Customizable size
+- **Memory Management**:
+  - Static `instances` Map for tracking all active avatars
+  - `destroy()` method for cleanup (cancels animation frame, removes event listeners)
+  - `destroyAll()` static method for bulk cleanup
+  - Automatic cleanup when canvas is removed from DOM
 
 ### 6. Starfield Animation
 
@@ -586,9 +591,12 @@ ToolCard (Tool Display)
 └── _toggle()
 
 AIAvatar (Canvas Animation)
-├── init()
-├── animate()
-└── draw()
+├── Static instances (Map) - Registry of all active avatars
+├── init() - Initialize animation and event listeners
+├── animate() - Animation loop with requestAnimationFrame
+├── draw() - Render avatar frame
+├── destroy() - Cleanup (cancel animation, remove listeners)
+└── destroyAll() (static) - Bulk cleanup of all instances
 
 ChainOfThought (Multi-step Display)
 ├── addStep()

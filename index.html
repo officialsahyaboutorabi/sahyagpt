@@ -1470,10 +1470,10 @@
                 </button>
             </div>
             <div class="modal-tabs">
-                <button class="modal-tab active" id="tabGeneral" onclick="chatApp.switchSettingsTab('general')">General</button>
-                <button class="modal-tab" id="tabModel" onclick="chatApp.switchSettingsTab('model')">Model</button>
-                <button class="modal-tab" id="tabAppearance" onclick="chatApp.switchSettingsTab('appearance')">Appearance</button>
-                <button class="modal-tab" id="tabAdvanced" onclick="chatApp.switchSettingsTab('advanced')">Advanced</button>
+                <button class="modal-tab active" id="tabGeneral" onclick="chatApp.switchSettingsTab('general', this)">General</button>
+                <button class="modal-tab" id="tabModel" onclick="chatApp.switchSettingsTab('model', this)">Model</button>
+                <button class="modal-tab" id="tabAppearance" onclick="chatApp.switchSettingsTab('appearance', this)">Appearance</button>
+                <button class="modal-tab" id="tabAdvanced" onclick="chatApp.switchSettingsTab('advanced', this)">Advanced</button>
             </div>
             <div class="modal-body">
                 <div class="settings-section active" id="tab-general">
@@ -1714,8 +1714,18 @@
 
         // AI Avatar Animation Class
         class AIAvatar {
+            static instances = new Map();
+            
             constructor(canvasId, size = 56) {
+                this.canvasId = canvasId;
                 this.canvas = document.getElementById(canvasId);
+                if (!this.canvas) return;
+                
+                // Cleanup existing instance for this canvas
+                if (AIAvatar.instances.has(canvasId)) {
+                    AIAvatar.instances.get(canvasId).destroy();
+                }
+                
                 this.ctx = this.canvas.getContext('2d');
                 this.size = size;
                 this.time = 0;
@@ -1723,28 +1733,53 @@
                 this.mouseY = 0;
                 this.targetX = 0;
                 this.targetY = 0;
+                this.animationId = null;
+                this.mouseHandler = null;
                 const dpr = window.devicePixelRatio || 1;
                 this.canvas.width = size * 2 * dpr;
                 this.canvas.height = size * 2 * dpr;
                 this.ctx.scale(dpr, dpr);
                 this.init();
+                
+                // Register instance
+                AIAvatar.instances.set(canvasId, this);
             }
             init() {
-                this.animate();
-                document.addEventListener('mousemove', (e) => {
+                this.mouseHandler = (e) => {
+                    if (!this.canvas) return;
                     const rect = this.canvas.getBoundingClientRect();
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
                     this.targetX = (e.clientX - centerX) / 20;
                     this.targetY = (e.clientY - centerY) / 20;
-                });
+                };
+                document.addEventListener('mousemove', this.mouseHandler);
+                this.animate();
             }
             animate() {
+                if (!this.canvas) return;
                 this.time += 0.02;
                 this.mouseX += (this.targetX - this.mouseX) * 0.1;
                 this.mouseY += (this.targetY - this.mouseY) * 0.1;
                 this.draw();
-                requestAnimationFrame(() => this.animate());
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+            destroy() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                if (this.mouseHandler) {
+                    document.removeEventListener('mousemove', this.mouseHandler);
+                    this.mouseHandler = null;
+                }
+                this.canvas = null;
+                this.ctx = null;
+                AIAvatar.instances.delete(this.canvasId);
+            }
+            static destroyAll() {
+                AIAvatar.instances.forEach(instance => instance.destroy());
+                AIAvatar.instances.clear();
             }
             draw() {
                 const ctx = this.ctx;
@@ -2244,7 +2279,15 @@
             _appendItem(htmlOrText) {
                 const el = document.createElement('div');
                 el.className = 'cot-item';
-                el.innerHTML = typeof htmlOrText === 'string' ? htmlOrText : '';
+                // Use textContent for text to prevent XSS, only use innerHTML if explicitly needed
+                if (typeof htmlOrText === 'string') {
+                    // Check if it looks like HTML (contains tags)
+                    if (htmlOrText.includes('<') && htmlOrText.includes('>')) {
+                        el.innerHTML = htmlOrText;
+                    } else {
+                        el.textContent = htmlOrText;
+                    }
+                }
                 this.itemsEl.appendChild(el);
                 return el;
             }
@@ -3917,7 +3960,14 @@ Using the search results above as your primary source of information, provide a 
                 } else this.showToast('No previous message to edit', 'error');
             }
 
-            updateEditButton() {}
+            updateEditButton() {
+                // Update edit button visibility based on whether there's content to edit
+                const hasMessages = this.messages.length > 0;
+                const editBtn = document.getElementById('editMessageBtn');
+                if (editBtn) {
+                    editBtn.style.display = hasMessages ? 'flex' : 'none';
+                }
+            }
 
             editMessage(index) {
                 const msg = this.messages[index];
@@ -4267,6 +4317,8 @@ Using the search results above as your primary source of information, provide a 
                 const welcomeScreen = document.getElementById('welcomeScreen');
                 const container = document.getElementById('messagesContainer');
                 if (this.messages.length > 0) { welcomeScreen.style.display = 'none'; container.style.display = 'block'; }
+                // Cleanup existing AIAvatar instances before clearing
+                AIAvatar.destroyAll();
                 container.innerHTML = '';
                 this.messages.forEach((msg, index) => { container.appendChild(this.createMessageElement(msg, index)); });
                 this.scrollToBottom();
@@ -4864,14 +4916,6 @@ Using the search results above as your primary source of information, provide a 
                     this.skillsManager.viewSkills();
                 }
             }
-
-            // Legacy skill template method - replaced by skillsManager
-            _legacyDownloadSkillTemplate() {
-                // This method is deprecated - use skillsManager.downloadTemplate() instead
-            }
-
-            createNewSkill() {
-                const modalHtml = `
                     <div class="modal-overlay active" id="createSkillModal" onclick="if(event.target.id === 'createSkillModal') chatApp.closeCreateSkillModal()">
                         <div class="modal" style="max-width: 700px; max-height: 85vh;">
                             <div class="modal-header">
@@ -5337,9 +5381,15 @@ When the user requests this skill:
                 else document.body.style.filter = '';
             }
 
-            switchSettingsTab(tabName) {
+            switchSettingsTab(tabName, clickedTab) {
                 document.querySelectorAll('.modal-tab').forEach(tab => tab.classList.remove('active'));
-                event.target.classList.add('active');
+                if (clickedTab) {
+                    clickedTab.classList.add('active');
+                } else {
+                    // Fallback: find tab by onclick attribute containing tabName
+                    const tab = document.querySelector(`.modal-tab[onclick*="'${tabName}'"]`);
+                    if (tab) tab.classList.add('active');
+                }
                 document.querySelectorAll('.settings-section').forEach(section => section.classList.remove('active'));
                 document.getElementById(`tab-${tabName}`).classList.add('active');
             }
@@ -5824,8 +5874,13 @@ When this skill is active:
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = filename;
+                document.body.appendChild(a);
                 a.click();
-                URL.revokeObjectURL(url);
+                // Delay cleanup to ensure download starts
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
             }
 
             createNewSkill() {
@@ -5976,14 +6031,18 @@ When this skill is active:
                 }
 
                 const searchInput = modal.querySelector('#skillSearchInput');
+                let searchTimeout;
                 searchInput.addEventListener('input', (e) => {
-                    const query = e.target.value.toLowerCase();
-                    const filtered = skills.filter(s => 
-                        s.name.toLowerCase().includes(query) ||
-                        s.description.toLowerCase().includes(query) ||
-                        s.category.toLowerCase().includes(query)
-                    );
-                    modal.querySelector('#skillsListContainer').innerHTML = this.renderSkillsList(filtered, activeSkillId);
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const query = e.target.value.toLowerCase();
+                        const filtered = skills.filter(s => 
+                            s.name.toLowerCase().includes(query) ||
+                            s.description.toLowerCase().includes(query) ||
+                            s.category.toLowerCase().includes(query)
+                        );
+                        modal.querySelector('#skillsListContainer').innerHTML = this.renderSkillsList(filtered, activeSkillId);
+                    }, 150); // Debounce 150ms
                 });
             }
 

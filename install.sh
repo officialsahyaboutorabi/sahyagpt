@@ -117,7 +117,7 @@ get_download_url() {
     # Binary names use 'sahyacode' prefix in the source repo
     local binary_name="sahyacode-${platform}-${arch}${suffix}"
     
-    # GitHub releases use raw binary format (no zip)
+    # GitHub releases use tar.gz format
     if [ "$VERSION" = "latest" ]; then
         local latest_version
         latest_version=$(get_latest_version)
@@ -125,14 +125,14 @@ get_download_url() {
             echo "Error: Could not determine latest version" >&2
             exit 1
         fi
-        echo "https://github.com/${SOURCE_REPO}/releases/download/${latest_version}/${binary_name}"
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${latest_version}/${binary_name}.tar.gz"
     else
         # Ensure VERSION has 'v' prefix for GitHub releases
         local version_tag="$VERSION"
         if [[ ! "$version_tag" =~ ^v ]]; then
             version_tag="v${version_tag}"
         fi
-        echo "https://github.com/${SOURCE_REPO}/releases/download/${version_tag}/${binary_name}"
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${version_tag}/${binary_name}.tar.gz"
     fi
 }
 
@@ -155,20 +155,32 @@ main() {
     TEMP_DIR=$(mktemp -d)
     trap "rm -rf $TEMP_DIR" EXIT
     
-    # Download binary directly (GitHub releases have raw binaries, not zips)
-    local binary_path="$TEMP_DIR/${INSTALL_NAME}"
+    # Download archive
+    local archive_path="$TEMP_DIR/${INSTALL_NAME}.tar.gz"
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$DOWNLOAD_URL" -o "$binary_path"
+        curl -fsSL "$DOWNLOAD_URL" -o "$archive_path"
     elif command -v wget >/dev/null 2>&1; then
-        wget -q "$DOWNLOAD_URL" -O "$binary_path"
+        wget -q "$DOWNLOAD_URL" -O "$archive_path"
     else
         echo "Error: curl or wget is required"
         exit 1
     fi
     
-    # Make executable and install
-    chmod +x "$binary_path"
-    mv "$binary_path" "$INSTALL_DIR/${INSTALL_NAME}"
+    # Extract archive
+    echo "Extracting..."
+    tar -xzf "$archive_path" -C "$TEMP_DIR"
+    
+    # Install binary
+    if [ -f "$TEMP_DIR/sahyacode" ]; then
+        chmod +x "$TEMP_DIR/sahyacode"
+        mv "$TEMP_DIR/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
+    elif [ -f "$TEMP_DIR/bin/sahyacode" ]; then
+        chmod +x "$TEMP_DIR/bin/sahyacode"
+        mv "$TEMP_DIR/bin/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
+    else
+        echo "Error: Could not find sahyacode binary in archive"
+        exit 1
+    fi
     
     # Create opencode symlink for backward compatibility
     if [ ! -L "$INSTALL_DIR/opencode" ]; then

@@ -170,8 +170,14 @@ main() {
     echo "Extracting..."
     tar -xzf "$archive_path" -C "$TEMP_DIR"
     
-    # Install binary
-    if [ -f "$TEMP_DIR/sahyacode" ]; then
+    # Find the extracted directory (sahyacode-*)
+    EXTRACTED_DIR=$(find "$TEMP_DIR" -maxdepth 1 -type d -name "sahyacode-*" | head -1)
+    
+    # Install binary - look for 'opencode' binary in the archive
+    if [ -f "$EXTRACTED_DIR/bin/opencode" ]; then
+        chmod +x "$EXTRACTED_DIR/bin/opencode"
+        mv "$EXTRACTED_DIR/bin/opencode" "$INSTALL_DIR/${INSTALL_NAME}"
+    elif [ -f "$TEMP_DIR/sahyacode" ]; then
         chmod +x "$TEMP_DIR/sahyacode"
         mv "$TEMP_DIR/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
     elif [ -f "$TEMP_DIR/bin/sahyacode" ]; then
@@ -179,6 +185,8 @@ main() {
         mv "$TEMP_DIR/bin/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
     else
         echo "Error: Could not find sahyacode binary in archive"
+        echo "Contents of temp directory:"
+        find "$TEMP_DIR" -type f 2>/dev/null || true
         exit 1
     fi
     

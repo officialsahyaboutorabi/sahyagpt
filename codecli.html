@@ -482,7 +482,7 @@
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                         </svg>
-                        v2.0.3 Now Available — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
+                        v2.0.4 Now Available — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
                     </div>
                     <h1 class="hero-title">Code with Sahya Code</h1>
                     <p class="hero-subtitle">
@@ -597,7 +597,7 @@
                                     <span class="terminal-prompt">$</span>
                                     <span class="terminal-cmd">sahyacode</span>
                                 </div>
-                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.0.3</div>
+                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.0.4</div>
                                 <div class="terminal-line terminal-output">Type your message or /help for commands</div>
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">&gt;</span>
@@ -691,7 +691,27 @@
                 <div class="changelog-container" style="max-width: 900px; margin: 0 auto 100px;">
                     <div class="changelog-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; border-left: 3px solid var(--accent);">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                            <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.0.3</span>
+                            <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.0.4</span>
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">April 2, 2025</span>
+                        </div>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Interactive Theme Manager</h3>
+                        <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                            <li>New <code>sahyacode theme</code> command for complete theme management</li>
+                            <li>Interactive theme creation wizard with step-by-step color picker</li>
+                            <li>Support for color input in hex, RGB, and RGBA formats</li>
+                            <li>Live theme preview with color swatches</li>
+                            <li>Edit existing custom themes</li>
+                            <li>Duplicate and modify themes</li>
+                            <li>List all built-in and custom themes</li>
+                            <li>Export themes to JSON files</li>
+                            <li>Import themes from JSON files</li>
+                            <li>Save themes globally or project-local</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="changelog-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.0.3</span>
                             <span style="color: var(--text-secondary); font-size: 0.9rem;">April 2, 2025</span>
                         </div>
                         <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Folder Path Fixes</h3>
@@ -861,6 +881,64 @@
                             <div class="terminal-line terminal-output">Base URL: https://llm.nexiant.ai/v1</div>
                             <div class="terminal-line terminal-output">API Key: ••••••••</div>
                         </div>
+                    </div>
+                    
+                    <div class="arch-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px;">
+                        <h3 style="font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <span style="background: var(--accent-light); padding: 8px; border-radius: 8px;">🎨</span>
+                            Theme Manager
+                        </h3>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;">
+                            Create, edit, and manage custom terminal themes with the interactive theme manager.
+                            Supports hex, RGB, and RGBA color formats with live preview.
+                        </p>
+                        
+                        <h4 style="font-size: 1rem; margin: 20px 0 12px; color: var(--accent);">Create a New Theme</h4>
+                        <div class="terminal-mock" style="margin-bottom: 16px;">
+                            <div class="terminal-line">
+                                <span class="terminal-prompt">$</span>
+                                <span class="terminal-cmd">sahyacode theme create</span>
+                            </div>
+                            <div class="terminal-line terminal-output">Theme name: my-awesome-theme</div>
+                            <div class="terminal-line terminal-output">Primary - Main brand color</div>
+                            <div class="terminal-line terminal-output">  Dark mode color: #ff4f00</div>
+                            <div class="terminal-line terminal-output">  Light mode color: #ff6b35</div>
+                            <div class="terminal-line terminal-output">✓ Theme saved!</div>
+                        </div>
+                        
+                        <h4 style="font-size: 1rem; margin: 20px 0 12px; color: var(--accent);">Theme Commands</h4>
+                        <div class="cmd-line" style="margin-bottom: 8px;">
+                            <code>sahyacode theme create</code>
+                            <span style="color: var(--text-secondary); margin-left: 12px;">— Create a new theme</span>
+                        </div>
+                        <div class="cmd-line" style="margin-bottom: 8px;">
+                            <code>sahyacode theme edit</code>
+                            <span style="color: var(--text-secondary); margin-left: 12px;">— Edit existing theme</span>
+                        </div>
+                        <div class="cmd-line" style="margin-bottom: 8px;">
+                            <code>sahyacode theme list</code>
+                            <span style="color: var(--text-secondary); margin-left: 12px;">— List all themes</span>
+                        </div>
+                        <div class="cmd-line" style="margin-bottom: 8px;">
+                            <code>sahyacode theme export</code>
+                            <span style="color: var(--text-secondary); margin-left: 12px;">— Export theme to file</span>
+                        </div>
+                        <div class="cmd-line" style="margin-bottom: 16px;">
+                            <code>sahyacode theme import</code>
+                            <span style="color: var(--text-secondary); margin-left: 12px;">— Import theme from file</span>
+                        </div>
+                        
+                        <h4 style="font-size: 1rem; margin: 20px 0 12px; color: var(--accent);">Color Input Formats</h4>
+                        <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px; margin-bottom: 16px;">
+                            <li><strong>Hex:</strong> <code>#ff4f00</code> or <code>ff4f00</code></li>
+                            <li><strong>RGB:</strong> <code>rgb(255, 79, 0)</code></li>
+                            <li><strong>RGBA:</strong> <code>rgba(255, 79, 0, 0.8)</code></li>
+                        </ul>
+                        
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            Themes are saved to <code>~/.config/sahyacode/themes/</code> (global) or 
+                            <code>.sahyacode/themes/</code> (project-local).
+                        </p>
                     </div>
                 </div>
                 

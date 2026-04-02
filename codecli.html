@@ -469,12 +469,12 @@
             <div class="content-scroll">
                 <!-- Hero Section -->
                 <div class="hero-section">
-                    <div class="hero-badge">
+                    <div class="hero-badge" id="version-badge">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                         </svg>
-                        v2.0.5 Now Available — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
+                        <span id="version-text">Loading...</span> — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
                     </div>
                     <h1 class="hero-title">Code with Sahya Code</h1>
                     <p class="hero-subtitle">
@@ -886,6 +886,24 @@
                 showToast();
             });
         }
+        
+        // Fetch latest version from GitHub
+        async function fetchLatestVersion() {
+            const versionText = document.getElementById('version-text');
+            try {
+                const response = await fetch('https://api.github.com/repos/officialsahyaboutorabi/sahya-code/releases/latest');
+                if (!response.ok) throw new Error('Failed to fetch');
+                const data = await response.json();
+                const version = data.tag_name || 'v2.0.5';
+                versionText.textContent = `${version} Now Available`;
+            } catch (err) {
+                // Fallback to static version if API fails
+                versionText.textContent = 'v2.0.5 Now Available';
+            }
+        }
+        
+        // Fetch version on page load
+        fetchLatestVersion();
     </script>
 </body>
 </html>

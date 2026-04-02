@@ -439,6 +439,27 @@
                         <span>Code CLI</span>
                     </a>
                 </div>
+                <div class="nav-section">
+                    <div class="nav-title">Documentation</div>
+                    <a href="#changelog" class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <span>Changelog</span>
+                    </a>
+                    <a href="#architecture" class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                        <span>Architecture</span>
+                    </a>
+                </div>
             </div>
             <div class="sidebar-footer">
                 <a href="index.html" class="settings-btn">
@@ -461,12 +482,13 @@
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                         </svg>
-                        v1.0.0 Now Available
+                        v2.0.1 Now Available — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
                     </div>
                     <h1 class="hero-title">Code with Sahya Code</h1>
                     <p class="hero-subtitle">
-                        Sahya Code is an open-source AI agent for the terminal. 
-                        It helps you understand large codebases, automate tedious work, and ship faster.
+                        An AI-powered coding agent for your terminal. Built on the original OpenCode foundation,
+                        reimagined with <strong>Nexiant AI</strong> as the default provider. Ship faster with
+                        intelligent code understanding and automation.
                     </p>
                     
                     <div class="install-section">
@@ -573,9 +595,9 @@
                             <div class="terminal-mock">
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">$</span>
-                                    <span class="terminal-cmd">sahya</span>
+                                    <span class="terminal-cmd">sahyacode</span>
                                 </div>
-                                <div class="terminal-line terminal-output">Welcome to Sahya Code v1.0.0</div>
+                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.0.1</div>
                                 <div class="terminal-line terminal-output">Type your message or /help for commands</div>
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">&gt;</span>
@@ -586,12 +608,12 @@
                         <div class="usage-content">
                             <h3 class="usage-title">Interactive Mode</h3>
                             <p class="usage-desc">
-                                Run 'sahya' in your project folder to launch the interactive terminal UI. 
+                                Run 'sahyacode' in your project folder to launch the interactive terminal UI.
                                 Use '@' to reference local files and get contextual assistance.
                             </p>
                             <div class="cmd-line">
-                                <code>sahya</code>
-                                <button class="cmd-copy" onclick="copyText('sahya')">
+                                <code>sahyacode</code>
+                                <button class="cmd-copy" onclick="copyText('sahyacode')">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -606,7 +628,7 @@
                             <div class="terminal-mock">
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">$</span>
-                                    <span class="terminal-cmd">sahya -p "Explain @main.py"</span>
+                                    <span class="terminal-cmd">sahyacode -p "Explain @main.py"</span>
                                 </div>
                                 <div class="terminal-line terminal-output">This Python script contains...</div>
                                 <div class="terminal-line terminal-output">1. A FastAPI application setup</div>
@@ -617,12 +639,12 @@
                         <div class="usage-content">
                             <h3 class="usage-title">Headless Mode</h3>
                             <p class="usage-desc">
-                                Use '-p' flag to run Sahya Code without the interactive UI — 
+                                Use '-p' flag to run Sahya Code without the interactive UI —
                                 ideal for scripts, automation, and CI/CD pipelines.
                             </p>
                             <div class="cmd-line">
-                                <code>sahya -p "Explain the auth flow"</code>
-                                <button class="cmd-copy" onclick="copyText('sahya -p "Explain the auth flow"')">
+                                <code>sahyacode -p "Explain the auth flow"</code>
+                                <button class="cmd-copy" onclick="copyText('sahyacode -p "Explain the auth flow"')">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -637,29 +659,178 @@
                             <div class="terminal-mock">
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">$</span>
-                                    <span class="terminal-cmd">sahya config</span>
+                                    <span class="terminal-cmd">sahyacode providers</span>
                                 </div>
-                                <div class="terminal-line terminal-output">Current configuration:</div>
-                                <div class="terminal-line terminal-output">  model: gpt-4</div>
-                                <div class="terminal-line terminal-output">  theme: dark</div>
-                                <div class="terminal-line terminal-output">  auto_save: true</div>
+                                <div class="terminal-line terminal-output">Available providers:</div>
+                                <div class="terminal-line terminal-output">  ✓ nexiant (default)</div>
+                                <div class="terminal-line terminal-output">  ✓ openai</div>
+                                <div class="terminal-line terminal-output">  ✓ anthropic</div>
                             </div>
                         </div>
                         <div class="usage-content">
                             <h3 class="usage-title">Easy Configuration</h3>
                             <p class="usage-desc">
-                                Configure your preferences with simple commands. 
-                                Set default models, themes, and behaviors to match your workflow.
+                                Configure AI providers and preferences with simple commands.
+                                Set up Nexiant, OpenAI, or your own LiteLLM instance.
                             </p>
                             <div class="cmd-line">
-                                <code>sahya config --list</code>
-                                <button class="cmd-copy" onclick="copyText('sahya config --list')">
+                                <code>sahyacode providers list</code>
+                                <button class="cmd-copy" onclick="copyText('sahyacode providers list')">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                     </svg>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Changelog Section -->
+                <h2 class="section-title" id="changelog">Changelog</h2>
+                <div class="changelog-container" style="max-width: 900px; margin: 0 auto 100px;">
+                    <div class="changelog-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; border-left: 3px solid var(--accent);">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.0.1</span>
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">April 2, 2025</span>
+                        </div>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Sahya Code Rebrand & Nexiant Integration</h3>
+                        <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                            <li>Complete rebrand from OpenCode to <strong>Sahya Code</strong></li>
+                            <li><strong>Nexiant AI</strong> is now the default provider (via LiteLLM)</li>
+                            <li>New ASCII art logo and branding</li>
+                            <li>Updated all documentation and user-facing text</li>
+                            <li>Config paths migrated to <code>~/.config/sahyacode/</code></li>
+                            <li>Binary renamed from <code>opencode</code> to <code>sahyacode</code></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="changelog-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.0.0</span>
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">March 2025</span>
+                        </div>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Initial Release</h3>
+                        <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                            <li>Based on OpenCode foundation</li>
+                            <li>Multi-provider AI support (75+ providers)</li>
+                            <li>Terminal UI with file context</li>
+                            <li>MCP (Model Context Protocol) support</li>
+                            <li>Headless mode for automation</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Architecture Section -->
+                <h2 class="section-title" id="architecture">Project Architecture</h2>
+                <div class="architecture-container" style="max-width: 900px; margin: 0 auto 100px;">
+                    <div class="arch-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                        <h3 style="font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <span style="background: var(--accent-light); padding: 8px; border-radius: 8px;">🏗️</span>
+                            Monorepo Structure
+                        </h3>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;">
+                            Sahya Code is organized as a monorepo with multiple packages:
+                        </p>
+                        <div class="cmd-line" style="margin-bottom: 12px;">
+                            <code>packages/opencode/</code>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px;">
+                            Core CLI application built with <strong>Bun</strong> and compiled to native binaries.
+                            Supports macOS, Linux (x64/ARM64), and Windows.
+                        </p>
+                        
+                        <h4 style="font-size: 1.1rem; margin: 24px 0 12px;">Key Components</h4>
+                        <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                            <li><strong>CLI</strong> — Terminal UI built with Ink/React for interactive sessions</li>
+                            <li><strong>Provider Layer</strong> — Abstraction for 75+ AI providers via LiteLLM</li>
+                            <li><strong>MCP Integration</strong> — Model Context Protocol for tool servers</li>
+                            <li><strong>Session Manager</strong> — SQLite-based conversation persistence</li>
+                            <li><strong>File System</strong> — Project indexing and context management</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="arch-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                        <h3 style="font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <span style="background: var(--accent-light); padding: 8px; border-radius: 8px;">🔌</span>
+                            Provider System
+                        </h3>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;">
+                            Sahya Code supports multiple AI providers through a unified interface:
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0;">
+                            <div style="background: var(--bg-secondary); padding: 16px; border-radius: 10px;">
+                                <strong style="color: var(--accent);">Nexiant (Default)</strong>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">LiteLLM endpoint at llm.nexiant.ai</p>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 16px; border-radius: 10px;">
+                                <strong>OpenAI</strong>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">GPT-4, GPT-3.5, and more</p>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 16px; border-radius: 10px;">
+                                <strong>Anthropic</strong>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Claude 3.5 Sonnet, Opus</p>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 16px; border-radius: 10px;">
+                                <strong>Ollama</strong>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Local models (Llama, etc.)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="cmd-line">
+                            <code>sahyacode providers list</code>
+                            <button class="cmd-copy" onclick="copyText('sahyacode providers list')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="arch-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px;">
+                        <h3 style="font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <span style="background: var(--accent-light); padding: 8px; border-radius: 8px;">⚙️</span>
+                            Connecting to LiteLLM / Nexiant
+                        </h3>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;">
+                            To use your own LiteLLM instance or connect to Nexiant AI:
+                        </p>
+                        
+                        <h4 style="font-size: 1rem; margin: 20px 0 12px; color: var(--accent);">Option 1: Interactive Setup</h4>
+                        <div class="terminal-mock" style="margin-bottom: 16px;">
+                            <div class="terminal-line">
+                                <span class="terminal-prompt">$</span>
+                                <span class="terminal-cmd">sahyacode providers add nexiant</span>
+                            </div>
+                            <div class="terminal-line terminal-output">Enter API key: ••••••••</div>
+                            <div class="terminal-line terminal-output">✓ Provider configured successfully</div>
+                        </div>
+                        
+                        <h4 style="font-size: 1rem; margin: 20px 0 12px; color: var(--accent);">Option 2: Environment Variable</h4>
+                        <div class="cmd-line" style="margin-bottom: 16px;">
+                            <code>export NEXIANT_API_KEY=your-api-key</code>
+                            <button class="cmd-copy" onclick="copyText('export NEXIANT_API_KEY=your-api-key')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <h4 style="font-size: 1rem; margin: 20px 0 12px; color: var(--accent);">Option 3: Custom LiteLLM URL</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+                            For custom LiteLLM deployments, add a custom provider:
+                        </p>
+                        <div class="terminal-mock">
+                            <div class="terminal-line">
+                                <span class="terminal-prompt">$</span>
+                                <span class="terminal-cmd">sahyacode providers add custom</span>
+                            </div>
+                            <div class="terminal-line terminal-output">Name: my-litellm</div>
+                            <div class="terminal-line terminal-output">Base URL: https://llm.nexiant.ai/v1</div>
+                            <div class="terminal-line terminal-output">API Key: ••••••••</div>
                         </div>
                     </div>
                 </div>

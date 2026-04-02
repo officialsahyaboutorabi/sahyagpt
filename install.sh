@@ -4,9 +4,8 @@ set -e
 # Sahya Code Installation Script
 # Install with: curl -fsSL https://sbgpt.qzz.io/install.sh | bash
 
-# Download binaries from original opencode repository (anomalyco/opencode)
-# But install locally as sahyacode
-SOURCE_REPO="anomalyco/opencode"
+# Download binaries from sahyacode repository
+SOURCE_REPO="officialsahyaboutorabi/sahya-code"
 INSTALL_NAME="sahyacode"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 VERSION="${VERSION:-latest}"
@@ -115,8 +114,8 @@ get_download_url() {
         fi
     fi
     
-    # Binary names use 'opencode' prefix in the source repo
-    local binary_name="opencode-${platform}-${arch}${suffix}"
+    # Binary names use 'sahyacode' prefix in the source repo
+    local binary_name="sahyacode-${platform}-${arch}${suffix}"
     
     # GitHub releases use .zip format
     if [ "$VERSION" = "latest" ]; then
@@ -171,15 +170,15 @@ main() {
         powershell -Command "Expand-Archive -Path '$TEMP_DIR/${INSTALL_NAME}.zip' -DestinationPath '$TEMP_DIR' -Force"
     fi
     
-    # Install binary (source is 'opencode', install as 'sahyacode')
-    if [ -f "$TEMP_DIR/opencode" ]; then
-        mv "$TEMP_DIR/opencode" "$INSTALL_DIR/${INSTALL_NAME}"
+    # Install binary
+    if [ -f "$TEMP_DIR/sahyacode" ]; then
+        mv "$TEMP_DIR/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
         chmod +x "$INSTALL_DIR/${INSTALL_NAME}"
-    elif [ -f "$TEMP_DIR/bin/opencode" ]; then
-        mv "$TEMP_DIR/bin/opencode" "$INSTALL_DIR/${INSTALL_NAME}"
+    elif [ -f "$TEMP_DIR/bin/sahyacode" ]; then
+        mv "$TEMP_DIR/bin/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
         chmod +x "$INSTALL_DIR/${INSTALL_NAME}"
     else
-        echo "Error: Could not find opencode binary in archive"
+        echo "Error: Could not find sahyacode binary in archive"
         echo "Contents of archive:"
         ls -la "$TEMP_DIR/"
         exit 1

@@ -127,7 +127,12 @@ get_download_url() {
         fi
         echo "https://github.com/${SOURCE_REPO}/releases/download/${latest_version}/${binary_name}"
     else
-        echo "https://github.com/${SOURCE_REPO}/releases/download/${VERSION}/${binary_name}"
+        # Ensure VERSION has 'v' prefix for GitHub releases
+        local version_tag="$VERSION"
+        if [[ ! "$version_tag" =~ ^v ]]; then
+            version_tag="v${version_tag}"
+        fi
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${version_tag}/${binary_name}"
     fi
 }
 

@@ -117,7 +117,7 @@ get_download_url() {
     # Binary names use 'sahyacode' prefix in the source repo
     local binary_name="sahyacode-${platform}-${arch}${suffix}"
     
-    # GitHub releases use .zip format
+    # GitHub releases use raw binary format (no zip)
     if [ "$VERSION" = "latest" ]; then
         local latest_version
         latest_version=$(get_latest_version)
@@ -125,9 +125,9 @@ get_download_url() {
             echo "Error: Could not determine latest version" >&2
             exit 1
         fi
-        echo "https://github.com/${SOURCE_REPO}/releases/download/${latest_version}/${binary_name}.zip"
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${latest_version}/${binary_name}"
     else
-        echo "https://github.com/${SOURCE_REPO}/releases/download/${VERSION}/${binary_name}.zip"
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${VERSION}/${binary_name}"
     fi
 }
 

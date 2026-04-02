@@ -150,39 +150,20 @@ main() {
     TEMP_DIR=$(mktemp -d)
     trap "rm -rf $TEMP_DIR" EXIT
     
-    # Download
+    # Download binary directly (GitHub releases have raw binaries, not zips)
+    local binary_path="$TEMP_DIR/${INSTALL_NAME}"
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$DOWNLOAD_URL" -o "$TEMP_DIR/${INSTALL_NAME}.zip"
+        curl -fsSL "$DOWNLOAD_URL" -o "$binary_path"
     elif command -v wget >/dev/null 2>&1; then
-        wget -q "$DOWNLOAD_URL" -O "$TEMP_DIR/${INSTALL_NAME}.zip"
+        wget -q "$DOWNLOAD_URL" -O "$binary_path"
     else
         echo "Error: curl or wget is required"
         exit 1
     fi
     
-    # Extract based on platform
-    echo "Extracting..."
-    if [ "$(uname -s)" = "Darwin" ] || [ "$(uname -s)" = "Linux" ]; then
-        # macOS and Linux have unzip
-        unzip -q "$TEMP_DIR/${INSTALL_NAME}.zip" -d "$TEMP_DIR"
-    else
-        # Windows - try PowerShell
-        powershell -Command "Expand-Archive -Path '$TEMP_DIR/${INSTALL_NAME}.zip' -DestinationPath '$TEMP_DIR' -Force"
-    fi
-    
-    # Install binary
-    if [ -f "$TEMP_DIR/sahyacode" ]; then
-        mv "$TEMP_DIR/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
-        chmod +x "$INSTALL_DIR/${INSTALL_NAME}"
-    elif [ -f "$TEMP_DIR/bin/sahyacode" ]; then
-        mv "$TEMP_DIR/bin/sahyacode" "$INSTALL_DIR/${INSTALL_NAME}"
-        chmod +x "$INSTALL_DIR/${INSTALL_NAME}"
-    else
-        echo "Error: Could not find sahyacode binary in archive"
-        echo "Contents of archive:"
-        ls -la "$TEMP_DIR/"
-        exit 1
-    fi
+    # Make executable and install
+    chmod +x "$binary_path"
+    mv "$binary_path" "$INSTALL_DIR/${INSTALL_NAME}"
     
     # Create opencode symlink for backward compatibility
     if [ ! -L "$INSTALL_DIR/opencode" ]; then

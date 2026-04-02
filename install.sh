@@ -82,6 +82,20 @@ check_musl() {
     echo ""
 }
 
+# Get the latest version from GitHub API
+get_latest_version() {
+    local api_url="https://api.github.com/repos/${SOURCE_REPO}/releases/latest"
+    local version
+    
+    if command -v curl >/dev/null 2>&1; then
+        version=$(curl -fsSL "$api_url" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
+    elif command -v wget >/dev/null 2>&1; then
+        version=$(wget -qO- "$api_url" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
+    fi
+    
+    echo "$version"
+}
+
 # Get the download URL
 get_download_url() {
     local platform_arch=$1
@@ -104,10 +118,17 @@ get_download_url() {
     # Binary names use 'opencode' prefix in the source repo
     local binary_name="opencode-${platform}-${arch}${suffix}"
     
+    # GitHub releases use .zip format
     if [ "$VERSION" = "latest" ]; then
-        echo "https://github.com/${SOURCE_REPO}/releases/latest/download/${binary_name}.tar.gz"
+        local latest_version
+        latest_version=$(get_latest_version)
+        if [ -z "$latest_version" ]; then
+            echo "Error: Could not determine latest version" >&2
+            exit 1
+        fi
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${latest_version}/${binary_name}.zip"
     else
-        echo "https://github.com/${SOURCE_REPO}/releases/download/${VERSION}/${binary_name}.tar.gz"
+        echo "https://github.com/${SOURCE_REPO}/releases/download/${VERSION}/${binary_name}.zip"
     fi
 }
 
@@ -130,18 +151,25 @@ main() {
     TEMP_DIR=$(mktemp -d)
     trap "rm -rf $TEMP_DIR" EXIT
     
-    # Download and extract
+    # Download
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$DOWNLOAD_URL" -o "$TEMP_DIR/${INSTALL_NAME}.tar.gz"
+        curl -fsSL "$DOWNLOAD_URL" -o "$TEMP_DIR/${INSTALL_NAME}.zip"
     elif command -v wget >/dev/null 2>&1; then
-        wget -q "$DOWNLOAD_URL" -O "$TEMP_DIR/${INSTALL_NAME}.tar.gz"
+        wget -q "$DOWNLOAD_URL" -O "$TEMP_DIR/${INSTALL_NAME}.zip"
     else
         echo "Error: curl or wget is required"
         exit 1
     fi
     
+    # Extract based on platform
     echo "Extracting..."
-    tar -xzf "$TEMP_DIR/${INSTALL_NAME}.tar.gz" -C "$TEMP_DIR"
+    if [ "$(uname -s)" = "Darwin" ] || [ "$(uname -s)" = "Linux" ]; then
+        # macOS and Linux have unzip
+        unzip -q "$TEMP_DIR/${INSTALL_NAME}.zip" -d "$TEMP_DIR"
+    else
+        # Windows - try PowerShell
+        powershell -Command "Expand-Archive -Path '$TEMP_DIR/${INSTALL_NAME}.zip' -DestinationPath '$TEMP_DIR' -Force"
+    fi
     
     # Install binary (source is 'opencode', install as 'sahyacode')
     if [ -f "$TEMP_DIR/opencode" ]; then
@@ -152,6 +180,8 @@ main() {
         chmod +x "$INSTALL_DIR/${INSTALL_NAME}"
     else
         echo "Error: Could not find opencode binary in archive"
+        echo "Contents of archive:"
+        ls -la "$TEMP_DIR/"
         exit 1
     fi
     

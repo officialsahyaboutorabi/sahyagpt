@@ -684,6 +684,86 @@
                 
                 <div class="changelog-timeline" style="max-width: 800px; margin: 0 auto 100px;">
                     
+                    <!-- v2.13.6 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px rgba(255, 79, 0, 0.2);"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.13.6</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 5, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Code Intelligence & Live Observatory</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li><strong>Code Intelligence Module</strong> — AST parsing, dependency graphs, semantic search, code metrics</li>
+                                <li><strong>Live Agent Observatory</strong> — Real-time agent monitoring with browser preview</li>
+                                <li>Upgrade command now prevents downgrades with version normalization</li>
+                                <li>Version display consistency (v prefix) across CLI and TUI</li>
+                                <li>Skill tool validation with improved error messages</li>
+                                <li>Migrated npm references from opencode-ai to sahyacode</li>
+                            </ul>
+                            <div style="margin-top: 16px; padding: 16px; background: var(--bg-secondary); border-radius: 8px;">
+                                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">New Commands:</div>
+                                <div class="cmd-line" style="margin-bottom: 8px;">
+                                    <code>sahyacode analyze ./src</code>
+                                    <button class="cmd-copy" onclick="copyText('sahyacode analyze ./src')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="cmd-line">
+                                    <code>sahyacode observatory --preview</code>
+                                    <button class="cmd-copy" onclick="copyText('sahyacode observatory --preview')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- v2.13.5 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--bg-hover); border: 2px solid var(--border); border-radius: 50%;"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; opacity: 0.9;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.13.5</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 5, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Linux Support & Workflow Improvements</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Added Linux build targets (x64, arm64, musl variants)</li>
+                                <li>Simplified GitHub Actions release workflow</li>
+                                <li>Fixed version mismatch in binaries</li>
+                                <li>Updated install script for cross-platform compatibility</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- v2.13.4 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--bg-hover); border: 2px solid var(--border); border-radius: 50%;"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; opacity: 0.9;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.13.4</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 2, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Bug Fixes & Improvements</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Fixed double 'v' in update notifications</li>
+                                <li>Fixed binary version reporting (was showing 0.0.0-main-*)</li>
+                                <li>Fixed install script tar.gz archive handling</li>
+                                <li>Build process now requires OPENCODE_VERSION env var</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
                     <!-- v2.0.8 -->
                     <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
                         <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
@@ -983,7 +1063,7 @@
                 versionText.textContent = `${version} Now Available`;
             } catch (err) {
                 // Fallback to static version if API fails
-                versionText.textContent = 'v2.0.8 Now Available';
+                versionText.textContent = 'v2.13.6 Now Available';
             }
         }
         

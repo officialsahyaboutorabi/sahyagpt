@@ -475,7 +475,7 @@
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                         </svg>
-                        <span id="version-text">v2.14.2</span> — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
+                        <span id="version-text">v2.14.3</span> — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
                     </div>
                     <h1 class="hero-title">Code with Sahya Code</h1>
                     <p class="hero-subtitle">
@@ -590,7 +590,7 @@
                                     <span class="terminal-prompt">$</span>
                                     <span class="terminal-cmd">sahyacode</span>
                                 </div>
-                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.14.2</div>
+                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.14.3</div>
                                 <div class="terminal-line terminal-output">Type your message or /help for commands</div>
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">&gt;</span>
@@ -684,21 +684,38 @@
                 
                 <div class="changelog-timeline" style="max-width: 800px; margin: 0 auto 100px;">
                     
-                    <!-- v2.14.2 -->
+                    <!-- v2.14.3 -->
                     <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
                         <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
                         <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px rgba(255, 79, 0, 0.2);"></div>
                         <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px;">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                                <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.14.2</span>
+                                <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.14.3</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 6, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Better Upgrade Error Messages</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Added cache-busting to install.sh download (fixes CDN caching issues)</li>
+                                <li>Better error messages when upgrade fails</li>
+                                <li>Helpful suggestion for manual install when 404 errors occur</li>
+                                <li>Platform-specific archive formats (.zip for Mac, .tar.gz for Linux)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- v2.14.2 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--bg-hover); border: 2px solid var(--border); border-radius: 50%;"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; opacity: 0.9;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.14.2</span>
                                 <span style="color: var(--text-secondary); font-size: 0.9rem;">April 6, 2025</span>
                             </div>
                             <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Observatory Chat Sidebar</h3>
                             <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
                                 <li>Added chat sidebar in observe section</li>
-                                <li>Shows live chat messages while observing agent activity</li>
-                                <li>Continue conversation with Prompt input while watching</li>
-                                <li>Real-time message updates from current session</li>
+                                <li>Use v2.14.3 for better upgrade reliability</li>
                             </ul>
                         </div>
                     </div>

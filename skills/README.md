@@ -1,4 +1,4 @@
-# BB_Skills
+# Skills
 
 A collection of AI skills for enhanced productivity and development workflows.
 
@@ -39,7 +39,9 @@ A collection of AI skills for enhanced productivity and development workflows.
 
 ## Usage
 
-These skills are designed to work with AI assistants that support skill-based interactions. Each skill provides structured guidance for specific tasks.
+These skills are designed to work with AI assistants that support skill-based interactions. Each skill provides structured guidance for specific tasks. 
+
+Many more skills are available as well. These list just a few skills.
 
 ## License
 

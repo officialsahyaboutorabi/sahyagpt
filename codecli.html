@@ -475,7 +475,7 @@
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                         </svg>
-                        <span id="version-text">v2.14.3</span> — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
+                        <span id="version-text">v2.16.2</span> — <a href="#changelog" style="color: var(--accent); text-decoration: none;">See what's new</a>
                     </div>
                     <h1 class="hero-title">Code with Sahya Code</h1>
                     <p class="hero-subtitle">
@@ -589,7 +589,7 @@
                                     <span class="terminal-prompt">$</span>
                                     <span class="terminal-cmd">sahyacode</span>
                                 </div>
-                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.14.3</div>
+                                <div class="terminal-line terminal-output">Welcome to Sahya Code v2.16.2</div>
                                 <div class="terminal-line terminal-output">Type your message or /help for commands</div>
                                 <div class="terminal-line">
                                     <span class="terminal-prompt">&gt;</span>
@@ -682,6 +682,80 @@
                 <h2 class="section-title" id="changelog">Changelog</h2>
                 
                 <div class="changelog-timeline" style="max-width: 800px; margin: 0 auto 100px;">
+                    
+                    <!-- v2.16.2 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px rgba(255, 79, 0, 0.2);"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.16.2</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 8, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">LiteLLM Model Discovery Fix</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Fixed LiteLLM models not showing after entering URL and API key</li>
+                                <li>Model discovery now properly runs for litellm provider</li>
+                                <li>Fetches available models from /models endpoint after authentication</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- v2.16.1 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--bg-hover); border: 2px solid var(--border); border-radius: 50%;"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; opacity: 0.95;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.16.1</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 8, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Install Script & LiteLLM TUI</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Fixed install.sh not finding sahyacode binary in extracted archive</li>
+                                <li>Fixed version showing as v0.0.0-main-... in binaries</li>
+                                <li>Added LiteLLM provider to TUI provider selection dialog</li>
+                                <li>Custom OpenAI-compatible endpoint support with URL + API key auth</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- v2.16.0 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--bg-hover); border: 2px solid var(--border); border-radius: 50%;"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; opacity: 0.9;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.16.0</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 8, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">LiteLLM Backend Support</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Full backend support for LiteLLM/custom OpenAI-compatible endpoints</li>
+                                <li>Auto-discovery of models from /models endpoint</li>
+                                <li>Support for baseURL configuration via config, env vars, or auth</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- v2.15.3-v2.15.9 -->
+                    <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
+                        <div class="timeline-line" style="position: absolute; left: 6px; top: 24px; bottom: -32px; width: 2px; background: var(--border);"></div>
+                        <div class="timeline-dot" style="position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: var(--bg-hover); border: 2px solid var(--border); border-radius: 50%;"></div>
+                        <div class="changelog-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; opacity: 0.85;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="background: var(--bg-hover); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.85rem; font-weight: 600;">v2.15.3 - v2.15.9</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">April 8, 2025</span>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Observatory Fixes & Custom Providers</h3>
+                            <ul style="color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
+                                <li>Fixed observatory browse endpoint 404 and CORS issues</li>
+                                <li>Added custom provider CLI command (sahyacode provider add)</li>
+                                <li>Fixed double "v" prefix in upgrade notifications</li>
+                                <li>Fixed upgrade command database migration interference</li>
+                            </ul>
+                        </div>
+                    </div>
                     
                     <!-- v2.14.3 -->
                     <div class="timeline-item" style="position: relative; padding-left: 32px; margin-bottom: 32px;">
@@ -1152,7 +1226,7 @@
                 versionText.textContent = `${version} Now Available`;
             } catch (err) {
                 // Fallback to static version if API fails
-                versionText.textContent = 'v2.13.7 Now Available';
+                versionText.textContent = 'v2.16.2 Now Available';
             }
         }
         

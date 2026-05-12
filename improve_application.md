@@ -149,6 +149,7 @@ if (error.name === 'AbortError') {
 **File:** `index.html`
 **Lines:** ~4111–4115
 **Severity:** HIGH — Fragile, can silently use the wrong model for continuation
+**Status:** PARTIALLY FIXED — DOM fallback still exists but provider is now explicitly stored on every message
 
 **Buggy code:**
 ```js
@@ -162,7 +163,12 @@ if (!modelId) {
 
 Reading a model identifier from visible DOM text is brittle. The dropdown may show a display name rather than the API model ID. If the user has switched models since the original message, the continuation silently uses a different model with no warning.
 
-**Fix needed:** Store `modelId` and `provider` on every message at creation time (already attempted at lines 4296–4301) and remove the DOM text fallback entirely.
+**Fix applied (2026-05-12):**
+- `provider: 'ollama'` is now stored on every Ollama model at fetch time
+- `continueResponse()` uses explicit `isLiteLLM`, `isYandexGPT`, `isOllama` flags instead of `modelId.includes('/')` heuristic
+- Ollama endpoint is resolved from `this.models` lookup rather than deprecated `this.settings.ollamaEndpoint`
+
+**Remaining work:** Remove the DOM text fallback entirely once all legacy messages without stored `model`/`provider` have aged out.
 
 ---
 
@@ -231,6 +237,7 @@ YandexGPT is accessed via a proxy that speaks the OpenAI `/chat/completions` for
 **File:** `index.html`
 **Line:** ~4295
 **Severity:** MEDIUM — `model`/`provider` missing from some messages; continuation logic degrades
+**Status:** FIXED — `provider: 'ollama'` now stored on all Ollama models; AI messages always carry model/provider
 
 **Buggy code:**
 ```js
@@ -241,7 +248,10 @@ if (provider) { message.provider = provider; }
 
 User messages are added via `addMessage('user', ...)` without a `modelId` or `provider`. AI messages added during an error path (line 4696) may omit these too. Old messages loaded from `localStorage` will not have them. The `continueResponse` fallback chain (bugs 2.4) is a direct consequence of this inconsistency.
 
-**Fix needed:** Always include `model` and `provider` on AI messages (default to `null`). Never omit fields — use explicit `null` so consumers can distinguish "unknown" from "not set".
+**Fix applied (2026-05-12):**
+- All models fetched from Ollama now include `provider: 'ollama'`
+- `streamResponse()` always passes `modelId` and `provider` to `addMessage()`
+- `continueResponse()` resolves provider from stored message metadata, not heuristics
 
 ---
 

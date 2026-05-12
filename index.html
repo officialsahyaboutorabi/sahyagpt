@@ -3084,11 +3084,14 @@ Using the search results above as your primary source of information, provide a 
                         const response = await fetch(`${endpoint.url}/api/tags`);
                         if (!response.ok) throw new Error(`Failed to fetch from ${endpoint.name}`);
                         const data = await response.json();
-                        const models = (data.models || []).map(m => ({
-                            name: m.name,
-                            endpoint: endpoint.url,
-                            endpointName: endpoint.name
-                        }));
+                        const models = (data.models || [])
+                            .filter(m => !m.name.endsWith(':cloud'))
+                            .map(m => ({
+                                name: m.name,
+                                endpoint: endpoint.url,
+                                endpointName: endpoint.name,
+                                provider: 'ollama'
+                            }));
                         this.models.push(...models);
                         anyConnected = true;
                     } catch (error) {
@@ -4134,8 +4137,17 @@ Using the search results above as your primary source of information, provide a 
                     return;
                 }
                 
-                // Detect provider - LiteLLM/YandexGPT models often have '/' in their name
-                const isLiteLLM = provider === 'litellm' || provider === 'yandexgpt' || modelId.includes('/');
+                // Detect provider from stored message or current model
+                const isLiteLLM = provider === 'litellm';
+                const isYandexGPT = provider === 'yandexgpt';
+                const isOllama = provider === 'ollama';
+                
+                // Find the model's endpoint for Ollama
+                let ollamaModelEndpoint = null;
+                if (isOllama) {
+                    const foundModel = this.models.find(m => m.name === modelId && m.provider === 'ollama');
+                    ollamaModelEndpoint = foundModel ? foundModel.endpoint : (this.settings.ollamaEndpoint || 'http://localhost:11434');
+                }
                 
                 // Update UI state
                 this.isGenerating = true;
@@ -4175,15 +4187,15 @@ Using the search results above as your primary source of information, provide a 
                     const continuePrompt = `The following is the beginning of your response that got cut off:\n\n<previous_response>\n${originalContent}\n</previous_response>\n\nComplete your response by continuing directly from where it ends above. Output ONLY the new text - do not repeat anything from <previous_response>.`;
                     conversationHistory.push({ role: 'user', content: continuePrompt });
                     
-                    if (isLiteLLM) {
+                    if (isLiteLLM || isYandexGPT) {
                         // LiteLLM/OpenAI format (also used by YandexGPT)
-                        const endpoint = provider === 'yandexgpt' 
+                        const endpoint = isYandexGPT 
                             ? (this.settings.yandexgptProxyUrl || 'https://yandexgpt-proxy.sahyagpt.workers.dev')
                             : (this.settings.litellmEndpoint || 'https://llm.nexiant.ai');
-                        const authHeader = provider === 'yandexgpt'
+                        const authHeader = isYandexGPT
                             ? `Api-Key ${this.settings.yandexgptApiKey}`
                             : `Bearer ${this.settings.litellmApiKey}`;
-                        const folderIdHeader = provider === 'yandexgpt' ? { 'OpenAI-Project': this.settings.yandexgptFolderId } : {};
+                        const folderIdHeader = isYandexGPT ? { 'OpenAI-Project': this.settings.yandexgptFolderId } : {};
                         
                         const response = await fetch(endpoint + '/chat/completions', {
                             method: 'POST',
@@ -4255,9 +4267,9 @@ Using the search results above as your primary source of information, provide a 
                                 }
                             }
                         }
-                    } else {
+                    } else if (isOllama) {
                         // Ollama format
-                        const response = await fetch(this.settings.ollamaEndpoint + '/api/chat', {
+                        const response = await fetch(ollamaModelEndpoint + '/api/chat', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -4302,6 +4314,8 @@ Using the search results above as your primary source of information, provide a 
                                 } catch (e) {}
                             }
                         }
+                    } else {
+                        throw new Error('Unknown provider for continuation: ' + provider);
                     }
                     
                     // Final save after completion
@@ -4609,14 +4623,27 @@ Using the search results above as your primary source of information, provide a 
                             }
                             throw new Error(`YandexGPT error: ${msg}`);
                         }
-                    } else {
+                    } else if (this.currentModel.provider === 'ollama') {
                         // ── Ollama ─────────────────────────────────────────────
-                        response = await fetch(`${this.currentModel.endpoint}/api/generate`, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ model: this.currentModel.name, prompt: userMessage, system: systemPromptWithSkill, temperature: parseFloat(this.settings.temperature), stream: true }),
+                        const conversationHistory = [
+                            { role: 'system', content: systemPromptWithSkill },
+                            ...this.messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.content })),
+                            { role: 'user', content: userMessage }
+                        ];
+                        response = await fetch(`${this.currentModel.endpoint}/api/chat`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: this.currentModel.name,
+                                messages: conversationHistory,
+                                temperature: parseFloat(this.settings.temperature),
+                                stream: true
+                            }),
                             signal: signal
                         });
                         if (!response.ok) throw new Error('Failed to get response from Ollama');
+                    } else {
+                        throw new Error('Unknown provider: ' + this.currentModel.provider);
                     }
 
                     const reader = response.body.getReader();
@@ -4686,10 +4713,11 @@ Using the search results above as your primary source of information, provide a 
                                 try { data = JSON.parse(trimmed.slice(6)); } catch (e) { continue; }
                                 token = data.choices?.[0]?.delta?.content ?? null;
                             } else {
-                                // NDJSON: {"response":"...","done":false}
+                                // NDJSON: Ollama /api/generate uses {"response":"..."}
+                                //         Ollama /api/chat uses {"message":{"content":"..."}}
                                 let data;
                                 try { data = JSON.parse(trimmed); } catch (e) { continue; }
-                                token = data.response ?? null;
+                                token = data.message?.content ?? data.response ?? null;
                             }
 
                             if (!token) continue;

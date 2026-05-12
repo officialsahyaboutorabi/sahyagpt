@@ -2,6 +2,26 @@
 
 All notable changes to the SahyaGPT project will be documented in this file.
 
+## [1.4.1] - 2026-05-12
+
+### Fixed (index.html)
+
+#### Ollama Chat API Integration
+- **Fixed Ollama streaming failures** — Switched from legacy `/api/generate` to modern `/api/chat` endpoint
+  - Added `provider: 'ollama'` to all Ollama models fetched from `/api/tags`
+  - `streamResponse()` now builds proper `messages` array (system + history + user) for `/api/chat`
+  - Token parser updated to read `data.message.content` (chat format) with fallback to `data.response` (generate format)
+  - Added explicit `else if (this.currentModel.provider === 'ollama')` branch with clear `else { throw new Error('Unknown provider') }` fallback
+
+#### Continue Response Provider Detection
+- **Fixed broken provider detection in `continueResponse()`**
+  - Replaced fragile `modelId.includes('/')` heuristic with explicit `provider === 'ollama'` checks
+  - Added `isLiteLLM`, `isYandexGPT`, `isOllama` boolean flags for clarity
+  - Ollama continuation now resolves endpoint from `this.models` lookup instead of deprecated `this.settings.ollamaEndpoint`
+  - Added `else { throw new Error('Unknown provider for continuation') }` for unknown providers
+
+---
+
 ## [1.4.0] - 2026-03-31
 
 ### Added

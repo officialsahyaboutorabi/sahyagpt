@@ -228,14 +228,24 @@ Populate UI Elements
 ### 1. Multi-Provider Support
 
 **Ollama** (Local Models):
-- Endpoint: `http://localhost:11434`
-- Protocol: Custom Ollama API
-- Streaming: NDJSON format
+- Endpoint: `http://localhost:11434` (configurable, multiple endpoints supported)
+- Protocol: Ollama Chat API (`/api/chat`)
+- Streaming: NDJSON format with `message.content` tokens
+- Authentication: None (local)
+- Model discovery: Fetched dynamically from `/api/tags`
+- Provider tag: `provider: 'ollama'` (required for routing)
 
 **LiteLLM** (Cloud Models):
-- Endpoint: `https://llm.nexiant.ai`
-- Protocol: OpenAI-compatible API
+- Endpoint: `https://llm.nexiant.ai` (configurable)
+- Protocol: OpenAI-compatible API (`/v1/chat/completions`)
 - Streaming: SSE format
+- Authentication: Bearer token
+
+**YandexGPT** (Alice AI):
+- Endpoint: `https://ai.api.cloud.yandex.net/v1`
+- Protocol: YandexGPT Responses API
+- Streaming: SSE via CORS proxy
+- Authentication: Api-Key + Folder ID
 
 ### 2. File Attachments
 
@@ -702,14 +712,35 @@ if (this.currentModel.provider === 'litellm') {
     // Use OpenAI-compatible SSE format
 } else if (this.currentModel.provider === 'yandexgpt') {
     // Use YandexGPT Responses API
+} else if (this.currentModel.provider === 'ollama') {
+    // Use Ollama Chat API (NDJSON)
 } else {
-    // Use Ollama NDJSON format
+    throw new Error('Unknown provider: ' + this.currentModel.provider);
 }
 ```
 
+**Note:** Every model in `this.models` must have a `provider` field. Ollama models are tagged with `provider: 'ollama'` during `fetchModels()`. Without this field, the provider falls through to the unknown-provider error.
+
 ### Response Format Handling
 
-**Ollama (NDJSON)**:
+**Ollama Chat API (NDJSON)**:
+```
+POST /api/chat
+{
+    "model": "llama3.2",
+    "messages": [
+        {"role": "system", "content": "..."},
+        {"role": "user", "content": "..."}
+    ],
+    "stream": true
+}
+
+Response chunks:
+{"message": {"content": "token"}, "done": false}
+{"message": {"content": ""}, "done": true}
+```
+
+**Ollama Generate API (legacy, still supported by parser)**:
 ```
 {"response": "token", "done": false}
 {"response": "", "done": true}
@@ -736,13 +767,27 @@ POST /v1/responses
 ### Unified Parsing
 The `streamResponse()` method normalizes both formats into tokens that are fed to `StreamRenderer`.
 
+**Token extraction logic**:
+```javascript
+if (isOpenAIFormat) {
+    // SSE: "data: {...}" or "data: [DONE]"
+    token = data.choices?.[0]?.delta?.content ?? null;
+} else {
+    // NDJSON: Ollama /api/chat uses {"message":{"content":"..."}}
+    //         Ollama /api/generate uses {"response":"..."}
+    token = data.message?.content ?? data.response ?? null;
+}
+```
+
+The parser supports both the modern `/api/chat` format (`message.content`) and the legacy `/api/generate` format (`response`) for backward compatibility.
+
 ### Supported Providers
 
 | Provider | Endpoint | Authentication | Models |
 |----------|----------|----------------|--------|
-| **Ollama** | Local/Custom URL | None | Any local model |
-| **LiteLLM** | `https://llm.nexiant.ai` | Bearer Token | Cloud models (GPT-4, Claude, etc.) |
-| **YandexGPT** | `https://ai.api.cloud.yandex.net/v1` | Api-Key + OpenAI-Project | yandexgpt, yandexgpt-lite, aliceai-llm |
+| **Ollama** | Local/Custom URL | None | Any local model | `/api/chat` (chat) |
+| **LiteLLM** | `https://llm.nexiant.ai` | Bearer Token | Cloud models (GPT-4, Claude, etc.) | `/v1/chat/completions` (SSE) |
+| **YandexGPT** | `https://ai.api.cloud.yandex.net/v1` | Api-Key + OpenAI-Project | yandexgpt, yandexgpt-lite, aliceai-llm | `/v1/responses` |
 
 #### YandexGPT Specifics
 
@@ -971,5 +1016,5 @@ MIT License - See project root for details
 
 ---
 
-*Architecture Documentation v1.7*
-*Last Updated: March 31, 2026*
+*Architecture Documentation v1.8*
+*Last Updated: May 12, 2026*
